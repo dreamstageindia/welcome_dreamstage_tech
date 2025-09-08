@@ -191,9 +191,9 @@ var MarioMaker = (function() {
     };
 
     this.fetchLevels = function(levelNumber) {
-      console.log(`Fetching level ${levelNumber} from: http://localhost:3000/api/levels/${levelNumber}`);
+      console.log(`Fetching level ${levelNumber} from: /api/levels/${levelNumber}`);
       levelsCache = null;
-      return fetch(`http://localhost:3000/api/levels/${levelNumber}`)
+      return fetch(`/api/levels/${levelNumber}`)
         .then(function(res) {
           if (!res.ok) {
             throw new Error(`Server returned ${res.status}: ${res.statusText}`);

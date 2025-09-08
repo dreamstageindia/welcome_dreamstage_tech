@@ -1,25 +1,25 @@
-// public/js/community.js
 (function(){
   const rankEl = document.getElementById('rank');
+  const rankInlineEl = document.getElementById('rank2');
+  const waAnchor = document.getElementById('waCta');
 
+  /* ---------------- Rank helpers ---------------- */
   function ordinal(n){
     const s = ["th","st","nd","rd"], v = n % 100;
     return n + (s[(v-20)%10] || s[v] || s[0]);
   }
   function setRank(n){
-    rankEl.textContent = n ? ordinal(n) : '—';
-    // mirror to #rank2 if present
-    const r2 = document.getElementById('rank2');
-    if (r2) r2.textContent = n ? ordinal(n) : '[Xth]';
+    const text = n ? ordinal(n) : '—';
+    rankEl.textContent = text;
+    if (rankInlineEl) rankInlineEl.textContent = n ? ordinal(n) : '[Xth]';
   }
 
-  // Try to get join order in the most reliable/cheapest way first
+  /* Try to resolve rank in multiple ways */
   async function resolveRank(){
     const params = new URLSearchParams(location.search);
     const fromQuery = params.get('rank');
     if (fromQuery && /^\d+$/.test(fromQuery)) return Number(fromQuery);
 
-    // If we have sessionId from onboarding, ask backend (idempotent)
     try {
       const sid = localStorage.getItem('QF_SESSION_ID');
       if (sid) {
@@ -35,7 +35,6 @@
       }
     } catch (e) {}
 
-    // Fallback: just show total members so far
     try {
       const r2 = await fetch('/api/community/count');
       if (r2.ok) {
@@ -47,7 +46,7 @@
     return null;
   }
 
-  // Simple confetti
+  /* ---------------- Simple confetti ---------------- */
   function confetti(){
     const canvas = document.getElementById('confetti');
     const ctx = canvas.getContext('2d');
@@ -87,6 +86,61 @@
     })();
   }
 
-  resolveRank().then(setRank);
-  confetti();
+  /* ---------------- Role-based routing ---------------- */
+  async function resolveRoleAndRoute(joinOrder){
+    // Prefer server truth; we use session -> playerId -> journey
+    let role = null;
+    try {
+      const sid = localStorage.getItem('QF_SESSION_ID');
+      if (sid) {
+        const r = await fetch('/api/player/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sid })
+        });
+        if (r.ok) {
+          const j = await r.json();
+          if (j && j.playerId) {
+            const g = await fetch('/api/journey/' + encodeURIComponent(j.playerId));
+            if (g.ok) {
+              const doc = await g.json();
+              if (doc && typeof doc.role === 'string') role = doc.role.toLowerCase();
+              // If artist -> redirect to EPK
+              if (role === 'artist') {
+                const qs = (typeof joinOrder === 'number') ? ('?rank=' + encodeURIComponent(joinOrder)) : '';
+                window.location.replace('/epk-demo.html' + qs);
+                return; // stop here
+              }
+            }
+            // Not artist or no role: set up WhatsApp auto-open
+            scheduleWhatsAppAutoOpen();
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      // If anything fails, fallback to WhatsApp auto-open
+    }
+    scheduleWhatsAppAutoOpen();
+  }
+
+  /* ---------------- WhatsApp auto-open (only for non-artists) ---------------- */
+  function scheduleWhatsAppAutoOpen(){
+    if (!waAnchor) return;
+    const timer = setTimeout(function(){
+      const popup = window.open(waAnchor.href, '_blank', 'noopener,noreferrer');
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        window.location.href = waAnchor.href; // fallback same-tab
+      }
+    }, 8000);
+    waAnchor.addEventListener('click', () => clearTimeout(timer), { once: true });
+  }
+
+  /* ---------------- Init ---------------- */
+  (async function init(){
+    confetti();
+    const rank = await resolveRank();
+    setRank(rank);
+    await resolveRoleAndRoute(rank);
+  })();
 })();

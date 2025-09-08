@@ -49,7 +49,7 @@ var CreatedLevels = (function() {
       }
 
       // Fetch levels from backend
-      fetch('http://localhost:3000/api/levels/list')
+      fetch('/api/levels/list')
         .then(function(res) {
           if (!res.ok) {
             throw new Error(`Server returned ${res.status}`);
@@ -90,7 +90,7 @@ var CreatedLevels = (function() {
     };
 
     this.deleteAllMaps = function() {
-      fetch('http://localhost:3000/api/levels', { method: 'DELETE' })
+      fetch('/api/levels', { method: 'DELETE' })
         .then(function(res) {
           if (!res.ok) {
             throw new Error(`Server returned ${res.status}`);
@@ -112,7 +112,7 @@ var CreatedLevels = (function() {
         alert('Error: Invalid level ID.');
         return;
       }
-      fetch(`http://localhost:3000/api/levels/${levelId}`)
+      fetch(`/api/levels/${levelId}`)
         .then(function(res) {
           if (!res.ok) {
             throw new Error(`Server returned ${res.status}`);

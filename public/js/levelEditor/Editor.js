@@ -158,7 +158,7 @@ function Editor() {
   // ←––––––– THE ONLY CHANGE –––––––→
   this.saveMap = function() {
     that.generateMap();
-    var endpoint = 'http://localhost:3000/api/levels';
+    var endpoint = '/api/levels';
     fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

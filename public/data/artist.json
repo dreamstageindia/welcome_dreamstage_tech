@@ -1,0 +1,838 @@
+[
+    {
+        "name": "Disco Jockey (DJ)",
+        "description": "Mixes music for events or clubs with Indian beats."
+    },
+    {
+        "name": "Video Jockey (VJ)",
+        "description": "Hosts music or cultural shows on TV or online."
+    },
+    {
+        "name": "Radio Jockey (RJ)",
+        "description": "Hosts radio shows with music or cultural commentary."
+    },
+    {
+        "name": "Bharatanatyam Choreographer",
+        "description": "Designs classical dance sequences from South India."
+    },
+    {
+        "name": "Kathak Performer",
+        "description": "Performs North Indian storytelling dance."
+    },
+    {
+        "name": "Odissi Choreographer",
+        "description": "Creates graceful Odisha dance routines."
+    },
+    {
+        "name": "Kuchipudi Performer",
+        "description": "Performs dynamic Andhra classical dance."
+    },
+    {
+        "name": "Mohiniyattam Dancer",
+        "description": "Performs feminine Kerala classical dance."
+    },
+    {
+        "name": "Sattriya Dancer",
+        "description": "Performs Assam’s devotional classical dance."
+    },
+    {
+        "name": "Bhangra Performer",
+        "description": "Performs energetic Punjabi folk dance."
+    },
+    {
+        "name": "Garba Dancer",
+        "description": "Performs circular Gujarati dance for Navratri."
+    },
+    {
+        "name": "Lavani Performer",
+        "description": "Performs bold Maharashtrian folk dance."
+    },
+    {
+        "name": "Ghoomar Dancer",
+        "description": "Performs swirling Rajasthani folk dance."
+    },
+    {
+        "name": "Chhau Performer",
+        "description": "Performs martial dance from Odisha or Bengal."
+    },
+    {
+        "name": "Folk Theatre Performer",
+        "description": "Acts in Nautanki or Tamasha plays."
+    },
+    {
+        "name": "Yakshagana Actor",
+        "description": "Performs Karnataka’s mythological theatre."
+    },
+    {
+        "name": "Bhavai Performer",
+        "description": "Performs acrobatic Gujarati folk theatre."
+    },
+    {
+        "name": "Street Musician",
+        "description": "Performs music in public spaces."
+    },
+    {
+        "name": "Dhol Player",
+        "description": "Plays the dhol drum for festivals or events."
+    },
+    {
+        "name": "Nadaswaram Player",
+        "description": "Plays South Indian wind instrument for ceremonies."
+    },
+    {
+        "name": "Shehnai Player",
+        "description": "Plays auspicious wind instrument for weddings."
+    },
+    {
+        "name": "Mridangam Player",
+        "description": "Plays Carnatic percussion drum."
+    },
+    {
+        "name": "Kanjira Player",
+        "description": "Plays tambourine-like drum in Carnatic music."
+    },
+    {
+        "name": "Rabab Player",
+        "description": "Plays Kashmiri stringed instrument."
+    },
+    {
+        "name": "Sarod Player",
+        "description": "Plays fretless string instrument in classical music."
+    },
+    {
+        "name": "Sufi Singer",
+        "description": "Sings devotional Sufi music with passion."
+    },
+    {
+        "name": "Thumri Singer",
+        "description": "Sings romantic Hindustani thumri."
+    },
+    {
+        "name": "Dhrupad Singer",
+        "description": "Sings meditative Dhrupad music."
+    },
+    {
+        "name": "Baul Singer",
+        "description": "Sings mystic Bengali folk songs."
+    },
+    {
+        "name": "Bhawaiya Singer",
+        "description": "Sings North Bengal folk songs."
+    },
+    {
+        "name": "Qawwali Performer",
+        "description": "Performs group Sufi devotional music."
+    },
+    {
+        "name": "Fusion Guitarist",
+        "description": "Blends Indian and Western guitar styles."
+    },
+    {
+        "name": "Mandolin Player",
+        "description": "Plays mandolin in Indian fusion music."
+    },
+    {
+        "name": "Tabla Maker",
+        "description": "Crafts traditional tabla drums."
+    },
+    {
+        "name": "Sitar Maker",
+        "description": "Crafts classical sitar instruments."
+    },
+    {
+        "name": "Madhubani Painter",
+        "description": "Paints mythological Bihar folk art."
+    },
+    {
+        "name": "Warli Artist",
+        "description": "Paints tribal geometric art from Maharashtra."
+    },
+    {
+        "name": "Tanjore Painter",
+        "description": "Paints gold-leaf adorned Tamil Nadu art."
+    },
+    {
+        "name": "Pichwai Painter",
+        "description": "Paints Krishna-themed temple art."
+    },
+    {
+        "name": "Patachitra Artist",
+        "description": "Paints Odisha’s narrative folk art."
+    },
+    {
+        "name": "Phad Painter",
+        "description": "Paints Rajasthani epic scroll art."
+    },
+    {
+        "name": "Miniature Painter",
+        "description": "Paints detailed Mughal or Rajput art."
+    },
+    {
+        "name": "Kalamkari Artist",
+        "description": "Paints or prints on fabric with natural dyes."
+    },
+    {
+        "name": "Gond Painter",
+        "description": "Paints tribal art from Madhya Pradesh."
+    },
+    {
+        "name": "Street Muralist",
+        "description": "Paints vibrant urban wall art."
+    },
+    {
+        "name": "Clay Modeler",
+        "description": "Sculpts clay idols for festivals."
+    },
+    {
+        "name": "Wood Sculptor",
+        "description": "Carves intricate wooden sculptures."
+    },
+    {
+        "name": "Metal Engraver",
+        "description": "Engraves designs on brass or silver."
+    },
+    {
+        "name": "Batik Artist",
+        "description": "Creates wax-resist dyed fabric art."
+    },
+    {
+        "name": "Textile Printer",
+        "description": "Prints designs on fabrics using blocks."
+    },
+    {
+        "name": "Embroiderer",
+        "description": "Crafts intricate Chikankari or Zardozi."
+    },
+    {
+        "name": "Weaver",
+        "description": "Weaves Banarasi or Kanjeevaram textiles."
+    },
+    {
+        "name": "Jewelry Artisan",
+        "description": "Crafts traditional Indian jewelry."
+    },
+    {
+        "name": "Rangoli Artist",
+        "description": "Creates colorful floor art for festivals."
+    },
+    {
+        "name": "Mehndi Designer",
+        "description": "Creates intricate henna patterns."
+    },
+    {
+        "name": "Sand Artist",
+        "description": "Creates ephemeral sand art stories."
+    },
+    {
+        "name": "Glass Painter",
+        "description": "Paints intricate designs on glass."
+    },
+    {
+        "name": "Palm Leaf Engraver",
+        "description": "Engraves stories on palm leaves."
+    },
+    {
+        "name": "Kite Maker",
+        "description": "Crafts artistic kites for festivals."
+    },
+    {
+        "name": "Mask Maker",
+        "description": "Crafts masks for Kathakali or Chhau."
+    },
+    {
+        "name": "Costume Designer",
+        "description": "Designs attire for dance or theatre."
+    },
+    {
+        "name": "Set Designer",
+        "description": "Creates stage sets for performances."
+    },
+    {
+        "name": "Pattachitra Narrator",
+        "description": "Sings while presenting Odisha scroll art."
+    },
+    {
+        "name": "Kavad Storyteller",
+        "description": "Narrates Rajasthani tales with portable shrines."
+    },
+    {
+        "name": "Shadow Puppeteer",
+        "description": "Performs stories with shadow puppets."
+    },
+    {
+        "name": "Folk Storyteller",
+        "description": "Narrates regional oral epics."
+    },
+    {
+        "name": "Lyricist",
+        "description": "Writes song lyrics for films or albums."
+    },
+    {
+        "name": "Poet",
+        "description": "Writes poetry in Hindi, Urdu, or regional languages."
+    },
+    {
+        "name": "Calligrapher",
+        "description": "Creates artistic Urdu or Devanagari script."
+    },
+    {
+        "name": "Cartoonist",
+        "description": "Draws satirical or humorous illustrations."
+    },
+    {
+        "name": "Animator",
+        "description": "Creates animated visuals for films or media."
+    },
+    {
+        "name": "Filmmaker",
+        "description": "Directs or produces cultural or artistic films."
+    },
+    {
+        "name": "Music Composer",
+        "description": "Composes music for films or performances."
+    },
+    {
+        "name": "Sound Designer",
+        "description": "Creates soundscapes for theatre or films."
+    },
+    {
+        "name": "Event Lighting Designer",
+        "description": "Designs lighting for cultural events."
+    },
+    {
+        "name": "Bamboo Artisan",
+        "description": "Crafts decorative bamboo items."
+    },
+    {
+        "name": "Terracotta Artist",
+        "description": "Sculpts terracotta figures or pottery."
+    },
+    {
+        "name": "Traditional Tattoo Artist",
+        "description": "Creates tribal or ritualistic tattoos."
+    },
+    {
+        "name": "Sufi Dancer",
+        "description": "Performs whirling dance in Sufi tradition."
+    },
+    {
+        "name": "Dabka Dancer",
+        "description": "Performs Kashmiri folk dance."
+    },
+    {
+        "name": "Banjara Embroiderer",
+        "description": "Crafts vibrant tribal embroidery."
+    },
+    {
+        "name": "Instrument Repairer",
+        "description": "Restores traditional musical instruments."
+    },
+    {
+        "name": "Vocal Coach",
+        "description": "Trains singers in classical or modern styles."
+    },
+    {
+        "name": "Dance Instructor",
+        "description": "Teaches classical or folk dance forms."
+    },
+    {
+        "name": "Tabla Accompanist",
+        "description": "Plays tabla to support vocal or dance performances."
+    },
+    {
+        "name": "Fusion Drummer",
+        "description": "Plays drums in Indian-Western fusion music."
+    },
+    {
+        "name": "Pakhawaj Player",
+        "description": "Plays traditional percussion in Dhrupad music."
+    },
+    {
+        "name": "Ghatam Player",
+        "description": "Plays clay pot percussion in Carnatic music."
+    },
+    {
+        "name": "Ektara Player",
+        "description": "Plays single-string folk instrument."
+    },
+    {
+        "name": "Bansuri Maker",
+        "description": "Crafts bamboo flutes for classical music."
+    },
+    {
+        "name": "Street Art Performer",
+        "description": "Creates live art or performances in public."
+    },
+    {
+        "name": "Puppet Maker",
+        "description": "Crafts traditional puppets for performances."
+    },
+    {
+        "name": "Theatre Director",
+        "description": "Directs plays with cultural themes."
+    },
+    {
+        "name": "Folk Instrumentalist",
+        "description": "Plays regional instruments like algoza."
+    },
+    {
+        "name": "Voice-Over Artist",
+        "description": "Provides narration for films or media."
+    },
+    {
+        "name": "Music Arranger",
+        "description": "Arranges music for orchestras or bands."
+    },
+    {
+        "name": "Chhath Song Singer",
+        "description": "Sings devotional songs for Chhath festival."
+    },
+    {
+        "name": "Ramlila Performer",
+        "description": "Acts in traditional Ramayana plays."
+    },
+    {
+        "name": "Qawwali Composer",
+        "description": "Composes Sufi devotional music."
+    },
+    {
+        "name": "Bollywood Choreographer",
+        "description": "Designs dance for Hindi films."
+    },
+    {
+        "name": "Theatre Actor",
+        "description": "Performs in traditional or modern Indian plays."
+    },
+    {
+        "name": "Comedian",
+        "description": "Performs stand-up or improvisational comedy."
+    },
+    {
+        "name": "Flow Artist",
+        "description": "Performs with props like poi or hoops in rhythmic flow."
+    },
+    {
+        "name": "Magician",
+        "description": "Performs magic and illusion acts for entertainment."
+    },
+    {
+        "name": "Camera Actor",
+        "description": "Acts in films or TV with emotive expressions."
+    },
+    {
+        "name": "Dancer",
+        "description": "Performs classical, folk, or contemporary dance forms."
+    },
+    {
+        "name": "Circus Artist",
+        "description": "Performs acrobatics or juggling in circus shows."
+    },
+    {
+        "name": "Puppeteer",
+        "description": "Performs storytelling with Rajasthani puppets."
+    },
+    {
+        "name": "MC/Host",
+        "description": "Hosts events with engaging commentary."
+    },
+    {
+        "name": "Beatboxer",
+        "description": "Creates rhythmic sounds vocally."
+    },
+    {
+        "name": "Bollywood Singer",
+        "description": "Sings for Hindi film soundtracks."
+    },
+    {
+        "name": "Indie/Folk Singer",
+        "description": "Sings independent or regional folk music."
+    },
+    {
+        "name": "Non-Hindi Vocalist",
+        "description": "Sings in regional Indian languages."
+    },
+    {
+        "name": "Techno DJ",
+        "description": "Mixes techno music for events."
+    },
+    {
+        "name": "Psy DJ",
+        "description": "Mixes psychedelic trance music for clubs."
+    },
+    {
+        "name": "Reggae DJ",
+        "description": "Mixes reggae music with Indian influences."
+    },
+    {
+        "name": "Hip-Hop Artist",
+        "description": "Performs rap or hip-hop music."
+    },
+    {
+        "name": "Instrumentalist",
+        "description": "Plays traditional or modern musical instruments."
+    },
+    {
+        "name": "Music Technologist",
+        "description": "Creates digital music or sound effects."
+    },
+    {
+        "name": "Wall Artist",
+        "description": "Paints murals on walls with cultural themes."
+    },
+    {
+        "name": "Graphic Designer",
+        "description": "Creates digital art for media or branding."
+    },
+    {
+        "name": "Photographer",
+        "description": "Captures cultural or artistic images."
+    },
+    {
+        "name": "Videographer",
+        "description": "Records and edits artistic or event videos."
+    },
+    {
+        "name": "Drone Technician",
+        "description": "Operates drones for aerial artistic footage."
+    },
+    {
+        "name": "Barista",
+        "description": "Crafts artistic coffee beverages."
+    },
+    {
+        "name": "Chef",
+        "description": "Cooks traditional or modern Indian cuisine."
+    },
+    {
+        "name": "Baker",
+        "description": "Bakes breads or desserts with Indian flavors."
+    },
+    {
+        "name": "Mixologist",
+        "description": "Crafts creative cocktails with Indian twists."
+    },
+    {
+        "name": "Face Painter",
+        "description": "Paints artistic designs on faces for events."
+    },
+    {
+        "name": "Henna Artist",
+        "description": "Creates intricate mehndi designs."
+    },
+    {
+        "name": "Tattoo Artist",
+        "description": "Designs traditional or modern tattoos."
+    },
+    {
+        "name": "Fashion Influencer",
+        "description": "Promotes Indian fashion trends online."
+    },
+    {
+        "name": "Makeup Artist",
+        "description": "Creates looks for performances or fashion."
+    },
+    {
+        "name": "Hair Stylist",
+        "description": "Styles hair for cultural or artistic events."
+    },
+    {
+        "name": "Nail Artist",
+        "description": "Creates intricate nail art designs."
+    },
+    {
+        "name": "Fashion Designer",
+        "description": "Designs traditional or modern Indian attire."
+    },
+    {
+        "name": "Slam Poet",
+        "description": "Performs spoken word poetry."
+    },
+    {
+        "name": "Public Speaker",
+        "description": "Delivers cultural or artistic orations."
+    },
+    {
+        "name": "Journalist",
+        "description": "Writes creative content for cultural media."
+    },
+    {
+        "name": "Linguist",
+        "description": "Studies or teaches Indian languages."
+    },
+    {
+        "name": "Trekking Guide",
+        "description": "Leads adventure treks in the Himalayas."
+    },
+    {
+        "name": "City Tour Guide",
+        "description": "Guides tourists through urban cultural sites."
+    },
+    {
+        "name": "Historic Tour Guide",
+        "description": "Guides tours of historical Indian monuments."
+    },
+    {
+        "name": "Property Manager/Host",
+        "description": "Manages cultural or heritage stays."
+    },
+    {
+        "name": "Tour Operator",
+        "description": "Organizes cultural or adventure tours."
+    },
+    {
+        "name": "Sports Coach",
+        "description": "Trains athletes in sports like cricket or kabaddi."
+    },
+    {
+        "name": "Martial Artist",
+        "description": "Practices or teaches Indian martial arts like Kalaripayattu."
+    },
+    {
+        "name": "Yoga Instructor",
+        "description": "Teaches traditional Indian yoga practices."
+    },
+    {
+        "name": "Nutritionist",
+        "description": "Advises on diet with Indian food focus."
+    },
+    {
+        "name": "Gym Trainer",
+        "description": "Guides fitness training in gyms."
+    },
+    {
+        "name": "Spa Therapist",
+        "description": "Provides wellness treatments like Ayurvedic massage."
+    },
+    {
+        "name": "Holistic Living Expert",
+        "description": "Promotes Ayurveda or natural living."
+    },
+    {
+        "name": "Therapist",
+        "description": "Provides mental or physical therapy."
+    },
+    {
+        "name": "Science Educator",
+        "description": "Teaches scientific subjects in schools."
+    },
+    {
+        "name": "Social Science Educator",
+        "description": "Teaches history or sociology with Indian context."
+    },
+    {
+        "name": "Mathematics Educator",
+        "description": "Teaches math with practical applications."
+    },
+    {
+        "name": "Technology Educator",
+        "description": "Teaches coding or tech skills."
+    },
+    {
+        "name": "Architect",
+        "description": "Designs buildings with Indian aesthetics."
+    },
+    {
+        "name": "Gardener",
+        "description": "Designs or maintains cultural gardens."
+    },
+    {
+        "name": "Crafter",
+        "description": "Creates traditional Indian handicrafts."
+    },
+    {
+        "name": "Carpenter",
+        "description": "Crafts wooden furniture or decor."
+    },
+    {
+        "name": "Plumber",
+        "description": "Handles plumbing for homes or venues."
+    },
+    {
+        "name": "Electrician",
+        "description": "Manages electrical setups for events."
+    },
+    {
+        "name": "Mason",
+        "description": "Builds structures with traditional techniques."
+    },
+    {
+        "name": "House Painter",
+        "description": "Paints buildings with aesthetic designs."
+    },
+    {
+        "name": "Pet Care Specialist",
+        "description": "Trains or cares for pets."
+    },
+    {
+        "name": "Child Care Specialist",
+        "description": "Provides care for children."
+    },
+    {
+        "name": "Elder Care Specialist",
+        "description": "Cares for elderly with cultural sensitivity."
+    },
+    {
+        "name": "House Maid",
+        "description": "Manages household cleaning tasks."
+    },
+    {
+        "name": "Cardiologist",
+        "description": "Treats heart-related conditions."
+    },
+    {
+        "name": "Dermatologist",
+        "description": "Treats skin conditions."
+    },
+    {
+        "name": "Orthopedist",
+        "description": "Treats bone and joint issues."
+    },
+    {
+        "name": "Neurologist",
+        "description": "Treats nervous system disorders."
+    },
+    {
+        "name": "Psychiatrist",
+        "description": "Treats mental health conditions."
+    },
+    {
+        "name": "Ob/Gyn",
+        "description": "Specializes in women’s reproductive health."
+    },
+    {
+        "name": "Pediatrician",
+        "description": "Treats children’s health issues."
+    },
+    {
+        "name": "Ophthalmologist",
+        "description": "Treats eye-related conditions."
+    },
+    {
+        "name": "ENT Specialist",
+        "description": "Treats ear, nose, and throat issues."
+    },
+    {
+        "name": "Pulmonologist",
+        "description": "Treats lung-related conditions."
+    },
+    {
+        "name": "Nephrologist",
+        "description": "Treats kidney disorders."
+    },
+    {
+        "name": "Gastroenterologist",
+        "description": "Treats digestive system issues."
+    },
+    {
+        "name": "Endocrinologist",
+        "description": "Treats hormonal disorders."
+    },
+    {
+        "name": "Infectious Disease Specialist",
+        "description": "Treats infectious diseases."
+    },
+    {
+        "name": "Primary Care Physician",
+        "description": "Provides general medical care."
+    },
+    {
+        "name": "Pathologist",
+        "description": "Analyzes medical samples for diagnosis."
+    },
+    {
+        "name": "Veterinarian",
+        "description": "Treats animals’ health issues."
+    },
+    {
+        "name": "Astrologer",
+        "description": "Predicts events using Vedic astrology."
+    },
+    {
+        "name": "Palmist",
+        "description": "Reads palms for insights into life."
+    },
+    {
+        "name": "Tarot Card Reader",
+        "description": "Uses tarot cards for divination."
+    },
+    {
+        "name": "Energy Healer",
+        "description": "Performs aura cleansing or energy healing."
+    },
+    {
+        "name": "Crystal Healer",
+        "description": "Uses crystals for therapeutic purposes."
+    },
+    {
+        "name": "Supernatural Expert",
+        "description": "Explores mystical or spiritual phenomena."
+    },
+    {
+        "name": "Private Detective",
+        "description": "Investigates personal or cultural matters."
+    },
+    {
+        "name": "Sitarist",
+        "description": "Plays the sitar in classical music."
+    },
+    {
+        "name": "Rangoli Artist",
+        "description": "Creates colorful floor art for festivals."
+    },
+    {
+        "name": "Wood Carver",
+        "description": "Carves intricate wooden sculptures."
+    },
+    {
+        "name": "Kathakali Performer",
+        "description": "Enacts dramatic Kerala stories with makeup."
+    },
+    {
+        "name": "Madhubani Painter",
+        "description": "Paints mythological Bihar folk art."
+    },
+    {
+        "name": "Wedding Organizer",
+        "description": "Plans traditional Indian weddings."
+    },
+    {
+        "name": "Singer",
+        "description": "Performs vocal music in various Indian styles."
+    },
+    {
+        "name": "Dancer",
+        "description": "Performs classical or folk dances of India."
+    },
+    {
+        "name": "Painter",
+        "description": "Creates visual art using traditional or modern mediums."
+    },
+    {
+        "name": "Sculptor",
+        "description": "Carves sculptures from stone, wood, or metal."
+    },
+    {
+        "name": "Musician",
+        "description": "Plays instruments like sitar or tabla."
+    },
+    {
+        "name": "Actor",
+        "description": "Performs in theatre or film productions."
+    },
+    {
+        "name": "Poet",
+        "description": "Writes poetry in Indian languages."
+    },
+    {
+        "name": "Writer",
+        "description": "Creates literary works or scripts."
+    },
+    {
+        "name": "Photographer",
+        "description": "Captures images of cultural themes."
+    },
+    {
+        "name": "Filmmaker",
+        "description": "Directs or produces artistic films."
+    }
+]

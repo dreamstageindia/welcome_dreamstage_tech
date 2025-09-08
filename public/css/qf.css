@@ -1,0 +1,183 @@
+/* ========== Questionnaire Overlay (Mario Theme) — MOBILE-FIT ========== */
+.qf-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+}
+.qf-overlay.hidden { display: none; }
+
+.qf-box {
+  width: min(720px, 94vw);
+  max-height: 92dvh;                 /* keep inside viewport */
+  background:
+    linear-gradient(0deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03)),
+    url('../images/bg.png');
+  background-size: cover;
+  border: 3px solid #000;
+  border-radius: 12px;
+  padding: 14px 14px 10px;
+  color: #ffffff;
+  position: relative;
+  box-shadow: 0 10px 0 #1b4b7a, 0 16px 40px rgba(0,0,0,0.45);
+
+  /* NEW: flex column so content can scale */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;                  /* no outer scrollbars */
+}
+
+.qf-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  border: 2px solid #000;
+  background: #ffcc00;
+  color: #000;
+  font-size: 22px;
+  font-family: SuperMario256, Arial, sans-serif;
+  cursor: not-allowed;
+  box-shadow: 0 4px 0 #b38400;
+}
+
+/* Header text */
+.qf-title {
+  font-family:"Outfit", sans-serif;
+  font-size: clamp(18px, 4.8vw, 26px);
+  letter-spacing: 1px;
+  margin: 2px 0 6px;
+  color: black;
+  text-align: center;
+}
+.qf-type {
+  min-height: 0; /* allow shrink */
+  font-family:"Outfit", sans-serif;
+  font-size: clamp(12px, 3.6vw, 16px);
+  font-weight: 500;
+  line-height: 1.45;
+  margin: 4px 0 8px;
+  color: black;
+  white-space: pre-wrap;
+  text-align: center;
+
+}
+
+/* Body area grows and gives space to the grid */
+.qf-body {
+  flex: 1;
+  min-height: 0;                     /* critical for no overflow */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Inputs */
+.qf-label {
+  font-family: "Outfit", sans-serif;
+  font-size: clamp(12px, 3.2vw, 14px);
+  color: black;
+  
+  margin-bottom: 6px;
+}
+.qf-input {
+  width: 100%;                       /* was 95% */
+  background: #0f172a;
+  border: 2px solid #000;
+  color: #fff;
+  font-size: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  outline: none;
+  box-shadow: inset 0 3px 0 #1b4b7a;
+  font-family: Arial, sans-serif;
+}
+.qf-input:focus { border-color: #ffcc00; }
+
+/* === OPTIONS GRID: always show 4 (2x2) without scrolling === */
+.qf-options {
+  flex: 1;                           /* take remaining space */
+  min-height: 0;                     /* allow the grid to shrink */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;               /* equal heights in both rows */
+  gap: 8px;
+  align-content: center;             /* keep packed vertically */
+}
+
+.qf-option {
+  display: flex; align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: linear-gradient(#15a7d9, #0d87b1);
+  border: 3px solid #000;            /* base border */
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-weight: 700;
+  font-family: SuperMario256, Arial, sans-serif;
+  font-size: clamp(12px, 3.6vw, 14px);
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 4px 0 #0b5672;
+}
+
+/* Highlight on hover/active, width never changes */
+.qf-option:hover { filter: brightness(1.08); }
+.qf-option.active,
+.qf-option.selected {                /* your JS can toggle either */
+  border-color: #ffcc00;             /* highlight WITHOUT size change */
+  box-shadow: 0 4px 0 #0b5672, 0 0 0 3px rgba(255,204,0,0.25) inset;
+}
+
+/* Suggestions list (when used) can scroll without pushing buttons away */
+.qf-suggest {
+  margin-top: 8px;
+  border: 3px solid #000;
+  border-radius: 10px;
+  background: #0f172a;
+  max-height: 36vh;                  /* capped so grid stays visible */
+  overflow: auto;
+  box-shadow: inset 0 4px 0 #1b4b7a;
+}
+
+/* Actions row stays visible */
+.qf-actions {
+  position: sticky;
+  bottom: 0;                         /* stick to bottom of box */
+  margin-top: 10px;
+  padding-top: 8px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+
+  /* subtle fade so it separates from content above */
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.25) 100%);
+}
+
+.qf-btn {
+  background: linear-gradient(#ff3b30, #c1271c);
+  border: 3px solid #000;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: SuperMario256, Arial, sans-serif;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 4px 0 #6b0000;
+}
+.qf-btn:hover { filter: brightness(1.05); }
+
+/* ===== Small phones: tighten spacing just a bit ===== */
+@media (max-width: 420px), (max-height: 680px) {
+  .qf-box { padding: 12px; }
+  .qf-title { margin-bottom: 4px; }
+  .qf-type { margin: 2px 0 6px; }
+  .qf-option { padding: 8px 10px; }
+  .qf-actions { margin-top: 8px; padding-top: 6px; }
+}

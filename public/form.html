@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dream Stage • Quick Intake Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#0b0b0f; --panel:#14141a; --line:#2a2a33; --ink:#f2f2f7; --muted:#b4b4be; --accent:#8b5cf6; --ok:#22c55e; --err:#ef4444; --warn:#f59e0b; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans"; }
+    .wrap { max-width: 900px; margin: 24px auto 48px; padding: 0 16px; }
+    .logo { display:flex; align-items:center; gap:12px; margin-bottom: 18px; }
+    .logo img { width:42px; height:auto; }
+    .caps { text-transform: uppercase; letter-spacing:.08em; font-size:11px; color:var(--muted); }
+    .h1 { font-size:22px; font-weight:700; margin:6px 0 2px; }
+    .muted { color:var(--muted); }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px; }
+    hr { border:0; border-top:1px solid var(--line); margin:18px 0; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+    .row-3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:14px; }
+    .row-1 { display:grid; grid-template-columns: 1fr; gap:14px; }
+    @media (max-width: 780px) { .row, .row-3 { grid-template-columns: 1fr; } }
+    .field { display:flex; flex-direction:column; gap:6px; }
+    .field label { color:var(--muted); font-size:13px; }
+    .field input[type="text"],
+    .field input[type="tel"],
+    .field input[type="search"],
+    .field select,
+    .field textarea {
+      background:#0f0f15; color:var(--ink);
+      border:1px solid var(--line); border-radius:10px; padding:10px 12px; outline:none;
+    }
+    .field textarea { min-height: 90px; resize: vertical; }
+    .radios { display:flex; gap:10px; flex-wrap:wrap; }
+    .radio { background:#0f0f15; border:1px solid var(--line); border-radius:999px; padding:8px 12px; cursor:pointer; user-select:none; }
+    .radio input { display:none; }
+    .radio.active { border-color:var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; }
+    .btn { appearance:none; border:1px solid var(--line); background:#0f0f15; color:var(--ink); border-radius:10px; padding:10px 14px; cursor:pointer; }
+    .btn.primary { background:var(--accent); border-color:transparent; color:white; }
+    .btn.good { background:var(--ok); border-color:transparent; color:black; }
+    .btn.warn { background:var(--warn); border-color:transparent; color:black; }
+    .btn.ghost { background:transparent; }
+    .status { font-size:13px; color:var(--muted); }
+    .ok { color:var(--ok); }
+    .err { color:var(--err); }
+    .pill { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:#101018; border:1px solid var(--line); color:var(--muted); font-size:12px; }
+    .link { color: var(--accent); text-decoration: none; }
+    .hidden { display:none; }
+    .grid-gap { display:grid; gap:14px; }
+    code.small { font-size:12px; color:#cbd5e1; background:#0f0f15; padding:2px 6px; border-radius:6px; }
+    .jsonbox { background:#0f0f15; border:1px solid var(--line); border-radius:10px; padding:10px; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; color:#cbd5e1; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">
+      <img src="/images/logo.png" alt="Dream Stage" />
+      <div>
+        <div class="caps">Dream Stage</div>
+        <div class="h1">Quick Intake Form</div>
+      </div>
+    </div>
+
+    <div class="card grid-gap">
+      <div class="pill">Session: <span id="sessId">initializing</span></div>
+      <div class="pill">Player: <span id="playerId">—</span></div>
+      <div class="muted">This writes to your backend via <code class="small">/api/journey/init</code>, <code class="small">/api/journey/:id</code>, <code class="small">/api/otp/send</code>, <code class="small">/api/otp/verify</code>.</div>
+
+      <hr />
+
+      <!-- Basic -->
+      <div class="row">
+        <div class="field">
+          <label for="name">Your name</label>
+          <input id="name" type="text" placeholder="Aarav Sharma" />
+        </div>
+        <div class="field">
+          <label>Role</label>
+          <div class="radios" id="roleGroup">
+            <label class="radio"><input type="radio" name="role" value="artist"><span>Artist</span></label>
+            <label class="radio"><input type="radio" name="role" value="helper"><span>Helper</span></label>
+            <label class="radio"><input type="radio" name="role" value="manager"><span>Manager</span></label>
+            <label class="radio"><input type="radio" name="role" value="business"><span>Business</span></label>
+            <label class="radio"><input type="radio" name="role" value="appreciator"><span>Appreciator</span></label>
+            <label class="radio"><input type="radio" name="role" value="lover"><span>Lover</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Artist specific -->
+      <div id="sect-artist" class="hidden grid-gap">
+        <hr />
+        <div class="caps">Artist details</div>
+        <div class="row">
+          <div class="field">
+            <label for="artistKind">Your art form</label>
+            <input id="artistKind" type="search" placeholder="e.g., DJ / Bharatanatyam / Painter / Chef" list="artistList" />
+            <datalist id="artistList"></datalist>
+            <div class="muted">Powered by <code class="small">/data/artist.json</code></div>
+          </div>
+          <div class="field">
+            <label for="city">Where are you based</label>
+            <input id="city" type="text" placeholder="Goa" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Helper specific -->
+      <div id="sect-helper" class="hidden grid-gap">
+        <hr />
+        <div class="caps">Helper details</div>
+        <div class="row">
+          <div class="field">
+            <label for="helperCapacity">Capacity</label>
+            <select id="helperCapacity">
+              <option value="">Select</option>
+              <option value="mentor">Mentor/Coach</option>
+              <option value="crew">Artist Crew</option>
+              <option value="manager">Artist Manager/Agent</option>
+              <option value="promoter">Promoter</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="helperStage">Stage you support</label>
+            <select id="helperStage">
+              <option value="">Select</option>
+              <option value="early">Early career / beginners</option>
+              <option value="mid">Mid-career / growing artists</option>
+              <option value="pro">Established / professional artists</option>
+              <option value="all">All stages</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business / Manager -->
+      <div id="sect-business" class="hidden grid-gap">
+        <hr />
+        <div class="caps">Business details</div>
+        <div class="row">
+          <div class="field">
+            <label for="businessKind">What kind of events/business</label>
+            <input id="businessKind" type="text" placeholder="Music festivals, weekend gigs, retreats, brand activations" />
+          </div>
+          <div class="field">
+            <label for="eventFrequency">How often do you host</label>
+            <select id="eventFrequency">
+              <option value="">Select</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="occasional">Occasionally / On-demand</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appreciator / Lover -->
+      <div id="sect-lover" class="hidden grid-gap">
+        <hr />
+        <div class="caps">Audience preferences</div>
+        <div class="row">
+          <div class="field">
+            <label for="loverPreference">What do you enjoy most</label>
+            <select id="loverPreference">
+              <option value="">Select</option>
+              <option value="live">Live performances</option>
+              <option value="visual">Visual arts</option>
+              <option value="festivals">Festivals & cultural events</option>
+              <option value="digital">Digital/interactive art</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="attendance">How often do you attend</label>
+            <select id="attendance">
+              <option value="">Select</option>
+              <option value="rare">Rarely</option>
+              <option value="occasional">Occasionally</option>
+              <option value="frequent">Frequently</option>
+              <option value="very_frequent">Very frequently</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Consent -->
+      <div class="row-1">
+        <div class="field">
+          <label>Consent</label>
+          <div class="btns">
+            <button class="btn" id="btnConsentNo" type="button">No</button>
+            <button class="btn good" id="btnConsentYes" type="button">Yes, I agree</button>
+          </div>
+          <div class="muted">Read terms in <a class="link" href="/consent.html" target="_blank" rel="noopener">Consent & Terms</a></div>
+          <div class="status" id="consentStatus">Not set</div>
+        </div>
+      </div>
+
+      <!-- Phone + OTP -->
+      <div class="row">
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input id="phone" type="tel" placeholder="+91 98765 43210" />
+          <div class="btns">
+            <button class="btn warn" id="btnSendOTP" type="button">Send OTP</button>
+            <span class="status" id="otpSendStatus"></span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="otp">OTP</label>
+          <input id="otp" type="text" placeholder="6-digit code" />
+          <div class="btns">
+            <button class="btn good" id="btnVerifyOTP" type="button">Verify</button>
+            <span class="status" id="otpVerifyStatus"></span>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Actions -->
+      <div class="btns">
+        <button class="btn" id="btnInit" type="button">Start / Re-init</button>
+        <button class="btn" id="btnSave" type="button">Save progress</button>
+        <button class="btn primary" id="btnSaveAll" type="button">Save all</button>
+        <span class="status" id="saveStatus"></span>
+      </div>
+
+      <div id="liveDocWrap" class="grid-gap">
+        <hr />
+        <div class="caps">Live document snapshot</div>
+        <div id="liveDoc" class="jsonbox">{}</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // Keys
+      var SESSION_KEY = 'QF_SESSION_ID';
+      var PLAYER_KEY  = 'QF_PLAYER_ID';
+
+      // DOM refs
+      var sessIdEl = document.getElementById('sessId');
+      var playerIdEl = document.getElementById('playerId');
+
+      var nameEl = document.getElementById('name');
+      var roleGroup = document.getElementById('roleGroup');
+
+      var sectArtist = document.getElementById('sect-artist');
+      var sectHelper = document.getElementById('sect-helper');
+      var sectBusiness = document.getElementById('sect-business');
+      var sectLover = document.getElementById('sect-lover');
+
+      var artistKindEl = document.getElementById('artistKind');
+      var cityEl = document.getElementById('city');
+
+      var helperCapacityEl = document.getElementById('helperCapacity');
+      var helperStageEl = document.getElementById('helperStage');
+
+      var businessKindEl = document.getElementById('businessKind');
+      var eventFrequencyEl = document.getElementById('eventFrequency');
+
+      var loverPreferenceEl = document.getElementById('loverPreference');
+      var attendanceEl = document.getElementById('attendance');
+
+      var btnConsentYes = document.getElementById('btnConsentYes');
+      var btnConsentNo  = document.getElementById('btnConsentNo');
+      var consentStatus = document.getElementById('consentStatus');
+
+      var phoneEl = document.getElementById('phone');
+      var otpEl = document.getElementById('otp');
+      var btnSendOTP = document.getElementById('btnSendOTP');
+      var btnVerifyOTP = document.getElementById('btnVerifyOTP');
+      var otpSendStatus = document.getElementById('otpSendStatus');
+      var otpVerifyStatus = document.getElementById('otpVerifyStatus');
+
+      var btnInit = document.getElementById('btnInit');
+      var btnSave = document.getElementById('btnSave');
+      var btnSaveAll = document.getElementById('btnSaveAll');
+      var saveStatus = document.getElementById('saveStatus');
+
+      var liveDoc = document.getElementById('liveDoc');
+
+      // Helpers
+      function read(key) { return localStorage.getItem(key); }
+      function write(key, val) { localStorage.setItem(key, val); }
+      function uid() { return 'sess_' + Math.random().toString(36).slice(2) + Date.now(); }
+      function normalizePhone(s) { return String(s || '').replace(/[^\d+]/g, '').trim(); }
+
+      function getSessionId() {
+        var sid = read(SESSION_KEY);
+        if (!sid) {
+          sid = uid();
+          write(SESSION_KEY, sid);
+        }
+        sessIdEl.textContent = sid;
+        return sid;
+      }
+
+      function setPlayerId(id) {
+        write(PLAYER_KEY, id);
+        playerIdEl.textContent = id || '—';
+      }
+      function getPlayerId() { return read(PLAYER_KEY); }
+
+      function getRole() {
+        var input = roleGroup.querySelector('input[name="role"]:checked');
+        return input ? input.value : '';
+      }
+      function pickRoleUI(value) {
+        // toggle pills
+        [].slice.call(roleGroup.querySelectorAll('.radio')).forEach(function(r){
+          var input = r.querySelector('input');
+          var active = input && input.value === value && input.checked;
+          r.classList.toggle('active', active);
+        });
+        // show/hide sections
+        sectArtist.classList.add('hidden');
+        sectHelper.classList.add('hidden');
+        sectBusiness.classList.add('hidden');
+        sectLover.classList.add('hidden');
+        if (value === 'artist') sectArtist.classList.remove('hidden');
+        if (value === 'helper') sectHelper.classList.remove('hidden');
+        if (value === 'business' || value === 'manager') sectBusiness.classList.remove('hidden');
+        if (value === 'appreciator' || value === 'lover') sectLover.classList.remove('hidden');
+      }
+
+      roleGroup.addEventListener('change', function(e){
+        if (e.target && e.target.name === 'role') {
+          pickRoleUI(e.target.value);
+        }
+      });
+      [].slice.call(roleGroup.querySelectorAll('.radio')).forEach(function(r){
+        r.addEventListener('click', function(){
+          var input = r.querySelector('input');
+          if (input) { input.checked = true; input.dispatchEvent(new Event('change', {bubbles:true})); }
+        });
+      });
+
+      // Load artist list
+      function loadArtistList() {
+        var list = document.getElementById('artistList');
+        fetch('/data/artist.json')
+          .then(function(res){ return res.json(); })
+          .then(function(items){
+            if (!Array.isArray(items)) return;
+            var html = items.slice(0, 500).map(function(it){
+              var name = (it && it.name) ? String(it.name) : '';
+              return '<option value="'+escapeHtml(name)+'"></option>';
+            }).join('');
+            list.innerHTML = html;
+          })
+          .catch(function(){});
+      }
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // Consent UI
+      var consentAgreed = null;
+      function updateConsentUI() {
+        if (consentAgreed === true) consentStatus.innerHTML = '<span class="ok">Agreed</span>';
+        else if (consentAgreed === false) consentStatus.innerHTML = '<span class="err">Declined</span>';
+        else consentStatus.textContent = 'Not set';
+      }
+      btnConsentYes.addEventListener('click', function(){
+        consentAgreed = true;
+        updateConsentUI();
+        quickSave({ consentAgreed: true });
+      });
+      btnConsentNo.addEventListener('click', function(){
+        consentAgreed = false;
+        updateConsentUI();
+        quickSave({ consentAgreed: false });
+      });
+
+      // API calls
+      function initJourney() {
+        var sid = getSessionId();
+        var safeName = (nameEl.value || '').trim();
+        return fetch('/api/journey/init', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify({ sessionId: sid, name: safeName })
+        }).then(function(res){
+          if (!res.ok) throw new Error('init failed');
+          return res.json();
+        }).then(function(r){
+          setPlayerId(r.playerId);
+          return r;
+        });
+      }
+
+      function patchJourney(payload) {
+        var pid = getPlayerId();
+        if (!pid) return Promise.reject(new Error('No playerId. Click Start.'));
+        return fetch('/api/journey/' + encodeURIComponent(pid), {
+          method: 'PATCH',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function(res){
+          if (!res.ok) throw new Error('save failed');
+          return res.json();
+        });
+      }
+
+      function fetchJourney() {
+        var pid = getPlayerId();
+        if (!pid) return Promise.resolve(null);
+        return fetch('/api/journey/' + encodeURIComponent(pid))
+          .then(function(res){ if (!res.ok) return null; return res.json(); })
+          .catch(function(){ return null; });
+      }
+
+      function sendOTP(phone) {
+        var pid = getPlayerId();
+        if (!pid) return Promise.reject(new Error('No playerId. Click Start.'));
+        return fetch('/api/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify({ playerId: pid, phone: phone })
+        }).then(function(res){
+          if (!res.ok) throw new Error('otp send failed');
+          return res.json();
+        });
+      }
+
+      function verifyOTP(code) {
+        var pid = getPlayerId();
+        if (!pid) return Promise.reject(new Error('No playerId. Click Start.'));
+        return fetch('/api/otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify({ playerId: pid, code: code })
+        }).then(function(res){
+          if (!res.ok) throw new Error('otp verify failed');
+          return res.json();
+        });
+      }
+
+      // Collect payload that matches /api/journey/:id handler expectations
+      function collectPayload() {
+        var role = getRole();
+        var payload = {};
+
+        if ((nameEl.value || '').trim()) {
+          // name is handled by /api/journey/init; patch only role etc.
+        }
+
+        if (role) payload.role = role;
+
+        if (role === 'artist') {
+          var art = (artistKindEl.value || '').trim();
+          if (art) payload.artistType = { name: art, description: '' };
+          var city = (cityEl.value || '').trim();
+          if (city) payload.location = city;
+        }
+
+        if (role === 'helper') {
+          if (helperCapacityEl.value) payload.helperCapacity = helperCapacityEl.value;
+          if (helperStageEl.value) payload.helperStage = helperStageEl.value;
+        }
+
+        if (role === 'business' || role === 'manager') {
+          var biz = (businessKindEl.value || '').trim();
+          if (biz) payload.managerRoleText = biz;
+          if (eventFrequencyEl.value) payload.eventFrequency = eventFrequencyEl.value;
+        }
+
+        if (role === 'appreciator' || role === 'lover') {
+          if (loverPreferenceEl.value) payload.appreciatorEngagement = loverPreferenceEl.value;
+          if (attendanceEl.value) payload.attendance = attendanceEl.value;
+        }
+
+        if (consentAgreed === true || consentAgreed === false) {
+          payload.consentAgreed = consentAgreed;
+        }
+
+        var phone = normalizePhone(phoneEl.value);
+        if (phone) payload.phoneNumber = phone;
+
+        return payload;
+      }
+
+      function quickSave(extra) {
+        var payload = collectPayload();
+        if (extra && typeof extra === 'object') {
+          Object.assign(payload, extra);
+        }
+        saveStatus.textContent = 'Saving...';
+        return patchJourney(payload)
+          .then(function(){ saveStatus.innerHTML = '<span class="ok">Saved</span>'; refreshLiveDoc(); })
+          .catch(function(){ saveStatus.innerHTML = '<span class="err">Save failed</span>'; });
+      }
+
+      // Buttons
+      btnInit.addEventListener('click', function(){
+        btnInit.disabled = true;
+        initJourney()
+          .then(function(){ saveStatus.innerHTML = '<span class="ok">Session started</span>'; refreshLiveDoc(); })
+          .catch(function(){ saveStatus.innerHTML = '<span class="err">Init failed</span>'; })
+          .finally(function(){ btnInit.disabled = false; });
+      });
+
+      btnSave.addEventListener('click', function(){
+        btnSave.disabled = true;
+        quickSave()
+          .finally(function(){ btnSave.disabled = false; });
+      });
+
+      btnSaveAll.addEventListener('click', function(){
+        btnSaveAll.disabled = true;
+        // ensure name saved via init if user changed it after first init
+        initJourney()
+          .then(function(){ return quickSave(); })
+          .finally(function(){ btnSaveAll.disabled = false; });
+      });
+
+      btnSendOTP.addEventListener('click', function(){
+        var phone = normalizePhone(phoneEl.value);
+        if (!phone) { phoneEl.focus(); return; }
+        btnSendOTP.disabled = true;
+        otpSendStatus.textContent = 'Sending...';
+        // Save phone number first (journey PATCH sets steps.phone = true)
+        quickSave({ phoneNumber: phone })
+          .then(function(){
+            return sendOTP(phone);
+          })
+          .then(function(r){
+            var dev = (r && r.devOtp) ? '  Dev OTP: ' + r.devOtp : '';
+            otpSendStatus.innerHTML = '<span class="ok">Sent</span>' + (dev ? ' <span class="muted">(' + dev + ')</span>' : '');
+          })
+          .catch(function(){
+            otpSendStatus.innerHTML = '<span class="err">Failed</span>';
+          })
+          .finally(function(){ btnSendOTP.disabled = false; });
+      });
+
+      btnVerifyOTP.addEventListener('click', function(){
+        var code = (otpEl.value || '').trim();
+        if (!/^\d{4,8}$/.test(code)) { otpEl.focus(); return; }
+        btnVerifyOTP.disabled = true;
+        otpVerifyStatus.textContent = 'Verifying...';
+        verifyOTP(code)
+          .then(function(){
+            otpVerifyStatus.innerHTML = '<span class="ok">Verified</span>';
+            refreshLiveDoc();
+          })
+          .catch(function(){
+            otpVerifyStatus.innerHTML = '<span class="err">Invalid OTP</span>';
+          })
+          .finally(function(){ btnVerifyOTP.disabled = false; });
+      });
+
+      // Live doc viewer
+      function refreshLiveDoc() {
+        fetchJourney().then(function(doc){
+          if (!doc) { liveDoc.textContent = '{}'; return; }
+          // hide sensitive hash if present (backend already strips codeHash in GET, but keep guard)
+          if (doc.otp && doc.otp.codeHash) doc.otp.codeHash = undefined;
+          liveDoc.textContent = JSON.stringify(doc, null, 2);
+        }).catch(function(){
+          liveDoc.textContent = '{}';
+        });
+      }
+
+      // Boot
+      (function boot(){
+        // ensure session exists and display it
+        getSessionId();
+        setPlayerId(getPlayerId() || '');
+        loadArtistList();
+        // role UI default
+        pickRoleUI(getRole());
+        // re-init if we already have a player, show snapshot
+        refreshLiveDoc();
+      })();
+    })();
+  </script>
+</body>
+</html>

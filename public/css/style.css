@@ -1,0 +1,698 @@
+@font-face {
+  font-family: SuperMario256;
+  src: url('../fonts/SuperMario256.ttf');
+}
+
+/* ======= FULLSCREEN SCALE ROOT ======= */
+html, body {
+  height: 100%;
+  overflow: hidden;                 /* prevent scroll */
+  background: #9ecbf2;              /* sky blue (no white gutters) */
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* === Force ALL game buttons to use white text === */
+button,
+.start-btn,
+.editor-btn,
+.created-btn,
+.back-btn,
+.delete-all-btn,
+.grid-small-btn,
+.grid-medium-btn,
+.grid-large-btn,
+.save-map-btn,
+.clear-map-btn,
+.level-btn,         /* clickable tile-like buttons */
+.control-btn {      /* mobile controls */
+  color: #ffffff !important;
+  text-shadow: 1px 1px 0 #000 !important; /* keeps legibility on bright sprites */
+}
+
+/* ========= Mobile-proof centering shell ========= */
+#stage-center {
+  position: fixed;
+  inset: 0;                   /* full viewport */
+  display: grid;              /* grid enables place-items */
+  place-items: center;        /* perfect center on both axes */
+  width: 100vw;
+  height: 100dvh;             /* handles mobile URL bars */
+  min-height: 100svh;
+  z-index: 50;
+}
+
+/* The fixed-size stage we scale */
+#scale-root {
+  width: 1280px;
+  height: 530px;                    /* 50 score + 480 canvas */
+  transform: scale(var(--mm-scale, 1));
+  transform-origin: center center;  /* scale around the visual center */
+  will-change: transform;
+
+  /* also center the inner content to avoid any internal drift */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* The logical stage container should fill the scaled box exactly */
+.main-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  box-sizing: border-box;
+
+  /* kill any stray offsets/margins from earlier CSS */
+  margin: 0 !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+
+/* Any fixed-size stage child must include its own border in the set size */
+.start-screen,
+.editor-screen,
+.game-screen,
+.levels-wrapper,
+.score-wrapper,
+.btn-wrapper {
+  box-sizing: border-box;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* ======= MOBILE CONTROLS: pinned bottom, no drift ======= */
+.mobile-controls {
+  display: none;                /* default hidden (desktop) */
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  padding: 0 20px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 3000;                /* above game, below overlays */
+  pointer-events: none;         /* container ignores taps */
+}
+
+.mobile-controls .nav-buttons {
+  display: flex;
+  gap: 14px;
+  pointer-events: auto;         /* buttons accept taps */
+}
+
+.control-btn {
+  width: 72px;
+  height: 72px;
+  border: 3px solid #000;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 28px;
+  font-family: SuperMario256, Arial, sans-serif;
+  touch-action: none;
+  pointer-events: auto;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.35);
+}
+
+/* Larger targets on small phones */
+@media (max-width: 420px) {
+  .control-btn { width: 64px; height: 64px; font-size: 24px; }
+}
+
+@media (max-width: 1000px) {
+  .game-screen {
+    width: 1280px;
+    height: 430px;
+    border: 1px solid black;      /* now counted via border-box */
+    border-top: none;
+    background: url('../images/bg.png');
+    display: none;
+    margin: 0;                    /* avoid extra centering math */
+    image-rendering: pixelated;   /* crisp pixels when scaled */
+  }
+}
+
+/* Show controls only on touch devices in landscape */
+@media (orientation: landscape) and (pointer: coarse) and (hover: none) {
+  .mobile-controls { display: flex; }
+}
+
+/* ======= Canvas rendering ======= */
+.game-screen {
+  width: 1280px;
+  height: 490px;
+  border: 1px solid black;      /* now counted via border-box */
+  border-top: none;
+  background: url('../images/bg.png');
+  display: none;
+  margin: 0;                    /* avoid extra centering math */
+  image-rendering: pixelated;   /* crisp pixels when scaled */
+}
+
+/* ======= Start / Editor ======= */
+.start-screen {
+  width: 1280px;
+  height: 581px;
+  border: 1px solid black;      /* counted in 1280x530 now */
+  background: url('../images/bg1.jpg');
+  background-size: cover;
+  position: relative;
+}
+
+/* NEW: Onboard-me-directly button (center bottom of start screen) */
+.onboard-btn{
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);        /* center horizontally */
+  width: 280px;
+  height: 54px;
+  border: 2px solid #000;
+  border-radius: 12px;
+  font-family: SuperMario256, Arial, sans-serif;
+  font-size: 18px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  background: linear-gradient(#22c55e, #15803d);
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.35);
+}
+@media (max-width: 600px) {
+  .onboard-btn{
+    width: 260px;
+    height: 52px;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    font-size: 16px;
+  }
+}
+
+.editor-screen {
+  width: 1280px;
+  height: 480px;
+  border: 1px solid black;
+  background: url('../images/bg.png');
+  position: relative;
+  overflow: hidden;
+  display: none;
+}
+
+/* ======= Score Bar (full width to avoid misalignment) ======= */
+.score-wrapper {
+  width: 1280px;                /* full width, not 1240 */
+  height: 50px;
+  padding-left: 40px;
+  display: none;
+  border: 1px solid black;
+  border-bottom: none;
+  line-height: 50px;
+  font-size: 20px;
+  background-color: #add1f3;
+  font-family: SuperMario256;
+  color: #ffffff;
+  margin: 0;                    /* no auto-centering margins */
+}
+
+.life-count {
+  background: url('../images/mario-head.png') left center no-repeat;
+  width: 100px;
+  float: left;
+  padding-left: 40px;
+}
+
+.coin-score {
+  background: url('../images/coin.png') left center no-repeat;
+  width: 150px;
+  float: left;
+  padding-left: 40px;
+}
+
+.level-num { width: 150px; float: left; }
+.total-score { float: left; }
+
+/* ======= Editor Grid & Elements ======= */
+.cell   { width: 31px; height: 31px; border: 1px solid blue; }
+/* .active { width: 31px; height: 31px; border: 1px solid blue; background: red; opacity: 0.5; } */
+
+.element-wrapper {
+  width: 1280px;
+  height: 130px;
+  background: #d2d2d2;
+  border: 1px solid black;
+  display: none;
+  margin: 0;
+}
+
+.platform      { width: 31px; height: 31px; background: url('../images/elements.png')   0    0; }
+.coin-box      { width: 31px; height: 31px; background: url('../images/elements.png') -32px  0; }
+.power-up-box  { width: 31px; height: 31px; background: url('../images/elements.png') -64px  0; }
+.useless-box   { width: 31px; height: 31px; background: url('../images/elements.png') -96px  0; }
+.flag-pole     { width: 31px; height: 31px; background: url('../images/elements.png') -128px 0; }
+.flag          { width: 31px; height: 31px; background: url('../images/elements.png') -160px 0; }
+.pipe-left     { width: 31px; height: 31px; background: url('../images/elements.png') -192px 0; }
+.pipe-right    { width: 31px; height: 31px; background: url('../images/elements.png') -224px 0; }
+.pipe-top-left { width: 31px; height: 31px; background: url('../images/elements.png') -256px 0; }
+.pipe-top-right{ width: 31px; height: 31px; background: url('../images/elements.png') -288px 0; }
+.goomba        { width: 31px; height: 31px; background: url('../images/enemies.png')      0  0; }
+
+/* Arrows in level-editor */
+.right-arrow { width: 60px; height: 60px; top: 215px; right: 0; background: url('../images/slider-right.png'); position: absolute; }
+.left-arrow  { width: 60px; height: 60px; top: 215px; left: 0;  background: url('../images/slider-left.png');  position: absolute; }
+
+.element-wrapper * { margin: 10px; float: left; }
+
+.lvl-size { clear: both; float: left; width: 115px; height: 32px; background: url('../images/lvl-size.png'); margin-right: 10px; }
+.grid-small-btn { float: left; width: 64px;  height: 32px; background: url('../images/grid-small-btn.png'); border: none; margin-right: 10px; }
+.grid-medium-btn:selected { background: red; }
+.grid-medium-btn { float: left; width: 96px;  height: 32px; background: url('../images/grid-medium-btn.png'); border: none; margin-right: 10px; }
+.grid-large-btn  { float: left; width: 128px; height: 32px; background: url('../images/grid-large-btn.png');  border: none; margin-right: 10px; }
+
+.save-map-btn  { float: right; width: 100px; height: 100px; background: url('../images/save-map-btn.png');  border: none; border: 2px solid black; margin-right: 10px; margin-top: -35px; }
+.clear-map-btn { float: right; width: 100px; height: 100px; background: url('../images/clear-map-btn.png'); border: none; border: 2px solid black; margin-right: 10px; margin-top: -35px; }
+
+/* ======= Levels List ======= */
+.levels-wrapper {
+  width: 1280px;
+  height: 530px;
+  border: 1px solid black;
+  position: relative;
+  overflow: hidden;
+  display: none;
+  background: url('../images/bg.png');
+  margin: 0;
+}
+
+.start-btn {
+  width: 200px;
+  height: 50px;
+  color: #ffffff;
+  background: url('../images/start-btn.png');
+  position: absolute;
+  bottom: 100px;
+  left: 252px;
+  border: 2px solid black;
+}
+.editor-btn {
+  width: 200px;
+  height: 50px;
+  background: url('../images/editor-btn.png');
+  position: absolute;
+  bottom: 100px;
+  left: 530px;
+  color: #ffffff;
+  border: 2px solid black;
+}
+.created-btn {
+  width: 200px;
+  height: 50px;
+  background: url('../images/saved-btn.png');
+  position: absolute;
+  bottom: 100px;
+  left: 810px;
+  color: #ffffff;
+  border: 2px solid black;
+}
+.back-btn {
+  width: 200px;
+  height: 50px;
+  background: url('../images/back-btn.png');
+  color: #ffffff;
+  border: 2px solid black;
+  margin: 10px;
+  display: none;
+}
+
+.level-btn {
+  font-family: SuperMario256;
+  font-size: 25px;
+  float: left;
+  line-height: 50px;
+  text-align: center;
+  width: 248px;
+  height: 50px;
+  color: #ffffff;
+  border: 2px solid black;
+  margin: 2px;
+  text-transform: uppercase;
+  font-weight: bold;
+  background: #15a7d9;
+}
+.delete-all-btn { width: 100px; height: 100px; background: url('../images/delete-all-btn.png'); color: #ffffff; border: 2px solid black; margin: 10px; position: absolute; bottom: 10px; right: 10px; }
+
+.btn-wrapper { width: 1280px; height: 100px; margin: 0; }
+
+/* ======= Misc ======= */
+.no-maps {
+  width: 1000px;
+  text-align: center;
+  font-family: SuperMario256;
+  font-size: 25px;
+  margin: 0 auto;
+  color: #ffffff;
+  background: #5fb952;
+  border: 2px solid black;
+}
+
+.loading-percentage {
+  font-size: 60px;
+  font-family: SuperMario256;
+  text-align: center;
+  padding: 100px;
+}
+
+.fb-comments { margin: 0 auto; }
+
+/* ======= Rotate Overlay ======= */
+.rotate-overlay {
+  position: fixed;
+  inset: 0;
+  display: none; /* toggled by JS */
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-family: SuperMario256, Arial, sans-serif;
+  font-size: 18px;
+  z-index: 6000;
+  text-align: center;
+  padding: 20px;
+}
+
+/* ========== Questionnaire Overlay (Mario Theme) ========== */
+:root {
+  --qf-accent: #ffcc00; /* highlight ring for selected options */
+}
+
+.qf-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+}
+.qf-overlay.hidden { display: none; }
+
+/* Make the panel a flex column so the action bar can stick on mobile */
+.qf-box {
+  width: min(720px, 94vw);
+  max-height: 92vh;              /* keeps it inside small screens */
+  display: flex;
+  flex-direction: column;
+
+  background:
+    linear-gradient(0deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03)),
+    url('../images/bg.png');
+  background-size: cover;
+  border: 3px solid #000;
+  border-radius: 12px;
+  padding: 18px 18px 14px;
+  color: #ffffff;
+  position: relative;
+  box-shadow: 0 10px 0 #1b4b7a, 0 16px 40px rgba(0,0,0,0.45);
+}
+
+.qf-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 2px solid #000;
+  background: #ffcc00;
+  color: #000;
+  font-size: 22px;
+  font-family: SuperMario256, Arial, sans-serif;
+  cursor: not-allowed;
+  box-shadow: 0 4px 0 #b38400;
+}
+
+.qf-title {
+  font-family: "Outfit", sans-serif;
+  font-size: 26px;
+  letter-spacing: 1px;
+  margin: 2px 0 10px;
+  color: #fff;
+}
+
+.qf-type {
+  min-height: 56px;
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 8px 0 10px;
+  color: #fff;
+  white-space: pre-wrap;
+}
+
+/* Scrollable content area so buttons stay visible */
+.qf-body {
+  margin-top: 4px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+}
+
+.qf-label {
+  display: block;
+  font-family: SuperMario256, Arial, sans-serif;
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.qf-input {
+  width: 100%;
+  background: #0f172a;
+  border: 2px solid #000;
+  color: #fff;
+  font-size: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  outline: none;
+  box-shadow: inset 0 3px 0 #1b4b7a;
+  font-family: Arial, sans-serif;
+}
+.qf-input:focus { border-color: #ffcc00; }
+
+/* Sticky actions — always visible on mobile */
+.qf-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+
+  position: sticky;
+  bottom: 0;
+  padding-top: 8px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(0,0,0,0.35), rgba(0,0,0,0));
+}
+.qf-btn {
+  background: linear-gradient(#ff3b30, #c1271c);
+  border: 3px solid #000;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: SuperMario256, Arial, sans-serif;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 4px 0 #6b0000;
+  flex-shrink: 0; /* do not shrink in tight spaces */
+}
+.qf-btn:hover { filter: brightness(1.05); }
+
+/* Options grid */
+.qf-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* Option cards — keep size constant no matter state */
+.qf-option {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: linear-gradient(#15a7d9, #0d87b1);
+  border: 3px solid #000;         /* fixed border width */
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-weight: 700;
+  font-family: SuperMario256, Arial, sans-serif;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 4px 0 #0b5672;
+  box-sizing: border-box;         /* preserve width */
+  min-height: 64px;               /* stable vertical rhythm */
+  display: flex;
+  align-items: center;
+}
+
+/* Hover keeps brightness only (no size change) */
+.qf-option:hover { filter: brightness(1.08); }
+
+/* SELECTED / FOCUSED STATE: add an outline ring that doesn't affect layout */
+.qf-option.selected,
+.qf-option.active,               /* <-- added to match JS toggling class */
+.qf-option:focus {
+  outline: 3px solid var(--qf-accent);
+  outline-offset: 0;
+  box-shadow: 0 4px 0 #0b5672, 0 0 0 3px rgba(255, 204, 0, 0.35) inset;
+}
+
+/* Suggested list */
+.qf-suggest {
+  margin-top: 8px;
+  border: 3px solid #000;
+  border-radius: 10px;
+  background: #0f172a;
+  max-height: 220px;
+  overflow: auto;
+  box-shadow: inset 0 4px 0 #1b4b7a;
+}
+.qf-s-item { padding: 10px 12px; border-bottom: 2px solid #000; cursor: pointer; }
+.qf-s-item:last-child { border-bottom: none; }
+.qf-s-item:hover { background: #0b1220; }
+.qf-s-name { font-family: SuperMario256, Arial, sans-serif; font-size: 14px; color: #ffcc00; text-shadow: 1px 1px 0 #000; }
+.qf-s-desc { font-size: 12px; color: #d1d5db; margin-top: 2px; font-family: Arial, sans-serif; }
+
+.qf-hide { display: none; }
+
+.qf-link {
+  color: #ffcc00;
+  text-decoration: underline;
+  font-family: SuperMario256, Arial, sans-serif;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.qf-dev-otp {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #ffcc00;
+  opacity: 0.9;
+  font-family: SuperMario256, Arial, sans-serif;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ===== Minimal Milestone Overlay (title + GIF + Continue) ===== */
+.ms-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.55);
+  z-index: 5500;
+}
+.ms-overlay.hidden { display: none; }
+
+.ms-box {
+  width: min(900px, 94vw);
+  border: 3px solid #000;
+  border-radius: 14px;
+  background:
+    linear-gradient(0deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03)),
+    url('../images/bg.png');
+  background-size: cover;
+  box-shadow: 0 10px 0 #1b4b7a, 0 16px 40px rgba(0,0,0,0.45);
+  padding: 18px;
+  position: relative;
+  color: #fff;
+  text-align: center;
+  z-index: 1; /* above confetti */
+}
+
+.ms-title {
+  font-family: "Outfit", sans-serif;
+  font-size: 28px;
+  color: #000;
+  margin: 4px 2px 10px;
+}
+
+/* Celebration GIF under the title */
+.ms-celebration {
+  display: block;
+  width: min(520px, 84%);
+  max-height: 200px;
+  margin: 8px auto 12px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+/* Continue button */
+.ms-next-btn {
+  display: inline-block;
+  margin: 6px auto 2px;
+  padding: 10px 16px;
+  border: 3px solid #000;
+  border-radius: 10px;
+  background: linear-gradient(#ff3b30, #c1271c);
+  color: #fff;
+  font-family: SuperMario256, Arial, sans-serif;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: 0 4px 0 #6b0000;
+  letter-spacing: .5px;
+  cursor: pointer;
+  width: 180px;
+}
+.ms-next-btn:disabled {
+  filter: grayscale(.5) brightness(.85);
+  cursor: not-allowed;
+}
+
+/* ===== Fullscreen Confetti Background (behind milestone box) ===== */
+.confetti {
+  position: absolute; /* or fixed if you want it to cover full viewport */
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* OUTER: handles falling (translate/rotate) */
+.confetti-piece {
+  position: absolute;
+  top: -12px; /* start slightly above viewport */
+  left: var(--c-left, 50%);
+  width: var(--c-size, 10px);
+  height: calc(var(--c-size, 10px) * 0.6);
+  background: hsl(var(--c-hue, 40) 90% 60%);
+  border: 2px solid rgba(0,0,0,0.25);
+  border-radius: 2px;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+  animation: confetti-fall var(--c-dur, 4s) linear var(--c-delay, 0s) forwards;
+  transform: translate3d(0, 0, 0) rotate(0deg);
+}
+
+/* INNER: handles the tilt/flips so it doesn't override translateY */
+.confetti-piece > i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  border-radius: inherit;
+  border: inherit;
+  box-shadow: inherit;
+  animation: confetti-tilt var(--c-rot, 1s) ease-in-out var(--c-delay, 0s) infinite;
+  transform: rotateY(0deg);
+}
+
+@keyframes confetti-fall {
+  0% { transform: translate3d(0, -12px, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(var(--c-drift, 0px), 110vh, 0) rotate(680deg); opacity: 1; }
+}
+
+@keyframes confetti-tilt {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}

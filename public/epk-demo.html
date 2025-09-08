@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dream Stage — EPK Demo</title>
+  <style>
+    html, body { height:100%; margin:0; background:#0b1220; }
+    .wrap{ position:fixed; inset:0; display:grid; }
+    iframe{ width:100%; height:100%; border:0; }
+
+    .hud{
+      position:fixed; top:12px; right:12px;
+      display:flex; align-items:center; gap:10px;
+      background: rgba(0,0,0,.55);
+      color:#fff; padding:10px 12px; border-radius:10px;
+      border:2px solid #fff;
+      font: 600 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      z-index:10;
+      opacity:0; pointer-events:none; transform: translateY(-6px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .hud.ready{ opacity:1; pointer-events:auto; transform: translateY(0); }
+    .timer{ font-weight:800; letter-spacing:.5px; }
+    .btn{
+      appearance:none; border:2px solid #fff; color:#0b1220; background:#ffcc00;
+      font-weight:800; padding:8px 12px; border-radius:10px; cursor:pointer;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    /* Loading badge */
+    .badge{
+      position:fixed; top:12px; right:12px; z-index:9;
+      background: rgba(255,255,255,.1); color:#fff; border:2px solid #fff;
+      padding:8px 10px; border-radius:10px; font: 600 13px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    .hidden{ display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <iframe
+      id="demoFrame"
+      src="https://app.dreamstage.tech/epk/e11a9dae/arvindra"
+      title="EPK Demo"
+      allow="autoplay; fullscreen"
+      referrerpolicy="no-referrer"
+    ></iframe>
+
+    <div id="loadingBadge" class="badge">Loading demo…</div>
+
+    <div id="hud" class="hud" aria-hidden="true">
+      <span>Demo ends in</span>
+      <span class="timer" id="timer">00:50</span>
+      <button class="btn" id="skipBtn" type="button">Create Yours →</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const toPay = () => { window.location.href = 'epk-pay.html'; };
+
+      const frame   = document.getElementById('demoFrame');
+      const hud     = document.getElementById('hud');
+      const timerEl = document.getElementById('timer');
+      const skipBtn = document.getElementById('skipBtn');
+      const badge   = document.getElementById('loadingBadge');
+
+      let remaining = 50;
+      let started   = false;
+      let iv        = null;
+
+      function renderTimer(){
+        const mm = String(Math.floor(remaining/60)).padStart(2,'0');
+        const ss = String(remaining%60).padStart(2,'0');
+        timerEl.textContent = `${mm}:${ss}`;
+      }
+
+      function startCountdown(){
+        if (started) return;
+        started = true;
+
+        // Hide loader, show HUD
+        badge.classList.add('hidden');
+        hud.classList.add('ready');
+        hud.setAttribute('aria-hidden', 'false');
+
+        // Initialize and run
+        renderTimer();
+        iv = setInterval(() => {
+          remaining--;
+          renderTimer();
+          if (remaining < 0) {
+            clearInterval(iv);
+            toPay();
+          }
+        }, 1000);
+      }
+
+      // Wait for iframe to fully load (cross-origin friendly)
+      frame.addEventListener('load', () => {
+        // Small micro-delay so the first paint of the demo is visible before timer appears
+        setTimeout(startCountdown, 150);
+      }, { once: true });
+
+      // Skip button
+      skipBtn.addEventListener('click', () => {
+        if (iv) clearInterval(iv);
+        toPay();
+      });
+    })();
+  </script>
+</body>
+</html>

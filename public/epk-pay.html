@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dream Stage — Subscription</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    :root{
+      --bg: #f6f7fb;
+      --card-bg: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --brand: #0b1220;
+      --brand-accent: #111827;
+      --border: #e5e7eb;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --maxw: min(820px, 94vw);
+      --gap: clamp(10px, 2vw, 16px);
+      --pad: clamp(16px, 2.2vw, 24px);
+      --green:#16a34a;
+      --red:#dc2626;
+      --blue:#2563eb;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin:0; min-height:100%; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif; }
+
+    /* Top bar */
+    .topbar{ position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--border); }
+    .topbar-inner{ max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+    .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color: var(--brand); font-weight: 700; letter-spacing:.2px; font-size: 18px; }
+    .brand img{ width: 28px; height: 28px; object-fit: contain; display:block; }
+    .brand span{ color: var(--brand); }
+
+    /* Layout */
+    .wrap{ min-height: calc(100svh - 52px); display:grid; place-items:center; padding: clamp(16px, 3vh, 40px) 12px; }
+    .card{ width: var(--maxw); border: 1px solid var(--border); border-radius: var(--radius); background: var(--card-bg); box-shadow: var(--shadow); padding: var(--pad); }
+
+    h1{ margin:0 0 8px; font-size: clamp(22px, 3.2vw, 30px); letter-spacing:.2px; }
+    h2{ margin:10px 0 6px; font-size: clamp(18px, 2.6vw, 22px); }
+    .muted{ color: var(--muted); }
+    p{ margin: 6px 0; }
+
+    /* Progress */
+    .progress{ display:flex; align-items:center; gap:12px; margin-bottom: 12px; }
+    .progress .label{ font-weight:700; font-size:14px; }
+    .progressbar{ flex:1; height:10px; background:#eef2f7; border-radius:999px; overflow:hidden; border:1px solid var(--border); }
+    .progressbar > span{ display:block; height:100%; width:0%; background:linear-gradient(90deg, #0b1220, #1f2937); }
+
+    /* Alerts */
+    .panel{ margin-top:12px; padding:12px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+    .ok{ background:#f0fdf4; border-color:#86efac; color:#14532d; }
+    .err{ background:#fef2f2; border-color:#fecaca; color:#7f1d1d; }
+
+    /* Forms */
+    .row{ display:grid; grid-template-columns: 1fr 2fr; gap: var(--gap); align-items:center; }
+    .row + .row { margin-top: 10px; }
+    label{ font-weight: 600; }
+    input, select, textarea{ width:auto; padding:12px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font: inherit; }
+    input:focus, select:focus, textarea:focus{ border-color:#93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,.2); outline:none; }
+    textarea{ min-height: 100px; resize: vertical; }
+    .hint{ margin-top:6px; font-size:12px; color: var(--muted); }
+
+    /* Price UI */
+    .price{ display:flex; align-items:baseline; gap:8px; margin-top:10px; font-weight:700; }
+    .price .amt{ font-size: clamp(22px, 3.5vw, 28px); }
+    .price .cut{ color: var(--muted); text-decoration: line-through; margin-right: 6px; }
+    .price .deal{ font-weight:900; }
+    .green{ color: var(--green); }
+    .red{ color: var(--red); }
+
+    /* Buttons */
+    .actions{ display:flex; gap:12px; justify-content:space-between; margin-top: 14px; flex-wrap:wrap; }
+    .right{ margin-left:auto; display:flex; gap:12px; flex-wrap:wrap; }
+    .btn{ background: var(--brand); border: 1px solid #0b1220; color:#fff; padding: 10px 16px; border-radius:10px; cursor:pointer; font-weight:700; }
+    .btn.secondary{ background:#111827; }
+    .btn.ghost{ background:#374151; }
+    .btn.link{ background:transparent; color:var(--brand); border:0; padding:0; text-decoration:underline; cursor:pointer; }
+    .btn.outline{ background:#fff; color:var(--brand); border:1px solid var(--border); }
+    .btn.success{ background: var(--green); border-color: var(--green); }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+    .hidden{ display:none !important; }
+
+    /* Step sections */
+    .step{ margin-top:12px; }
+    .commit-block{ display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--border); border-radius:10px; background:#fff; }
+    .commit-block input[type="checkbox"]{ margin-top:2px; transform: scale(1.1); }
+
+    /* Lists */
+    ul.clean{ margin:8px 0 0 0; padding-left: 18px; }
+    ul.clean li{ margin:6px 0; }
+
+    /* Modal */
+    .backdrop{ position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 30; display:none; }
+    .modal{ position: fixed; inset: 0; display:none; z-index: 40; align-items:center; justify-content:center; padding: 24px; }
+    .modal .box{ width: min(560px, 96vw); background:#fff; border:1px solid var(--border); border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden; }
+    .modal header, .modal footer{ padding: 14px 16px; }
+    .modal header{ background:#f3f4f6; border-bottom: 1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-weight:700; }
+    .modal main{ padding: 14px 16px; display:grid; gap:10px; }
+    .kv{ display:flex; gap:10px; }
+    .kv .k{ width: 120px; font-weight:600; color: var(--muted); }
+    .modal .panel{ margin:0; }
+    .modal .row{ grid-template-columns: 120px 1fr; }
+    .modal footer{ display:flex; gap:10px; justify-content:flex-end; border-top: 1px solid var(--border); }
+    .x{ background:transparent; border:0; font-size:20px; cursor:pointer; }
+    .pill{ display:inline-block; padding:4px 8px; border:1px solid var(--border); border-radius:999px; background:#f9fafb; font-weight:700; }
+    .show{ display:flex !important; }
+
+    @media (max-width: 720px){
+      .row{ grid-template-columns: 1fr; }
+      .actions{ flex-direction: column; align-items: stretch; }
+      .right{ margin-left:0; }
+      .btn{ width: 100%; }
+      .progress{ flex-direction: column; align-items: stretch; gap:8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top brand bar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="https://dreamstage.tech" target="_blank" rel="noopener">
+        <img src="./logo.png" alt="Dream Stage logo" onerror="this.onerror=null;this.src='/images/dreamstage-logo.png'">
+        <span>Dream Stage</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+
+      <!-- Progress -->
+      <div class="progress">
+        <div class="label" id="stepLabel">Step 1 of 10</div>
+        <div class="progressbar"><span id="progressBar"></span></div>
+      </div>
+
+      <!-- Alerts -->
+      <div id="alert" class="panel err" style="display:none;"></div>
+      <div id="ok" class="panel ok" style="display:none;"></div>
+
+      <!-- ========== STEP 1: (Merged) Mission + Commitment ========== -->
+      <section id="step1" class="step">
+        <h1>Join the Dream Stage movement</h1>
+        <p class="muted">
+          Welcome to Dream Stage – a space where your creative dreams are not just supported, they’re celebrated.
+          Join a community that champions happiness, growth, and learning for every creator.
+        </p>
+
+        <div class="commit-block" style="margin-top:10px">
+          <input id="commitChk" type="checkbox" />
+          <label for="commitChk">
+            <strong>By joining Dream Stage, I commit to a journey of happiness, growth, and learning.</strong>
+            <br/>
+            <span class="muted">My support helps build a space that nurtures creators everywhere.</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn link" data-skip type="button">Skip to payment</button>
+          <div class="right">
+            <button class="btn outline" data-prev type="button" disabled>Previous</button>
+            <button class="btn" id="step1Next" data-next type="button" disabled>Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 2: Immediate Offerings ========== -->
+      <section id="step2" class="step hidden">
+        <h1>What you get today</h1>
+        <ul class="clean">
+          <li>You own your data (secure, never sold to third parties).</li>
+          <li>No ads — a clean, distraction-free space.</li>
+          <li>Fully customizable, shareable Artist EPK/Profile.</li>
+          <li>Early community access (Creator Code benefits).</li>
+          <li>Be part of the world’s largest artist collective (early member advantage).</li>
+        </ul>
+
+        <div class="actions">
+          <button class="btn link" data-skip type="button">Skip to payment</button>
+          <div class="right">
+            <button class="btn outline" data-prev type="button">Previous</button>
+            <button class="btn" data-next type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 3: Future Offerings ========== -->
+      <section id="step3" class="step hidden">
+        <h1>A path to a better future</h1>
+        <ul class="clean">
+          <li>Right work and right people, when you want them.</li>
+          <li>Your EPK/Profile readable by anyone, anywhere.</li>
+          <li>Your physical encrypted key for seamless identity.</li>
+          <li>Instant, on-time blockchain payments.</li>
+          <li>Explore, learn, discover, earn through, and teach art forms.</li>
+        </ul>
+
+        <div class="actions">
+          <button class="btn link" data-skip type="button">Skip to payment</button>
+          <div class="right">
+            <button class="btn outline" data-prev type="button">Previous</button>
+            <button class="btn" data-next type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 4: Freebie — Familia/Collective ========== -->
+      <section id="step4" class="step hidden">
+        <h1>Welcome to the Dream Stage familia</h1>
+        <p>Your Creator’s Code represents your commitment to happiness and growth on your creative journey.</p>
+        <p class="muted">By joining, you’re part of a movement where creativity and collaboration thrive.</p>
+
+        <div class="actions">
+          <button class="btn link" data-skip type="button">Skip to payment</button>
+          <div class="right">
+            <button class="btn outline" data-prev type="button">Previous</button>
+            <button class="btn" data-next type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 5: Anchoring Bigger Price / Early Discount ========== -->
+      <section id="step5" class="step hidden">
+        <h1>Early commitment benefits</h1>
+        <p id="earlyDiscountLine" class="muted">
+          If your Creator Code is under 100, you’ll receive an exclusive discount on the yearly subscription for the next 2 years.
+        </p>
+
+        <div class="actions">
+          <button class="btn link" data-skip type="button">Skip to payment</button>
+          <div class="right">
+            <button class="btn outline" data-prev type="button">Previous</button>
+            <button class="btn" data-next type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 6: Final Confirmation (checkbox) ========== -->
+      <section id="step6" class="step hidden">
+        <h1>Final confirmation</h1>
+        <div class="commit-block" style="margin-top:10px">
+          <input id="finalCtaChk" type="checkbox" />
+          <label for="finalCtaChk">
+            <strong>I confirm my subscription and I’m ready to begin as a Dream Stage creator.</strong>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn link" data-skip type="button">Skip to payment</button>
+          <div class="right">
+            <button class="btn outline" data-prev type="button">Previous</button>
+            <button class="btn" id="step6Next" data-next type="button" disabled>Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 7: Payment ========== -->
+      <section id="step7" class="step hidden">
+        <h1>Activate your membership</h1>
+        <p class="muted">Confirm your details and complete the payment to unlock 1 year of access.</p>
+
+        <div class="panel">
+          <div class="row">
+            <label for="name">Name</label>
+            <input id="name" type="text" placeholder="Your name" />
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <label for="country">Country</label>
+            <select id="country"></select>
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <label for="phone">Phone</label>
+            <div>
+              <input id="phone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210"/>
+              <div id="hint" class="hint">Enter your number — we’ll look up your account automatically.</div>
+            </div>
+          </div>
+
+          <div id="priceBox" class="price" style="display:none;">
+            <span class="cut">₹199</span>
+            <span class="amt deal" id="amt">—</span>
+            <span class="muted">(based on your community join rank)</span>
+          </div>
+
+          <div id="rankMsg" class="hint" style="display:none;"></div>
+
+          <div class="actions">
+            <div></div>
+            <div class="right">
+              <button class="btn outline" data-prev type="button">Previous</button>
+              <button class="btn" id="payBtn" type="button" disabled>Pay & Activate</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 8: Referral Program ========== -->
+      <section id="step8" class="step hidden">
+        <h1>Welcome to the familia — invite others</h1>
+        <p id="inviteLine">As a thank you for your early commitment, you can invite a few creators into this movement.</p>
+        <p class="muted"><em>“Choose carefully—invite those who are true to the movement.”</em></p>
+
+        <div class="actions">
+          <button class="btn outline" id="sendInvitesBtn" type="button">Send my invites</button>
+          <div class="right">
+            <button class="btn outline" data-prev type="button">Previous</button>
+            <button class="btn" data-next type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 9: Gift Sent (Referral Info) ========== -->
+      <section id="step9" class="step hidden">
+        <h1>Invites sent</h1>
+        <p>Your referral info has been sent via SMS and Email along with your personal referral code.</p>
+        <p class="muted">You’re now entrusted with inviting the next creators to join our community.</p>
+
+        <div class="actions">
+          <button class="btn outline" data-prev type="button">Previous</button>
+          <div class="right">
+            <button class="btn" data-next type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== STEP 10: Emotional Recall + CTA ========== -->
+      <section id="step10" class="step hidden">
+        <h1>Let’s build the future together</h1>
+        <p>
+          Congratulations once again! By joining Dream Stage, you’ve committed to a journey of happiness, growth, and learning.
+          Now, start building your EPK, showcase your work, and connect with creators.
+        </p>
+
+        <div class="actions">
+          <a class="btn success" href="https://app.dreamstage.tech" target="_blank" rel="noopener">Start building my EPK now</a>
+          <div class="right">
+            <button class="btn outline" data-prev type="button">Previous</button>
+            <button class="btn secondary" type="button" onclick="window.open('https://instagram.com','_blank')">Follow on Instagram</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Payment Confirmation Modal (edit + summary) -->
+  <div id="confirmBackdrop" class="backdrop"></div>
+  <div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="box">
+      <header>
+        <div id="confirmTitle">Confirm your details</div>
+        <button class="x" id="closeModal" aria-label="Close">✕</button>
+      </header>
+      <main>
+        <div id="modalAlert" class="panel err hidden"></div>
+
+        <!-- Summary view -->
+        <div id="summaryView">
+          <div class="kv"><div class="k">Name</div><div id="confName">—</div></div>
+          <div class="kv"><div class="k">Phone</div><div id="confPhone">—</div></div>
+          <div class="kv"><div class="k">Amount</div><div><span id="confAmount" class="pill">₹—</span></div></div>
+        </div>
+
+        <!-- Edit view -->
+        <div id="editView" class="hidden">
+          <div class="row">
+            <label for="editName">Name</label>
+            <input id="editName" type="text" placeholder="Your name"/>
+          </div>
+          <div class="row">
+            <label for="editCountry">Country</label>
+            <select id="editCountry"></select>
+          </div>
+          <div class="row">
+            <label for="editPhone">Phone</label>
+            <input id="editPhone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210"/>
+          </div>
+        </div>
+      </main>
+      <footer>
+        <button class="btn secondary" id="editToggle">Edit</button>
+        <button class="btn hidden" id="saveEdit">Save changes</button>
+        <button class="btn ghost hidden" id="cancelEdit">Cancel</button>
+        <button class="btn" id="confirmPay">Confirm & Pay</button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      /* ---------- Helpers ---------- */
+      const $ = id => document.getElementById(id);
+      const qs = sel => document.querySelector(sel);
+      const qsa = sel => Array.from(document.querySelectorAll(sel));
+
+      /* ---------- Shared UI ---------- */
+      const alertBox = $('alert'), okBox = $('ok');
+      function showErr(msg){ alertBox.textContent = msg; alertBox.style.display='block'; okBox.style.display='none'; }
+      function showOk(msg){ okBox.textContent = msg; okBox.style.display='block'; alertBox.style.display='none'; }
+      function hideNotes(){ alertBox.style.display='none'; okBox.style.display='none'; }
+
+      /* ---------- Progress / Steps ---------- */
+      const TOTAL_STEPS = 10;
+      let currentStep = 1;
+      const stepLabel = $('stepLabel');
+      const progressBar = $('progressBar');
+
+      function showStep(n){
+        currentStep = Math.max(1, Math.min(TOTAL_STEPS, n));
+        qsa('.step').forEach((s, i)=> s.classList.toggle('hidden', (i+1)!==currentStep));
+        const pct = Math.round((currentStep-1)/(TOTAL_STEPS-1)*100);
+        stepLabel.textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
+        progressBar.style.width = pct + '%';
+        // Toggle skip visibility (only before payment)
+        qsa('[data-skip]').forEach(b => b.classList.toggle('hidden', currentStep>=7));
+        // Prev button disabled on first
+        qsa('[data-prev]').forEach(b => b.disabled = (currentStep===1));
+      }
+
+      // Nav buttons
+      qsa('[data-next]').forEach(btn => btn.addEventListener('click', () => {
+        // Prevent moving past step 7 without payment
+        if (currentStep === 7) return;
+        showStep(currentStep + 1);
+      }));
+      qsa('[data-prev]').forEach(btn => btn.addEventListener('click', () => showStep(currentStep - 1)));
+      qsa('[data-skip]').forEach(btn => btn.addEventListener('click', () => showStep(7))); // jump to payment
+
+      /* ---------- Session & local state ---------- */
+      const STATE_KEY='QF_STATE', SESSION_KEY='QF_SESSION_ID';
+      const readState = () => { try{ return JSON.parse(localStorage.getItem(STATE_KEY)||'{}'); }catch{return {}} };
+      const writeState = (p) => { const s=readState(); Object.assign(s,p||{}); localStorage.setItem(STATE_KEY, JSON.stringify(s)); };
+      function ensureSessionId(){
+        let sid = localStorage.getItem(SESSION_KEY);
+        if (!sid) { sid = 'ds_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem(SESSION_KEY, sid); }
+        return sid;
+      }
+      const sessionId = ensureSessionId();
+
+      // State we track locally (for UI only)
+      const appState = {
+        paid: false,
+        invitesSent: false,
+        invitesAllowance: 0,
+        earlyDiscountPct: 0
+      };
+
+      /* ---------- Backend patch queue ---------- */
+      let patchTimer=null, pendingPatch={};
+      function queuePatch(delta){
+        Object.assign(pendingPatch, delta||{});
+        clearTimeout(patchTimer);
+        patchTimer = setTimeout(async ()=>{
+          const payload = { ...pendingPatch };
+          pendingPatch = {};
+          try{
+            await fetch(`/api/player/${encodeURIComponent(sessionId)}`, {
+              method:'PATCH', headers:{'Content-Type':'application/json'},
+              body: JSON.stringify(payload)
+            });
+          }catch(e){}
+        }, 300);
+      }
+
+      /* ---------- Countries ---------- */
+      const COUNTRY_CODES = [
+        { code:'IN', dial:'91', name:'India (+91)', pattern:/^[6-9]\d{9}$/ },
+        { code:'US', dial:'1',  name:'United States (+1)', pattern:/^\d{10}$/ },
+        { code:'GB', dial:'44', name:'United Kingdom (+44)', pattern:/^\d{10}$/ },
+        { code:'AE', dial:'971',name:'United Arab Emirates (+971)', pattern:/^\d{7,9}$/ },
+        { code:'SG', dial:'65', name:'Singapore (+65)', pattern:/^\d{8}$/ },
+        { code:'AU', dial:'61', name:'Australia (+61)', pattern:/^\d{9}$/ }
+      ];
+      function fillCountrySelect(sel){
+        sel.innerHTML = '';
+        COUNTRY_CODES.forEach(c=>{ const o=document.createElement('option'); o.value=c.dial; o.textContent=c.name; sel.appendChild(o); });
+      }
+      const countrySel = $('country');
+      fillCountrySelect(countrySel); countrySel.value='91';
+
+      const normDigits = s => String(s||'').replace(/\D+/g,'');
+      function toE164(dial, national){
+        const cc=normDigits(dial), nn=normDigits(national);
+        const total=cc+nn; if (total.length<5 || total.length>15) return null;
+        return '+'+total;
+      }
+      function validateNational(dial, national){
+        const c=COUNTRY_CODES.find(x=>x.dial===String(dial));
+        if (!c || !c.pattern) return normDigits(national).length>=6;
+        return c.pattern.test(normDigits(national));
+      }
+      function splitE164(phone){
+        if (!phone) return null;
+        let raw = String(phone).trim();
+        if (raw.startsWith('00')) raw = '+' + raw.slice(2);
+        raw = raw.replace(/[^\d+]/g, '');
+        const m = raw.match(/^\+?(\d{1,3})(\d{5,})$/);
+        if (!m) return null;
+        const cc = m[1], rest = m[2];
+        const sorted = [...COUNTRY_CODES].sort((a,b)=>b.dial.length-a.dial.length);
+        const match = sorted.find(c => (cc+rest).startsWith(c.dial));
+        if (match){
+          const national = (cc+rest).slice(match.dial.length);
+          return { dial: match.dial, national };
+        }
+        return { dial: cc, national: rest };
+      }
+
+      /* ---------- Price / rank helpers ---------- */
+      const amtEl=$('amt'), priceBox=$('priceBox'), rankMsg=$('rankMsg');
+      function showPriceFromJoinOrder(joinOrder){
+        const isTop50 = (typeof joinOrder==='number' && joinOrder<=50);
+        const rupees = isTop50 ? 49 : 99;
+        amtEl.textContent = `₹${rupees}`;
+        amtEl.classList.remove('green','red');
+        amtEl.classList.add(isTop50 ? 'green' : 'red');
+        priceBox.style.display='flex';
+        if (isTop50) rankMsg.textContent = 'Congrats! You’re among the first 50. Special launch price unlocked.';
+        else rankMsg.textContent = 'Early supporter price applied.';
+        rankMsg.style.display = 'block';
+      }
+      function calcEarlyDiscountPct(joinOrder){
+        if (typeof joinOrder==='number' && joinOrder>0 && joinOrder<100) {
+          return Math.max(10, 100 - joinOrder); // e.g., rank 12 => 88%
+        }
+        return 0;
+      }
+      function invitesForRank(joinOrder){
+        if (joinOrder && joinOrder<=50) return 5;
+        if (joinOrder && joinOrder<100) return 3;
+        return 1;
+      }
+
+      /* ---------- Step 1: Commitment ---------- */
+      const commitChk = $('commitChk');
+      const step1Next = $('step1Next');
+      function updateStep1() {
+        step1Next.disabled = !commitChk.checked;
+      }
+      commitChk.addEventListener('change', ()=>{
+        const agreed = !!commitChk.checked;
+        writeState({ committed: agreed });
+        updateStep1();
+        queuePatch({ consent: agreed, commitmentAgreed: agreed });
+      });
+
+      /* ---------- Step 5: Early discount text ---------- */
+      const earlyDiscountLine = $('earlyDiscountLine');
+
+      /* ---------- Step 6: Final confirmation ---------- */
+      const finalCtaChk = $('finalCtaChk');
+      const step6Next = $('step6Next');
+      function updateStep6(){
+        step6Next.disabled = !finalCtaChk.checked;
+      }
+      finalCtaChk.addEventListener('change', ()=>{
+        const checked = !!finalCtaChk.checked;
+        writeState({ confirmed: checked });
+        updateStep6();
+        queuePatch({ subscriptionConfirmed: checked });
+      });
+
+      /* ---------- Step 7: Payment fields & lookup ---------- */
+      const nameEl=$('name'), phoneEl=$('phone'), hint=$('hint'), payBtn=$('payBtn');
+
+      // Persist name/phone
+      nameEl.addEventListener('input', ()=>{
+        const val = nameEl.value.trim();
+        writeState({ name: val });
+        queuePatch({ name: val });
+      });
+
+      phoneEl.addEventListener('input', ()=>{
+        const dial = countrySel.value;
+        const national = phoneEl.value.trim();
+        const e164 = toE164(dial, national);
+        if (e164) { writeState({ phone: e164 }); queuePatch({ phone: e164 }); }
+        debouncedLookup();
+      });
+      countrySel.addEventListener('change', ()=>{
+        const dial = countrySel.value;
+        const national = phoneEl.value.trim();
+        const e164 = toE164(dial, national);
+        if (e164) { writeState({ phone: e164 }); queuePatch({ phone: e164 }); }
+        debouncedLookup();
+      });
+      phoneEl.addEventListener('blur', maybeLookupNow);
+      phoneEl.addEventListener('paste', () => setTimeout(debouncedLookup, 0));
+
+      let lastQueried = ''; let foundPlayer=null;
+      async function lookupByPhone(e164){
+        if (!e164 || e164 === lastQueried) return;
+        lastQueried = e164;
+        payBtn.disabled = true;
+        foundPlayer = null;
+        priceBox.style.display = 'none';
+        rankMsg.style.display = 'none';
+        hideNotes();
+        hint.textContent = 'Looking up your account…';
+
+        try{
+          const r = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
+          if (!r.ok){ showErr('This is an invite only platform. This number was not invited.'); return; }
+          const p = await r.json();
+          foundPlayer = p;
+
+          if (!nameEl.value.trim() && p.name){ nameEl.value = p.name; }
+          showOk(`Hi ${nameEl.value || p.name || 'there'}! We found your account.`);
+          showPriceFromJoinOrder(p.joinOrder);
+          payBtn.disabled = false;
+
+          writeState({ name: nameEl.value || p.name || '', phone: p.phone?.number || e164 });
+          hint.textContent = 'Your Dream Stage account will be activated on this number.';
+
+          // Early discount + invites preview (for earlier steps)
+          appState.earlyDiscountPct = calcEarlyDiscountPct(p.joinOrder);
+          appState.invitesAllowance = invitesForRank(p.joinOrder);
+          if (appState.earlyDiscountPct>0) {
+            earlyDiscountLine.textContent = `Since your Creator Code is under 100, you get ${appState.earlyDiscountPct}% off on the yearly subscription for the next 2 years.`;
+          }
+          $('inviteLine').textContent = `As a thank you for your early commitment, you can invite ${appState.invitesAllowance} creator${appState.invitesAllowance>1?'s':''} into this movement.`;
+
+          // Patch name/phone for consistency
+          queuePatch({ name: nameEl.value || p.name || '' });
+          queuePatch({ phone: p.phone?.number || e164 });
+        }catch{
+          showErr('Something went wrong while finding your account.');
+        }
+      }
+      function maybeLookupNow(){
+        const national = phoneEl.value.trim();
+        const dial = countrySel.value;
+        if (!validateNational(dial, national)){
+          payBtn.disabled = true;
+          foundPlayer = null;
+          priceBox.style.display = 'none';
+          rankMsg.style.display = 'none';
+          hint.textContent = national.length
+            ? 'Number format looks invalid for the selected country.'
+            : 'Enter your number — we’ll look up your account automatically.';
+          return;
+        }
+        const e164 = toE164(dial, national);
+        if (e164) lookupByPhone(e164);
+      }
+      let lookupTimer=null;
+      function debouncedLookup(){ clearTimeout(lookupTimer); lookupTimer=setTimeout(maybeLookupNow, 350); }
+
+      /* ---------- Payment modal wiring ---------- */
+      const backdrop = $('confirmBackdrop');
+      const modal = $('confirmModal');
+      const summaryView = $('summaryView');
+      const editView = $('editView');
+      const editToggleBtn = $('editToggle');
+      const saveEditBtn = $('saveEdit');
+      const cancelEditBtn = $('cancelEdit');
+      const confirmPayBtn = $('confirmPay');
+      const closeModalBtn = $('closeModal');
+      const confName = $('confName');
+      const confPhone = $('confPhone');
+      const confAmount = $('confAmount');
+      const modalAlert = $('modalAlert');
+      const editName = $('editName');
+      const editCountry = $('editCountry');
+      const editPhone = $('editPhone');
+
+      function fillCountrySelect(sel){
+        sel.innerHTML = '';
+        COUNTRY_CODES.forEach(c=>{ const o=document.createElement('option'); o.value=c.dial; o.textContent=c.name; sel.appendChild(o); });
+      }
+
+      function openModal(){
+        if (!foundPlayer){ showErr('Please enter a valid number so we can find your account first.'); return; }
+        modalAlert.classList.add('hidden');
+        summaryView.classList.remove('hidden');
+        editView.classList.add('hidden');
+        editToggleBtn.classList.remove('hidden');
+        saveEditBtn.classList.add('hidden');
+        cancelEditBtn.classList.add('hidden');
+
+        // Fill summary
+        const displayName = nameEl.value.trim() || (foundPlayer?.name) || '—';
+        confName.textContent = displayName;
+        const e164 = toE164(countrySel.value, phoneEl.value.trim()) || (foundPlayer?.phone?.number) || '—';
+        confPhone.textContent = e164;
+        const rupees = (foundPlayer && typeof foundPlayer.joinOrder==='number' && foundPlayer.joinOrder<=50) ? 49 : 99;
+        confAmount.textContent = `₹${rupees}`;
+
+        // Prep edit form
+        editName.value = displayName;
+        fillCountrySelect(editCountry);
+        const parts = splitE164(e164);
+        if (parts){ editCountry.value = parts.dial; editPhone.value = parts.national; } else { editCountry.value='91'; editPhone.value=''; }
+
+        backdrop.classList.add('show');
+        modal.classList.add('show');
+      }
+      function closeModal(){ backdrop.classList.remove('show'); modal.classList.remove('show'); }
+      closeModalBtn.addEventListener('click', closeModal);
+      backdrop.addEventListener('click', closeModal);
+
+      // Edit inside modal
+      editToggleBtn.addEventListener('click', () => {
+        summaryView.classList.add('hidden');
+        editView.classList.remove('hidden');
+        editToggleBtn.classList.add('hidden');
+        saveEditBtn.classList.remove('hidden');
+        cancelEditBtn.classList.remove('hidden');
+        editName.focus();
+      });
+      cancelEditBtn.addEventListener('click', () => {
+        modalAlert.classList.add('hidden');
+        summaryView.classList.remove('hidden');
+        editView.classList.add('hidden');
+        editToggleBtn.classList.remove('hidden');
+        saveEditBtn.classList.add('hidden');
+        cancelEditBtn.classList.add('hidden');
+      });
+
+      saveEditBtn.addEventListener('click', async () => {
+        modalAlert.classList.add('hidden');
+        const newName = editName.value.trim();
+        const national = editPhone.value.trim();
+        const dial = editCountry.value;
+        if (!validateNational(dial, national)){
+          modalAlert.textContent = 'Please enter a valid phone number for the selected country.';
+          modalAlert.classList.remove('hidden');
+          return;
+        }
+        const e164 = toE164(dial, national);
+        try{
+          const r = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
+          if (!r.ok){ modalAlert.textContent='This number is not on the invite list.'; modalAlert.classList.remove('hidden'); return; }
+          const p = await r.json();
+          foundPlayer = p;
+
+          // Update main form
+          nameEl.value = newName || p.name || '';
+          countrySel.value = dial;
+          phoneEl.value = national;
+          writeState({ name: nameEl.value, phone: e164 });
+          queuePatch({ name: nameEl.value });
+          queuePatch({ phone: e164 });
+
+          // Update summary & price
+          confName.textContent = nameEl.value || p.name || '—';
+          confPhone.textContent = e164;
+          const rupees = (p.joinOrder<=50) ? 49 : 99;
+          confAmount.textContent = `₹${rupees}`;
+          showPriceFromJoinOrder(p.joinOrder);
+          payBtn.disabled = false;
+
+          // Back to summary
+          summaryView.classList.remove('hidden');
+          editView.classList.add('hidden');
+          editToggleBtn.classList.remove('hidden');
+          saveEditBtn.classList.add('hidden');
+          cancelEditBtn.classList.add('hidden');
+        }catch{
+          modalAlert.textContent='Something went wrong while validating the new number.';
+          modalAlert.classList.remove('hidden');
+        }
+      });
+
+      // Open modal from Step 7 Pay button
+      $('payBtn').addEventListener('click', openModal);
+
+      // Confirm & Pay
+      confirmPayBtn.addEventListener('click', async () => {
+        if (!foundPlayer){ modalAlert.textContent='We could not find your account. Please edit and try again.'; modalAlert.classList.remove('hidden'); return; }
+        try{
+          const res = await fetch('/api/pay/order', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ phone: foundPlayer.phone.number })
+          });
+          if (!res.ok){
+            const j = await res.json().catch(()=>({}));
+            modalAlert.textContent = j.error || 'Could not create order. Please try again.';
+            modalAlert.classList.remove('hidden');
+            return;
+          }
+          const order = await res.json();
+
+          const options = {
+            key: order.keyId,
+            amount: order.amount,
+            currency: order.currency,
+            name: "Dream Stage",
+            description: "1-year membership",
+            order_id: order.orderId,
+            prefill: {
+              name: nameEl.value || order.name || "Dream Stage Member",
+              contact: foundPlayer.phone.number || order.contact || ''
+            },
+            theme: { color: "#0b1220" },
+            handler: async function (resp) {
+              try{
+                const v = await fetch('/api/pay/verify', {
+                  method:'POST', headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({
+                    phone: foundPlayer.phone.number,
+                    razorpay_payment_id: resp.razorpay_payment_id,
+                    razorpay_order_id: resp.razorpay_order_id,
+                    razorpay_signature: resp.razorpay_signature
+                  })
+                });
+                if (!v.ok){
+                  const j = await v.json().catch(()=>({}));
+                  showErr(j.error || 'Payment verification failed. If amount was deducted, contact support.');
+                  closeModal(); return;
+                }
+                showOk('Payment successful! Your 1-year subscription is active.');
+                closeModal();
+
+                // Mark paid and continue to post-activation steps
+                appState.paid = true;
+                writeState({ paid: true });
+                showStep(8);
+              }catch{
+                showErr('Could not verify payment. Please contact support.');
+                closeModal();
+              }
+            },
+            modal: { ondismiss: function(){ showErr('Payment cancelled.'); closeModal(); } }
+          };
+          // Close summary and open Razorpay widget
+          closeModal();
+          new Razorpay(options).open();
+        }catch{
+          modalAlert.textContent='Could not start payment. Please try again.';
+          modalAlert.classList.remove('hidden');
+        }
+      });
+
+      /* ---------- Step 8: Referral program ---------- */
+      const sendInvitesBtn = $('sendInvitesBtn');
+      sendInvitesBtn.addEventListener('click', ()=>{
+        appState.invitesSent = true;
+        writeState({ invitesSent: true });
+        showOk('Your referral invitations have been sent!');
+      });
+
+      /* ---------- Init ---------- */
+      (async function init(){
+        // Ensure session doc exists (compat)
+        await fetch('/api/player/session', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ sessionId })
+        }).catch(()=>{});
+
+        // Prefill from local state
+        const s = readState();
+        if (s.name) $('name').value = s.name;
+        const ph = s?.phone || s?.phone?.number || '';
+        const parts = splitE164(ph);
+        if (parts){ countrySel.value = parts.dial; $('phone').value = parts.national; }
+
+        // Restore checkboxes
+        if (s.committed){ commitChk.checked = true; }
+        if (s.confirmed){ finalCtaChk.checked = true; }
+        updateStep1();
+        updateStep6();
+
+        // If we already have a valid phone, lookup immediately
+        if (parts){ lookupByPhone('+'+parts.dial+parts.national); }
+
+        // Start on step 1 (or continue to post-activation if already paid)
+        if (s.paid){ showStep(8); } else { showStep(1); }
+      })();
+    })();
+  </script>
+</body>
+</html>

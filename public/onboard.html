@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dream Stage — Direct Onboarding</title>
+
+  <!-- Font -->
+  <link rel="preload" href="fonts/SuperMario256.ttf" as="font" type="font/ttf" crossorigin>
+  <style>
+    @font-face{
+      font-family: SuperMario256;
+      src: url("fonts/SuperMario256.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --maxw: min(960px, 94vw);
+      --pad: clamp(14px, 2.5vw, 24px);
+      --gap: clamp(10px, 2vw, 18px);
+      --radius: 14px;
+
+      --h1: clamp(22px, 3vw, 32px);
+      --h2: clamp(16px, 2.2vw, 22px);
+      --txt: clamp(14px, 1.8vw, 16px);
+      --label: clamp(13px, 1.7vw, 15px);
+      --btn: clamp(14px, 2vw, 16px);
+    }
+
+    html, body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 50% -10%, #bfe6ff, #9ecbf2 60%, #7fb4e6 100%);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: #0b1220;
+    }
+
+    .wrap { min-height: 100svh; display: grid; place-items: start center; padding: clamp(16px, 3vh, 40px) 0; }
+    .card {
+      width: var(--maxw);
+      border: 3px solid #000;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(0deg, rgba(255,255,255,0.06), rgba(255,255,255,0.06)),
+        url('images/bg.png');
+      background-size: cover;
+      box-shadow: 0 12px 0 #1b4b7a, 0 24px 60px rgba(0,0,0,.25);
+      padding: var(--pad);
+    }
+
+    .logo { width: clamp(84px, 12vw, 120px); display:block; margin:0 auto 6px; }
+    .brand { text-align:center; font-family: SuperMario256, system-ui, sans-serif; font-size: clamp(12px, 2vw, 16px); letter-spacing: 1.2px; color:#000; margin-bottom: 10px; }
+    h1 { font-family: SuperMario256, system-ui, sans-serif; font-size: var(--h1); text-align:center; margin: 6px 0 16px; color:#000; }
+    .intro { text-align:center; font-size: var(--txt); margin-bottom: 18px; }
+
+    form { display:grid; gap: var(--gap); }
+    fieldset { border:2px solid #000; border-radius: 12px; padding: var(--pad); background: rgba(255,255,255,.4); }
+    legend { padding: 0 8px; font-family: SuperMario256, system-ui, sans-serif; font-size: var(--h2); color:#000; }
+
+    .row { display:grid; gap: var(--gap); }
+    .row-2 { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 720px){ .row-2{ grid-template-columns: 1fr; } }
+
+    label { display:block; font-size: var(--label); font-family: SuperMario256, system-ui, sans-serif; color:#000; margin-bottom: 6px; }
+    input[type="text"], input[type="tel"], input[type="search"], textarea, select {
+      width:100%; font-size: var(--txt); padding: 10px 12px; border: 2px solid #000; border-radius: 10px;
+      color:#0b1220; background: #fff; outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color:#ffcc00; box-shadow: 0 0 0 3px rgba(255,204,0,.25); }
+
+    .radios { display: grid; gap: 10px; }
+    .radio {
+      display:flex; align-items:center; gap:10px; background: #15a7d9; color:#fff; border:3px solid #000;
+      border-radius: 10px; padding: 10px 12px; box-shadow: 0 4px 0 #0b5672; cursor:pointer; user-select:none;
+      font-family: SuperMario256, system-ui, sans-serif;
+    }
+    .radio input{ accent-color: #000; width:18px; height:18px; }
+    .radio.active{ outline: 3px solid #ffcc00; }
+
+    .muted { font-size: 12px; opacity:.8; }
+
+    .actions { display:flex; gap: 12px; flex-wrap: wrap; align-items:center; justify-content:flex-end; margin-top: 6px; }
+    .btn {
+      background: linear-gradient(#ff3b30, #c1271c); border: 3px solid #000; color: #fff; padding: 12px 18px;
+      border-radius: 12px; cursor: pointer; font-weight: 700; font-family: SuperMario256, system-ui, sans-serif;
+      letter-spacing: 0.5px; box-shadow: 0 6px 0 #6b0000; font-size: var(--btn);
+    }
+    .btn:disabled{ filter: grayscale(.5) brightness(.9); cursor:not-allowed; }
+    .ghost{ background: #0f172a; color:#fff; box-shadow: 0 6px 0 #1b4b7a; }
+
+    .error{ background: #ffe9ea; border: 2px solid #ff3b30; color:#7a1111; padding: 10px 12px; border-radius: 10px; font-size: var(--txt); }
+    .ok{ background: #eafff1; border: 2px solid #15a152; color:#104d2e; padding: 10px 12px; border-radius: 10px; font-size: var(--txt); }
+
+    .suggest { margin-top:6px; border:2px solid #000; border-radius:10px; background:#fff; max-height: 220px; overflow:auto; }
+    .s-item{ padding:8px 10px; border-bottom:1px solid #ddd; cursor:pointer; }
+    .s-item:hover{ background:#f3f4f6; }
+    .s-item .name{ font-weight:600; }
+    .s-item .desc{ font-size:12px; opacity:.8; }
+
+    .hidden{ display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <img class="logo" src="images/logo.png" alt="Dream Stage" />
+      <div class="brand">DREAM STAGE</div>
+      <h1>Direct Onboarding</h1>
+      <p class="intro">Skip the game and answer a few quick questions to join the community.</p>
+
+      <div id="alert" class="hidden"></div>
+
+      <form id="onboardForm" `novalidate>
+        <!-- Basic -->
+        <fieldset>
+          <legend>About you</legend>
+          <div class="row row-2">
+            <div>
+              <label for="name">Your name</label>
+              <input id="name" name="name" type="text" style="width: 50%;" placeholder="Your name" autocomplete="name" required />
+            </div>
+            <div>
+              <label>Role</label>
+              <div class="radios" id="roleGroup">
+                <label class="radio"><input type="radio" name="role" value="artist"> <span>🧑‍🎨 Artist</span></label>
+                <label class="radio"><input type="radio" name="role" value="helper"> <span>🧑‍💼 Someone who helps artists</span></label>
+                <label class="radio"><input type="radio" name="role" value="business"> <span>🏘️ Event curator / Business</span></label>
+                <label class="radio"><input type="radio" name="role" value="lover"> <span>🎭 Art lover</span></label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Role: Artist -->
+        <fieldset id="artistBlock" class="hidden">
+          <legend>Artist details</legend>
+          <div class="row row-2">
+            <div>
+              <label for="artistType">Your art form</label>
+              <input id="artistType" type="search" placeholder="e.g., DJ / Bharatanatyam / Painter / Chef" autocomplete="off" />
+              <div id="artistSuggest" class="suggest hidden"></div>
+              <div class="muted">Start typing to see suggestions</div>
+            </div>
+            <div>
+              <label for="location">Where are you based?</label>
+              <input id="location" type="text" style="width:50%;" placeholder="e.g., Delhi, Goa, Bangalore" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Role: Helper -->
+        <fieldset id="helperBlock" class="hidden">
+          <legend>Helper details</legend>
+          <div class="row row-2">
+            <div>
+              <label for="helperCapacity">How do you help?</label>
+              <select id="helperCapacity">
+                <option value="">Select...</option>
+                <option value="mentor">Mentor / Coach</option>
+                <option value="crew">Artist Crew</option>
+                <option value="manager">Artist Manager / Agent</option>
+                <option value="promoter">Promoter</option>
+              </select>
+            </div>
+            <div>
+              <label for="helperStage">Who do you support most?</label>
+              <select id="helperStage">
+                <option value="">Select...</option>
+                <option value="early">Early career / beginners</option>
+                <option value="mid">Mid-career / growing artists</option>
+                <option value="pro">Established / professional</option>
+                <option value="all">All stages</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Role: Business -->
+        <fieldset id="businessBlock" class="hidden">
+          <legend>Business details</legend>
+          <div class="row row-2">
+            <div>
+              <label for="businessKind">What kind of business / events?</label>
+              <input id="businessKind" type="text" placeholder="e.g., Music festivals, Weekend gigs, Retreats, Brand activations" />
+            </div>
+            <div>
+              <label for="eventFrequency">How often do you host?</label>
+              <select id="eventFrequency">
+                <option value="">Select...</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="occasional">Occasionally / On-demand only</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Role: Lover -->
+        <fieldset id="loverBlock" class="hidden">
+          <legend>Art lover</legend>
+          <div class="row row-2">
+            <div>
+              <label for="appreciatorEngagement">What do you enjoy most?</label>
+              <select id="appreciatorEngagement">
+                <option value="">Select...</option>
+                <option value="live">Live performances (music, dance, theatre)</option>
+                <option value="visual">Visual arts (painting, photography, sculpture)</option>
+                <option value="festivals">Festivals & cultural events</option>
+                <option value="digital">Digital / interactive art</option>
+              </select>
+            </div>
+            <div>
+              <label for="attendance">How often do you attend events?</label>
+              <select id="attendance">
+                <option value="">Select...</option>
+                <option value="rare">Rarely</option>
+                <option value="occasional">Occasionally</option>
+                <option value="frequent">Frequently</option>
+                <option value="very_frequent">Very frequently</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Consent -->
+        <fieldset>
+          <legend>Consent</legend>
+          <label>
+            <input id="consent" type="checkbox" />
+            <span>I agree to be evaluated for platform onboarding.
+              <a href="/consent.html" target="_blank" rel="noopener">Read Terms &amp; Conditions</a>
+            </span>
+          </label>
+        </fieldset>
+
+        <!-- Phone + OTP -->
+        <fieldset>
+          <legend>Verify your phone</legend>
+          <div class="row row-2">
+            <div>
+              <label for="country">Country</label>
+              <select id="country"></select>
+            </div>
+            <div>
+              <label for="phone">Phone number</label>
+              <input id="phone" type="tel" placeholder="e.g., 98765 43210" style="width:50%;" inputmode="tel" />
+              <div id="phoneHelp" class="muted"></div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="sendOtpBtn" class="btn">Send OTP</button>
+          </div>
+
+          <div id="otpRow" class="row row-2 hidden" style="margin-top:8px;">
+            <div>
+              <label for="otp">Enter OTP</label>
+              <input id="otp" type="text" inputmode="numeric" pattern="\\d*" placeholder="6-digit code" style="width: 50%;" />
+              <div id="devOtp" class="muted"></div>
+            </div>
+            <div class="actions" style="align-items:end; justify-content:flex-start;">
+              <button type="button" id="verifyOtpBtn" class="btn ghost">Verify OTP</button>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Actions -->
+        <!-- <fieldset>
+          <legend>Actions</legend>
+          <div class="actions" style="justify-content:flex-start;">
+            <button type="button" id="saveBtn" class="btn ghost">Save details</button>
+          </div>
+        </fieldset> -->
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const stateKey = 'QF_STATE';
+      const sessionKey = 'QF_SESSION_ID';
+      const playerKey = 'QF_PLAYER_ID';
+      const apiBase = '';
+
+      const $ = (id) => document.getElementById(id);
+      const alertBox = $('alert');
+
+      function showAlert(msg, kind = 'error') {
+        alertBox.className = kind === 'ok' ? 'ok' : 'error';
+        alertBox.textContent = msg;
+        alertBox.classList.remove('hidden');
+        setTimeout(() => alertBox.classList.add('hidden'), 4500);
+      }
+
+      function readLocal() { try { return JSON.parse(localStorage.getItem(stateKey) || '{}'); } catch { return {}; } }
+      function writeLocal(patch) { const s = readLocal(); Object.assign(s, patch || {}); localStorage.setItem(stateKey, JSON.stringify(s)); return s; }
+
+      const getSessionId = () => localStorage.getItem(sessionKey) || null;
+      const setSessionId = (id) => localStorage.setItem(sessionKey, id);
+      const getPlayerId  = () => localStorage.getItem(playerKey)  || null;
+      const setPlayerId  = (id) => localStorage.setItem(playerKey, id);
+      const uid = () => 'sess_' + Math.random().toString(36).slice(2) + Date.now();
+
+      function ensureSession() {
+        const sid = getSessionId();
+        if (sid) {
+          return fetch(apiBase + '/api/player/session', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: sid })
+          }).then(r => {
+            if (!r.ok) throw new Error('session touch failed');
+            return r.json();
+          }).then(j => {
+            if (j && j.playerId) setPlayerId(j.playerId);
+            return sid;
+          }).catch(() => makeNewSession());
+        }
+        return makeNewSession();
+      }
+
+      function makeNewSession() {
+        const newSid = uid();
+        return fetch(apiBase + '/api/player/session', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: newSid })
+        })
+        .then(async r => {
+          if (!r.ok) {
+            let msg = 'Failed to start session';
+            try { const j = await r.json(); if (j && j.error) msg = j.error; } catch {}
+            throw new Error(msg);
+          }
+          return r.json();
+        })
+        .then(j => {
+          setSessionId(newSid);
+          if (j && j.playerId) setPlayerId(j.playerId);
+          return newSid;
+        })
+        .catch(() => {
+          // Fallback: create via journey/init
+          return fetch(apiBase + '/api/journey/init', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: newSid, name: '' })
+          })
+          .then(async r => {
+            if (!r.ok) {
+              let msg = 'Failed to initialize session';
+              try { const j = await r.json(); if (j && j.error) msg = j.error; } catch {}
+              throw new Error(msg);
+            }
+            return r.json();
+          })
+          .then(j => {
+            setSessionId(newSid);
+            if (j && j.playerId) setPlayerId(j.playerId);
+            return newSid;
+          })
+          .catch(err => { showAlert(err.message || 'Could not start a session. Please refresh and try again.'); throw err; });
+        });
+      }
+
+      function savePatch(patch) {
+        return ensureSession().then(sid => {
+          return fetch(apiBase + '/api/player/' + encodeURIComponent(sid), {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(patch)
+          }).then(r => {
+            if (!r.ok) return r.json().catch(() => ({ error: 'save failed' })).then(e => { throw new Error(e.error || 'Save failed'); });
+            return r.json();
+          });
+        });
+      }
+
+      function sendOtp(e164) {
+        return ensureSession().then(sid => {
+          return fetch(apiBase + '/api/otp/send', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: sid, phone: e164 })
+          }).then(async r => {
+            if (!r.ok) {
+              let msg = 'Failed to send OTP';
+              try { const j = await r.json(); if (j && j.error) msg = j.error; } catch {}
+              const err = new Error(msg); err.status = r.status; throw err;
+            }
+            return r.json();
+          });
+        });
+      }
+
+      function verifyOtp(code) {
+        return ensureSession().then(sid => {
+          return fetch(apiBase + '/api/otp/verify', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: sid, otp: code })
+          }).then(async r => {
+            if (!r.ok) {
+              let msg = 'Failed to verify OTP';
+              try { const j = await r.json(); if (j && j.error) msg = j.error; } catch {}
+              throw new Error(msg);
+            }
+            return r.json();
+          });
+        });
+      }
+
+      function fetchDoc() {
+        const pid = getPlayerId();
+        if (!pid) return ensureSession().then(fetchDoc);
+        return fetch('/api/journey/' + encodeURIComponent(pid))
+          .then(r => { if (!r.ok) throw new Error('journey fetch failed'); return r.json(); });
+      }
+
+      /* ---------- Form wiring ---------- */
+      const nameInput = $('name');
+      const roleGroup = $('roleGroup');
+
+      const artistBlock = $('artistBlock');
+      const helperBlock = $('helperBlock');
+      const businessBlock = $('businessBlock');
+      const loverBlock = $('loverBlock');
+
+      const artistTypeInput = $('artistType');
+      const artistSuggest = $('artistSuggest');
+      const locationInput = $('location');
+
+      const helperCapacity = $('helperCapacity');
+      const helperStage = $('helperStage');
+
+      const businessKind = $('businessKind');
+      const eventFrequency = $('eventFrequency');
+
+      const appreciatorEngagement = $('appreciatorEngagement');
+      const attendance = $('attendance');
+
+      const consentChk = $('consent');
+
+      const countrySel = $('country');
+      const phoneInput = $('phone');
+      const phoneHelp  = $('phoneHelp');
+
+      const sendOtpBtn = $('sendOtpBtn');
+      const otpRow = $('otpRow');
+      const otpInput = $('otp');
+      const verifyOtpBtn = $('verifyOtpBtn');
+      const devOtp = $('devOtp');
+
+      const saveBtn = $('saveBtn');
+
+      // Country list
+      const COUNTRY_CODES = [
+        { code: 'IN', dial: '91',  name: 'India (+91)' },
+        { code: 'US', dial: '1',   name: 'United States (+1)' },
+        { code: 'GB', dial: '44',  name: 'United Kingdom (+44)' },
+        { code: 'AE', dial: '971', name: 'United Arab Emirates (+971)' },
+        { code: 'SG', dial: '65',  name: 'Singapore (+65)' },
+        { code: 'AU', dial: '61',  name: 'Australia (+61)' },
+        { code: 'DE', dial: '49',  name: 'Germany (+49)' },
+        { code: 'FR', dial: '33',  name: 'France (+33)' }
+      ];
+      function populateCountries() {
+        countrySel.innerHTML = '';
+        COUNTRY_CODES.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.dial;
+          opt.textContent = c.name;
+          countrySel.appendChild(opt);
+        });
+        countrySel.value = '91';
+      }
+      populateCountries();
+
+      // Phone validation
+      function normalizeDigits(s){ return String(s || '').replace(/\D+/g, ''); }
+      const PHONE_RULES = {
+        '91':  { min:10, max:10, normalize:n=>n.replace(/^0+/,''), test:n=>/^[6-9]\d{9}$/.test(n) },
+        '1':   { min:10, max:10, normalize:n=>n,                 test:n=>/^[2-9]\d{2}[2-9]\d{6}$/.test(n) },
+        '44':  { min:9,  max:10, normalize:n=>n.replace(/^0/,''), test:n=>/^\d{9,10}$/.test(n) },
+        '971': { min:9,  max:9,  normalize:n=>n.replace(/^0/,''), test:n=>/^\d{9}$/.test(n) },
+        '65':  { min:8,  max:8,  normalize:n=>n,                 test:n=>/^\d{8}$/.test(n) },
+        '61':  { min:9,  max:9,  normalize:n=>n.replace(/^0/,''), test:n=>/^[45]\d{8}$/.test(n) },
+        '49':  { min:7,  max:11, normalize:n=>n.replace(/^0/,''), test:n=>/^\d{7,11}$/.test(n) },
+        '33':  { min:9,  max:9,  normalize:n=>n.replace(/^0/,''), test:n=>/^[1-9]\d{8}$/.test(n) },
+      };
+      function validatePhoneByCountry(dial, raw){
+        const rule = PHONE_RULES[dial];
+        let n = normalizeDigits(raw);
+        if (!rule) {
+          if (n.length < 5 || n.length > 15) return { ok:false, reason:'Invalid length' };
+          return { ok:true, e164: `+${dial}${n}` };
+        }
+        n = rule.normalize(n);
+        if (n.length < rule.min || n.length > rule.max) return { ok:false, reason:`Enter a valid phone number` };
+        if (rule.test && !rule.test(n)) return { ok:false, reason:`Enter a valid phone number` };
+        return { ok:true, e164: `+${dial}${n}` };
+      }
+      function fromE164(e164) {
+        const m = String(e164 || '').match(/^\+(\d{1,3})(\d{5,})$/);
+        if (!m) return null;
+        return { dial: m[1], national: m[2] };
+      }
+      function refreshPhoneValidity(){
+        const dial = countrySel.value;
+        const raw  = phoneInput.value;
+        if (!raw.trim()) { phoneHelp.textContent = ''; sendOtpBtn.disabled = false; return; }
+        const v = validatePhoneByCountry(dial, raw);
+        if (v.ok) { phoneHelp.textContent = 'Looks good'; phoneHelp.style.color = '#0a7'; sendOtpBtn.disabled = false; }
+        else { phoneHelp.textContent = v.reason || 'Invalid phone number'; phoneHelp.style.color = '#a00'; sendOtpBtn.disabled = true; }
+      }
+      countrySel.addEventListener('change', refreshPhoneValidity);
+      phoneInput.addEventListener('input', refreshPhoneValidity);
+
+      function setRoleUI(role) {
+        [artistBlock, helperBlock, businessBlock, loverBlock].forEach(el => el.classList.add('hidden'));
+        roleGroup.querySelectorAll('.radio').forEach(r => r.classList.remove('active'));
+        const selected = roleGroup.querySelector(`input[value="${role}"]`);
+        if (selected) selected.closest('.radio').classList.add('active');
+        if (role === 'artist') artistBlock.classList.remove('hidden');
+        else if (role === 'helper') helperBlock.classList.remove('hidden');
+        else if (role === 'business') businessBlock.classList.remove('hidden');
+        else if (role === 'lover') loverBlock.classList.remove('hidden');
+      }
+
+      // Artist autosuggest
+      let artistEntries = [];
+      fetch('/data/artist.json').then(r => r.json()).then(d => { artistEntries = Array.isArray(d) ? d : []; }).catch(() => { artistEntries = []; });
+      function renderSuggest(list) {
+        if (!list.length) { artistSuggest.classList.add('hidden'); artistSuggest.innerHTML = ''; return; }
+        artistSuggest.innerHTML = '';
+        list.slice(0, 12).forEach(item => {
+          const row = document.createElement('div');
+          row.className = 's-item';
+          row.innerHTML = `<div class="name">${item.name}</div><div class="desc">${item.description || ''}</div>`;
+          row.onclick = function () { artistTypeInput.value = item.name; artistSuggest.classList.add('hidden'); doSave(); };
+          artistSuggest.appendChild(row);
+        });
+        artistSuggest.classList.remove('hidden');
+      }
+      artistTypeInput.addEventListener('input', function () {
+        const q = this.value.toLowerCase().trim();
+        if (!q) { renderSuggest([]); return; }
+        const out = artistEntries.filter(e => (e.name || '').toLowerCase().includes(q) || (e.description || '').toLowerCase().includes(q));
+        renderSuggest(out);
+      });
+      document.addEventListener('click', (e) => { if (!artistSuggest.contains(e.target) && e.target !== artistTypeInput) artistSuggest.classList.add('hidden'); });
+
+      // Save helpers
+      function currentRole() { const r = roleGroup.querySelector('input[name="role"]:checked'); return r ? r.value : ''; }
+      function collectPatch() {
+        const role = currentRole();
+        const patch = {};
+        const name = nameInput.value.trim();
+        if (name) patch.name = name;
+        if (role) patch.role = role;
+
+        if (role === 'artist') {
+          if (artistTypeInput.value.trim()) patch.artistType = { name: artistTypeInput.value.trim(), description: '' };
+          if (locationInput.value.trim()) patch.location = locationInput.value.trim();
+        } else if (role === 'helper') {
+          if (helperCapacity.value) patch.helperCapacity = helperCapacity.value;
+          if (helperStage.value) patch.helperStage = helperStage.value;
+        } else if (role === 'business') {
+          if (businessKind.value.trim()) patch.managerRoleText = businessKind.value.trim();
+          if (eventFrequency.value) patch.eventFrequency = eventFrequency.value;
+        } else if (role === 'lover') {
+          if (appreciatorEngagement.value) patch.appreciatorEngagement = appreciatorEngagement.value;
+          if (attendance.value) patch.attendance = attendance.value;
+        }
+
+        patch.consent = !!consentChk.checked;
+        return patch;
+      }
+
+      let saveTimer = null;
+      function doSave(debounced = true) {
+        const patch = collectPatch();
+        if (debounced) {
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(() => { savePatch(patch).catch(err => console.error(err)); }, 350);
+        } else {
+          return savePatch(patch);
+        }
+      }
+
+      // Wire inputs -> autosave
+      nameInput.addEventListener('blur', () => doSave());
+      roleGroup.querySelectorAll('input[name="role"]').forEach(r => {
+        r.addEventListener('change', () => { setRoleUI(r.value); doSave(false).catch(() => {}); });
+      });
+      [artistTypeInput, locationInput, helperCapacity, helperStage, businessKind, eventFrequency, appreciatorEngagement, attendance].forEach(el => {
+        el.addEventListener('change', () => doSave());
+        el.addEventListener('blur', () => doSave());
+      });
+      consentChk.addEventListener('change', () => doSave());
+
+      // Optional Save details button (guarded)
+      if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+          doSave(false).then(() => showAlert('Details saved.', 'ok')).catch(e => showAlert(e.message || 'Failed to save'));
+        });
+      }
+
+      // Phone + OTP
+      sendOtpBtn.addEventListener('click', () => {
+        const role = currentRole();
+        if (!nameInput.value.trim()) { showAlert('Please enter your name.'); nameInput.focus(); return; }
+        if (!role) { showAlert('Please select your role.'); return; }
+        if (!consentChk.checked) { showAlert('Please agree to the consent to continue.'); return; }
+
+        if (role === 'artist') {
+          if (!artistTypeInput.value.trim()) { showAlert('Please enter your art form.'); artistTypeInput.focus(); return; }
+          if (!locationInput.value.trim()) { showAlert('Please enter where you are based.'); locationInput.focus(); return; }
+        } else if (role === 'helper') {
+          if (!helperCapacity.value) { showAlert('Please choose how you help artists.'); helperCapacity.focus(); return; }
+          if (!helperStage.value) { showAlert('Please choose the stage you support.'); helperStage.focus(); return; }
+        } else if (role === 'business') {
+          if (!businessKind.value.trim()) { showAlert('Please describe your business / events.'); businessKind.focus(); return; }
+          if (!eventFrequency.value) { showAlert('Please select how often you host.'); eventFrequency.focus(); return; }
+        } else if (role === 'lover') {
+          if (!appreciatorEngagement.value) { showAlert('Please select what you enjoy most.'); appreciatorEngagement.focus(); return; }
+          if (!attendance.value) { showAlert('Please select how often you attend.'); attendance.focus(); return; }
+        }
+
+        doSave(false).then(() => {
+          const v = validatePhoneByCountry(countrySel.value, phoneInput.value);
+          if (!v.ok) { showAlert(v.reason || 'Please enter a valid phone number.'); phoneInput.focus(); return; }
+
+          sendOtpBtn.disabled = true;
+          sendOtp(v.e164).then(resp => {
+            writeLocal({ phone: v.e164 });
+            otpRow.classList.remove('hidden');
+            devOtp.textContent = resp.devOtp ? ('Dev OTP: ' + resp.devOtp) : '';
+            savePatch({ phone: v.e164 }).catch(() => {});
+          }).catch(err => {
+            if (err && err.status === 409) showAlert('This phone number is already in use. Please use a different number.');
+            else showAlert(err.message || 'Failed to send OTP');
+          }).finally(() => { sendOtpBtn.disabled = false; });
+        }).catch(e => { showAlert(e.message || 'Failed to save details before sending OTP'); });
+      });
+
+      verifyOtpBtn.addEventListener('click', () => {
+        const code = (otpInput.value || '').trim();
+        if (!/^\d{4,8}$/.test(code)) { showAlert('Please enter a valid OTP.'); otpInput.focus(); return; }
+
+        verifyOtpBtn.disabled = true;
+        verifyOtp(code).then(() => {
+          writeLocal({ phoneVerified: true });
+          const sid = getSessionId();
+          fetch('/api/player/session', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: sid })
+          }).then(r => r.json()).then(j => {
+            const rank = (j && typeof j.joinOrder === 'number') ? j.joinOrder : null;
+            const qs = rank ? ('?rank=' + encodeURIComponent(rank)) : '';
+            window.location.href = '/community.html' + qs;
+          }).catch(() => { window.location.href = '/community.html'; });
+        }).catch(e => {
+          showAlert(e.message || 'Invalid OTP');
+        }).finally(() => { verifyOtpBtn.disabled = false; });
+      });
+
+      // Prefill
+      function prefill(doc) {
+        if (!doc) return;
+        if (doc._id) setPlayerId(doc._id);
+
+        const verified = (doc.phone && doc.phone.verified) || (doc.steps && doc.steps.phoneVerified);
+        if (verified) {
+          const rank = (typeof doc.joinOrder === 'number') ? doc.joinOrder : null;
+          const qs = rank ? ('?rank=' + encodeURIComponent(rank)) : '';
+          window.location.replace('/community.html' + qs);
+          return;
+        }
+
+        if (doc.name) nameInput.value = doc.name;
+        if (doc.role) { const r = roleGroup.querySelector(`input[value="${doc.role}"]`); if (r) { r.checked = true; setRoleUI(doc.role); } }
+
+        if (doc.role === 'artist') {
+          if (doc.artistType && doc.artistType.name) artistTypeInput.value = doc.artistType.name;
+          if (doc.location) locationInput.value = doc.location;
+        } else if (doc.role === 'helper') {
+          if (doc.helperCapacity) helperCapacity.value = doc.helperCapacity;
+          if (doc.helperStage) helperStage.value = doc.helperStage;
+        } else if (doc.role === 'business') {
+          if (doc.managerRoleText) businessKind.value = doc.managerRoleText;
+          if (doc.eventFrequency) eventFrequency.value = doc.eventFrequency;
+        } else if (doc.role === 'lover') {
+          if (doc.appreciatorEngagement) appreciatorEngagement.value = doc.appreciatorEngagement;
+          if (doc.attendance) attendance.value = doc.attendance;
+        }
+
+        if (doc.consent && typeof doc.consent.agreed === 'boolean') consentChk.checked = doc.consent.agreed;
+
+        if (doc.phone && doc.phone.number) {
+          const parts = fromE164(doc.phone.number);
+          if (parts) { countrySel.value = parts.dial; phoneInput.value = parts.national; }
+        }
+        refreshPhoneValidity();
+      }
+
+      ensureSession().then(fetchDoc).then(prefill).catch(() => {});
+
+      // Click highlight on role tiles
+      roleGroup.querySelectorAll('.radio').forEach(el => {
+        el.addEventListener('click', () => {
+          const input = el.querySelector('input[type="radio"]');
+          if (input) { input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <title>Mario Maker</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" type="text/css" href="css/reset.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <link rel="stylesheet" type="text/css" href="css/qf.css">
+
+  <!-- Bullet-proof centering shell (inline so it always wins) -->
+  <style>
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: #9ecbf2;                 /* sky blue */
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+    }
+    /* Fullscreen shell that respects safe areas and centers content */
+    #stage-center {
+  position: fixed;
+  inset: 0;                   /* full viewport */
+  display: block;              /* <-- was block; grid is required for place-items */
+  place-items: center;        /* perfect center on both axes */
+  width: 100vw;
+  height: 100dvh;             /* handles mobile URL bars; fallbacks below */
+  min-height: 100svh;
+  z-index: 50;
+}
+    /* Fixed-size stage that we scale */
+    #scale-root {
+  width: 1280px;
+  height: 30px;              /* 50 score + 480 canvas */
+  transform: scale(var(--mm-scale, 1));
+  transform-origin: center center;
+  will-change: transform;
+
+  /* keep internal content perfectly centered too */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  /* avoids subpixel blur on some mobile GPUs */
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
+}
+  </style>
+</head>
+
+<body>
+
+  <!-- Portrait fallback overlay -->
+  <div id="rotate-overlay" class="rotate-overlay" style="display:none">
+    Please rotate your device to landscape for the best experience!
+  </div>
+
+  <!-- Centering shell + scalable stage -->
+  <div id="stage-center">
+    <div id="scale-root">
+      <div class="main-wrapper">
+        <canvas class="game-screen"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- on-screen touch controls (mobile only) -->
+  <div class="mobile-controls">
+    <div class="nav-buttons">
+      <button id="btn-left"  class="control-btn">◀</button>
+      <button id="btn-right" class="control-btn">▶</button>
+    </div>
+    <button id="btn-jump" class="control-btn">⏫</button>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/View.js"></script>
+  <script src="js/GameUI.js"></script>
+
+  <script src="js/mainGame/GameSound.js"></script>
+  <script src="js/mainGame/Element.js"></script>
+  <script src="js/mainGame/PowerUp.js"></script>
+  <script src="js/mainGame/Enemy.js"></script>
+  <script src="js/mainGame/Bullet.js"></script>
+  <script src="js/mainGame/Mario.js"></script>
+  <script src="js/mainGame/Score.js"></script>
+  <script src="js/mainGame/MarioGame.js"></script>
+
+  <script src="js/levelEditor/Storage.js"></script>
+  <script src="js/levelEditor/Editor.js"></script>
+  <script src="js/levelEditor/CreatedLevels.js"></script>
+
+  <!-- Question Flow -->
+  <script src="js/QuestionFlow.js"></script>
+
+  <script src="js/MilestoneScreen.js"></script>
+
+  <script src="js/MarioMaker.js"></script>
+
+  <!-- Fit-to-screen scaler (must load before Preloader) -->
+  <script src="js/Scaler.js"></script>
+
+  <script src="js/Preloader.js"></script>
+
+  <script>
+    // Lock to landscape when allowed
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(function(err){
+        console.warn('Orientation lock failed:', err);
+      });
+    }
+
+    // Show “rotate” overlay if still in portrait on phones/tablets
+    function checkOrientation() {
+      const overlay = document.getElementById('rotate-overlay');
+      if (window.matchMedia("(orientation: portrait) and (max-width: 1024px)").matches) {
+        overlay.style.display = 'flex';
+      } else {
+        overlay.style.display = 'none';
+      }
+    }
+
+    window.addEventListener('orientationchange', checkOrientation, { passive: true });
+    window.addEventListener('resize', checkOrientation, { passive: true });
+    document.addEventListener('visibilitychange', checkOrientation, { passive: true });
+    checkOrientation();
+  </script>
+
+</body>
+</html>

@@ -86,43 +86,46 @@
     })();
   }
 
-  /* ---------------- Role-based routing ---------------- */
-  async function resolveRoleAndRoute(joinOrder){
-    // Prefer server truth; we use session -> playerId -> journey
-    let role = null;
-    try {
-      const sid = localStorage.getItem('QF_SESSION_ID');
-      if (sid) {
-        const r = await fetch('/api/player/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: sid })
-        });
-        if (r.ok) {
-          const j = await r.json();
-          if (j && j.playerId) {
-            const g = await fetch('/api/journey/' + encodeURIComponent(j.playerId));
-            if (g.ok) {
-              const doc = await g.json();
-              if (doc && typeof doc.role === 'string') role = doc.role.toLowerCase();
-              // If artist -> redirect to EPK
-              if (role === 'artist') {
-                const qs = (typeof joinOrder === 'number') ? ('?rank=' + encodeURIComponent(joinOrder)) : '';
+
+ /* ---------------- Role-based routing ---------------- */
+async function resolveRoleAndRoute(joinOrder){
+  let role = null;
+  try {
+    const sid = localStorage.getItem('QF_SESSION_ID');
+    if (sid) {
+      const r = await fetch('/api/player/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sid })
+      });
+      if (r.ok) {
+        const j = await r.json();
+        if (j && j.playerId) {
+          const g = await fetch('/api/journey/' + encodeURIComponent(j.playerId));
+          if (g.ok) {
+            const doc = await g.json();
+            if (doc && typeof doc.role === 'string') role = doc.role.toLowerCase();
+            // If artist -> redirect to EPK after 10 seconds
+            if (role === 'artist') {
+              const qs = (typeof joinOrder === 'number') ? ('?rank=' + encodeURIComponent(joinOrder)) : '';
+              setTimeout(() => {
                 window.location.replace('/epk-demo.html' + qs);
-                return; // stop here
-              }
+              }, 10000); // 10 seconds
+              return; // stop here
             }
-            // Not artist or no role: set up WhatsApp auto-open
-            scheduleWhatsAppAutoOpen();
-            return;
           }
+          // Not artist or no role: set up WhatsApp auto-open
+          scheduleWhatsAppAutoOpen();
+          return;
         }
       }
-    } catch (e) {
-      // If anything fails, fallback to WhatsApp auto-open
     }
-    scheduleWhatsAppAutoOpen();
+  } catch (e) {
+    // If anything fails, fallback to WhatsApp auto-open
   }
+  scheduleWhatsAppAutoOpen();
+}
+
 
   /* ---------------- WhatsApp auto-open (only for non-artists) ---------------- */
   function scheduleWhatsAppAutoOpen(){

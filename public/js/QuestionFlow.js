@@ -487,7 +487,7 @@ var QuestionFlow = (function () {
 
       var lab1 = document.createElement('label');
       lab1.className = 'qf-label';
-      lab1.textContent = 'Country';
+      lab1.textContent = '';
 
       var lab2 = document.createElement('label');
       lab2.className = 'qf-label';

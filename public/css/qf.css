@@ -85,7 +85,7 @@
   margin-bottom: 6px;
 }
 .qf-input {
-  width: 100%;                       /* was 95% */
+  width: 95%;                       /* was 95% */
   background: #0f172a;
   border: 2px solid #000;
   color: #fff;

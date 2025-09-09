@@ -1,7 +1,4 @@
-@font-face{
-    font-family: SuperMario256;
-    src: url('../fonts/SuperMario256.ttf');
-  }
+
   
   :root{
     --ink:#000; --shadow:rgba(0,0,0,.2);

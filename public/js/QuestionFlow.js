@@ -1,20 +1,4 @@
 // public/js/QuestionFlow.js
-// Dream Stage question flow (Mario-themed overlay) with:
-// - Auto-redirect to community page if already verified
-// - True resume from the next unanswered step
-// - Phone entry with country selector, E.164 normalization
-//
-// Endpoints used:
-// - POST /api/player/session          { sessionId } -> { playerId, joinOrder }
-// - PATCH /api/player/:sessionId      store partials (compat layer on server)
-// - GET   /api/journey/:id            full server-side state (steps etc.)
-// - POST /api/otp/send                { sessionId, phone }
-// - POST /api/otp/verify              { sessionId, otp } -> { verified, playerId, joinOrder }
-//
-// Client cache:
-//   localStorage.QF_SESSION_ID   -> sessionId
-//   localStorage.QF_PLAYER_ID    -> playerId (optional but helpful)
-//   localStorage.QF_STATE        -> small local snapshot of flow UI state
 
 var QuestionFlow = (function () {
   var instance;
@@ -29,6 +13,15 @@ var QuestionFlow = (function () {
     var sessionKey = 'QF_SESSION_ID';
     var playerKey  = 'QF_PLAYER_ID';
     var apiBase    = ''; // same origin
+
+    // lazy MilestoneScreen accessor
+    function getMilestone() {
+      try {
+        return (window.MilestoneScreen && window.MilestoneScreen.getInstance) ? window.MilestoneScreen.getInstance() : null;
+      } catch (e) {
+        return null;
+      }
+    }
 
     // ---- Resumable local state (UI-focused flags) ----
     function readState() {
@@ -531,7 +524,7 @@ var QuestionFlow = (function () {
         }
         send.disabled = true;
         sendOtp(e164).then(function(r){
-          // DO NOT call savePatch({ phone: e164 }) — server /otp/send already saved phone.number.
+          
           writeState({ phone: e164 });
 
           // Next: OTP entry
@@ -598,12 +591,12 @@ var QuestionFlow = (function () {
       logoEl.style.display = 'block';
       return showMessage(
         'Welcome',
-        'Welcome to Dream Stage — where every dream takes center stage and every voice becomes part of the show.'
+        'Welcome to Dream Stage, where every dream takes center stage and every voice becomes part of the show.'
       ).then(function(){
         logoEl.style.display = 'none';
         return askText(
           "What's Your Name?",
-          'What would you like us to call you?',
+          '',
           'Enter your name',
           'Save'
         );
@@ -613,8 +606,7 @@ var QuestionFlow = (function () {
       }).then(function(){
         return showMessage(
           'Welcome to Dream Stage',
-          '“Welcome to Dream Stage, a place where your name is remembered, not just recorded. ' +
-          'You’re not just entering a platform; you’re stepping into a movement.”'
+          '“Welcome to Dream Stage, a place where your name is remembered, not just recorded. You’re not just entering a platform; you’re stepping into a movement.”'
         );
       }).then(close);
     }
@@ -622,8 +614,8 @@ var QuestionFlow = (function () {
     function roleQuestion() {
       open();
       return askOptions(
-        'Tell us about you',
         'What best describes your current role?',
+        '',
         [
           { label: '🧑‍🎨 Artist', value: 'artist' },
           { label: '🧑‍💼 Someone who helps artists', value: 'helper' },
@@ -635,9 +627,10 @@ var QuestionFlow = (function () {
         writeState({ role: role, roleDone: true });
         return savePatch({ role: role });
       }).then(function(){
+        // Message 2 (post Q2)
         return showMessage(
-          'Thanks!',
-          '“Every movement needs its people. It takes mass collaboration to organize and uplift this industry, and it starts with knowing who you are.”'
+          'Every movement needs its people. It takes mass collaboration to organize and uplift this industry, and it starts with knowing who you are.',
+          ''
         );
       }).then(close);
     }
@@ -648,9 +641,9 @@ var QuestionFlow = (function () {
 
       if (st.role === 'artist') {
         return askAutosuggest(
-          'Your art form',
-          'Let’s get to know your role a little more — What kind of an artist are you? (For example DJ/Dancer/Painter/Chef)',
-          'e.g., DJ / Bharatanatyam / Painter / Chef'
+          'Let’s get to know your role a little more, What kind of an artist are you',
+          '',
+          'For example DJ/Dancer/Painter/Chef'
         ).then(function(kind){
           writeState({ artistKind: kind, q3Done: true });
           return savePatch({ artistKind: kind }); // server compat maps to artistType
@@ -678,8 +671,8 @@ var QuestionFlow = (function () {
 
       } else if (st.role === 'business') {
         return askText(
-          'Your curation/business',
           'What kind of a business are you or what kind of events do you curate? (e.g., Music festivals, Weekend gigs, Retreats, Brand Activations)',
+          '',
           'Describe your business/events...',
           'Continue'
         ).then(function(kind){
@@ -691,8 +684,8 @@ var QuestionFlow = (function () {
 
       } else { // lover
         return askOptions(
-          'What do you enjoy?',
           'What kind of artistic experiences do you enjoy the most?',
+          '',
           [
             { label: 'Live performances (music, dance, theatre)', value: 'live' },
             { label: 'Visual arts (painting, photography, sculpture)', value: 'visual' },
@@ -725,21 +718,21 @@ var QuestionFlow = (function () {
 
       if (st.role === 'artist') {
         return askText(
-          'Where are you based?',
-          'Where are you currently based? (e.g., Delhi, Goa, Bangalore)',
+          'Where are you currently based?',
+          '',
           'Your city...',
           'Continue'
         ).then(function(city){
           writeState({ city: city, q4Done: true });
           return savePatch({ location: city });
         }).then(function(){
-          return showMessage('Noted!', 'From the hills to the coast, from big cities to quiet towns — art lives everywhere. Knowing where you create helps us bring the stage closer to you.');
+          return showMessage('Noted!', 'From the hills to the coast, from big cities to quiet towns- art lives everywhere. Knowing where you create helps us bring the stage closer to you.');
         }).then(consentOtpThenFinal);
 
       } else if (st.role === 'helper') {
         return askOptions(
-          'Who do you support?',
           'What stage of an artist’s journey do you usually support?',
+          '',
           [
             { label: 'Early career / beginners', value: 'early' },
             { label: 'Mid-career / growing artists', value: 'mid' },
@@ -751,13 +744,13 @@ var QuestionFlow = (function () {
           writeState({ helperStage: stage, q4Done: true });
           return savePatch({ helperStage: stage });
         }).then(function(){
-          return showMessage('Appreciated!', 'At Dream Stage, we believe every supporter behind the scenes is just as vital as the ones on stage. Whether you\'re booking gigs, offering guidance, or amplifying artists through promotion — you\'re helping shape the future of culture with us.');
+          return showMessage('Appreciated!', 'At Dream Stage, we believe every supporter behind the scenes is just as vital as the ones on stage. Whether you\'re booking gigs, offering guidance, or amplifying artists through promotion- you\'re helping shape the future of culture with us.');
         }).then(consentOtpThenFinal);
 
       } else if (st.role === 'business') {
         return askOptions(
-          'How often do you host?',
           'How often do you organize or host gigs/events?',
+          '',
           [
             { label: 'Weekly', value: 'weekly' },
             { label: 'Monthly', value: 'monthly' },
@@ -769,13 +762,13 @@ var QuestionFlow = (function () {
           writeState({ eventFrequency: freq, q4Done: true });
           return savePatch({ eventFrequency: freq });
         }).then(function(){
-          return showMessage('Great!', 'Every event you host keeps the creative ecosystem alive. At Dream Stage, we’re building a community where artists and curators collaborate seamlessly — and knowing your pace helps us make that connection stronger.');
+          return showMessage('Great!', 'Every event you host keeps the creative ecosystem alive. At Dream Stage, we’re building a community where artists and curators collaborate seamlessly- and knowing your pace helps us make that connection stronger.');
         }).then(consentOtpThenFinal);
 
       } else { // lover
         return askOptions(
-          'How often do you attend?',
           'How often do you attend events?',
+          '',
           [
             { label: 'Rarely (once or twice a year)', value: 'rare' },
             { label: 'Occasionally (every few months)', value: 'occasional' },
@@ -787,9 +780,24 @@ var QuestionFlow = (function () {
           writeState({ attendance: att, q4Done: true });
           return savePatch({ attendance: att });
         }).then(function(){
-          return showMessage('Awesome!', 'You make the magic matter — every great performance begins with a passionate audience that feels, celebrates, and amplifies an artist’s work.');
+          return showMessage('Awesome!', 'You make the magic matter- every great performance begins with a passionate audience that feels, celebrates, and amplifies an artist’s work.');
         }).then(consentOtpThenFinal);
       }
+    }
+
+    // -------------- Level-complete role messages --------------
+    function level2RoleMessage(role) {
+      if (role === 'artist') return 'Your art deserves the spotlight, keep creating!';
+      if (role === 'business') return 'You’re curating more than events- you’re curating culture.';
+      if (role === 'helper') return 'Behind every artist’s journey, there’s someone like you making it possible.';
+      return 'Your love for art keeps the creative spirit alive.';
+    }
+
+    function level3RoleMessage(role) {
+      if (role === 'artist') return 'Each step you take builds the stage for your dreams.';
+      if (role === 'business') return 'Every choice you make brings fresh talent to the world.';
+      if (role === 'helper') return 'Your support turns dreams into reality for countless artists.';
+      return 'Every moment you engage, you make art more meaningful.';
     }
 
     // -------------- Public controls --------------
@@ -810,6 +818,22 @@ var QuestionFlow = (function () {
         .catch(function(){
           // If this fails, user can still start flow; session creation will run on next calls
         });
+
+      // Listen for milestone close to continue flow if the generic popup handled it.
+      window.addEventListener('milestone:closed', function(ev){
+        var detail = ev && ev.detail || {};
+        if (detail.level === 2) {
+          var st = readState();
+          if (!st.q3Done) q3RoleSpecific();
+        }
+        if (detail.level === 3) {
+          var st3 = readState();
+          if (!st3.q4Done || !st3.phoneVerified) {
+            // kick off the rest (Question 4 then consent+otp)
+            q4RoleSpecificThenConsentOtp();
+          }
+        }
+      });
     };
 
     // Existing game hook (kept for backwards compatibility)
@@ -820,13 +844,44 @@ var QuestionFlow = (function () {
     };
 
     // Existing level hook (kept): show next step after a level finishes
+    // UPDATED: Removed MilestoneScreen calls here to avoid duplicates.
     this.afterLevelComplete = function(level) {
       var st = readState();
+      var ms = getMilestone();
 
-      if (level === 1 && !st.roleDone) return roleQuestion();
-      if (level === 2 && !st.q3Done)   return q3RoleSpecific();
-      if (level === 3 && !st.q4Done)   return q4RoleSpecificThenConsentOtp();
+      // Level 1 -> Question 2 (role)
+      if (level === 1 && !st.roleDone) {
+        close();
+        return roleQuestion();
+      }
 
+      // Level 2 -> let MilestoneScreen (generic) show; then continue when it closes.
+      if (level === 2) {
+        // If no milestone is visible at all, proceed immediately.
+        if (!(ms && ms.isActive && ms.isActive())) {
+          if (!st.q3Done) return q3RoleSpecific();
+          close();
+          return Promise.resolve();
+        }
+        // If visible, do nothing; init() listener will continue on close.
+        return Promise.resolve();
+      }
+
+      // Level 3 -> same pattern as Level 2
+      if (level === 3) {
+        if (!(ms && ms.isActive && ms.isActive())) {
+          if (!st.q4Done) return q4RoleSpecificThenConsentOtp();
+          if (!st.phoneVerified) {
+            open();
+            return consentOtpThenFinal();
+          }
+          close();
+          return Promise.resolve();
+        }
+        return Promise.resolve();
+      }
+
+      // Default fallthrough for other levels
       close();
       return Promise.resolve();
     };

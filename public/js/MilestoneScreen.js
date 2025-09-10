@@ -79,7 +79,7 @@ var MilestoneScreen = (function () {
       messageEl = document.createElement('div');
       messageEl.className = 'ms-message';
       messageEl.style.cssText =
-        'font-family: Outfit, sans-serif; font-size:16px; text-shadow:1px 1px 0 #000;color:black; margin:6px 8px 0; line-height:1.4; text-align:center;';
+        'font-family: "Lexend", sans-serif; font-size:16px;color:black; margin:6px 8px 0; line-height:1.4; text-align:center;font-weight:400;';
 
       nextBtn = document.createElement('button');
       nextBtn.className = 'ms-next-btn';

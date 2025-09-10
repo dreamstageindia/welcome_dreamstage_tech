@@ -6,15 +6,9 @@
   <title>Dream Stage — Direct Onboarding</title>
 
   <!-- Font -->
-  <link rel="preload" href="fonts/SuperMario256.ttf" as="font" type="font/ttf" crossorigin>
+  <!-- <link rel="preload" href="fonts/SuperMario256.ttf" as="font" type="font/ttf" crossorigin> -->
   <style>
-    @font-face{
-      font-family: SuperMario256;
-      src: url("fonts/SuperMario256.ttf") format("truetype");
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
+   @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
     :root {
       --maxw: min(960px, 94vw);
@@ -51,19 +45,19 @@
     }
 
     .logo { width: clamp(84px, 12vw, 120px); display:block; margin:0 auto 6px; }
-    .brand { text-align:center; font-family: SuperMario256, system-ui, sans-serif; font-size: clamp(12px, 2vw, 16px); letter-spacing: 1.2px; color:#000; margin-bottom: 10px; }
-    h1 { font-family: SuperMario256, system-ui, sans-serif; font-size: var(--h1); text-align:center; margin: 6px 0 16px; color:#000; }
+    .brand { text-align:center; font-family: "Bungee", system-ui, sans-serif; font-size: clamp(12px, 2vw, 16px); letter-spacing: 1.2px; color:#000; margin-bottom: 10px; }
+    h1 { font-family: "Bungee", system-ui, sans-serif; font-size: var(--h1); text-align:center; margin: 6px 0 16px; color:#000; }
     .intro { text-align:center; font-size: var(--txt); margin-bottom: 18px; }
 
     form { display:grid; gap: var(--gap); }
     fieldset { border:2px solid #000; border-radius: 12px; padding: var(--pad); background: rgba(255,255,255,.4); }
-    legend { padding: 0 8px; font-family: SuperMario256, system-ui, sans-serif; font-size: var(--h2); color:#000; }
+    legend { padding: 0 8px; font-family: "Bungee", system-ui, sans-serif; font-size: var(--h2); color:#000; }
 
     .row { display:grid; gap: var(--gap); }
     .row-2 { grid-template-columns: 1fr 1fr; }
     @media (max-width: 720px){ .row-2{ grid-template-columns: 1fr; } }
 
-    label { display:block; font-size: var(--label); font-family: SuperMario256, system-ui, sans-serif; color:#000; margin-bottom: 6px; }
+    label { display:block; font-size: var(--label); font-family: "Bungee", system-ui, sans-serif; color:#000; margin-bottom: 6px; }
     input[type="text"], input[type="tel"], input[type="search"], textarea, select {
       width:85%; font-size: var(--txt); padding: 10px 12px; border: 2px solid #000; border-radius: 10px;
       color:#0b1220; background: #fff; outline: none;
@@ -74,7 +68,7 @@
     .radio {
       display:flex; align-items:center; gap:10px; background: #15a7d9; color:#fff; border:3px solid #000;
       border-radius: 10px; padding: 10px 12px; box-shadow: 0 4px 0 #0b5672; cursor:pointer; user-select:none;
-      font-family: SuperMario256, system-ui, sans-serif;
+      font-family: "Bungee", system-ui, sans-serif;
     }
     .radio input{ accent-color: #000; width:18px; height:18px; }
     .radio.active{ outline: 3px solid #ffcc00; }
@@ -84,7 +78,7 @@
     .actions { display:flex; gap: 12px; flex-wrap: wrap; align-items:center; justify-content:flex-end; margin-top: 6px; }
     .btn {
       background: linear-gradient(#ff3b30, #c1271c); border: 3px solid #000; color: #fff; padding: 12px 18px;
-      border-radius: 12px; cursor: pointer; font-weight: 700; font-family: SuperMario256, system-ui, sans-serif;
+      border-radius: 12px; cursor: pointer; font-weight: 700; font-family: "Bungee", system-ui, sans-serif;
       letter-spacing: 0.5px; box-shadow: 0 6px 0 #6b0000; font-size: var(--btn);
     }
     .btn:disabled{ filter: grayscale(.5) brightness(.9); cursor:not-allowed; }

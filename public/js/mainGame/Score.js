@@ -21,7 +21,7 @@ function Score() {
     view.style(el, {
       color: color,
       textShadow: shadow,
-      fontFamily: 'SuperMario256, Arial, sans-serif'
+      fontFamily: '"Bungee", Arial, sans-serif'
     });
   }
 

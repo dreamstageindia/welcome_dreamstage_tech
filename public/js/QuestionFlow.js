@@ -451,9 +451,7 @@ var QuestionFlow = (function () {
 
       var resolveWait;
       var yes = makeBtn('Yes, I Agree', function(){ resolveWait(true); });
-      var no  = makeBtn('No', function(){ resolveWait(false); });
-
-      actionsEl.appendChild(no);
+      
       actionsEl.appendChild(yes);
 
       return new Promise(function(resolve){ resolveWait = resolve; });

@@ -162,11 +162,6 @@ function MarioGame() {
     animationID = window.requestAnimationFrame(that.startGame);
     gameUI.clear(0, 0, maxWidth, height);
 
-    if (instructionTick < 1000) {
-      that.showInstructions();
-      instructionTick++;
-    }
-
     that.renderMap();
 
     for (var i = 0; i < powerUps.length; i++) {
@@ -192,10 +187,7 @@ function MarioGame() {
     marioInGround = mario.grounded;
   };
 
-  this.showInstructions = function() {
-    gameUI.writeText('Controls: Arrow keys for direction, shift to run, ctrl for bullets', 30, 30);
-    gameUI.writeText('Tip: Jumping while running makes you jump higher', 30, 60);
-  };
+  
 
   this.renderMap = function() {
     mario.grounded = false;

@@ -445,7 +445,7 @@ var QuestionFlow = (function () {
 
       var msg = document.createElement('div');
       msg.className = 'qf-type';
-      msg.innerHTML = 'Do you agree to be evaluated for platform onboarding? ' +
+      msg.innerHTML = 'By using Dream Stage, you agree to our Terms & Community Guidelines and Privacy Policy' +
         '<br><a class="qf-link" href="/consent.html" target="_blank" rel="noopener">Read Terms & Conditions</a>';
       bodyEl.appendChild(msg);
 

@@ -593,7 +593,7 @@ var QuestionFlow = (function () {
       ).then(function(){
         logoEl.style.display = 'none';
         return askText(
-          "What's Your Name?",
+          "What would you like us to call you",
           '',
           'Enter your name',
           'Save'

@@ -24,7 +24,7 @@ button,
 .clear-map-btn,
 .level-btn,         /* clickable  tile-like buttons */
 .control-btn {      /* mobile controls */
-  color: #ffffff !important;
+  color: black !important;
 }
 
 /* ========= Mobile-proof centering shell ========= */
@@ -156,7 +156,7 @@ button,
   width: 1280px;
   height: 581px;
   border: 1px solid black;      /* counted in 1280x530 now */
-  background: url('../images/bg1.jpg');
+  background: url('../images/bg2.webp');
   background-size: cover;
   position: relative;
 }
@@ -164,19 +164,19 @@ button,
 /* NEW: Onboard-me-directly button (center bottom of start screen) */
 .onboard-btn{
   position: absolute;
-  bottom: 30px;
-  left: 50%;
+  bottom: 70px;
+  left: 62%;
   transform: translateX(-50%);        /* center horizontally */
   width: 280px;
   height: 54px;
-  border: 2px solid #000;
-  border-radius: 12px;
+  border: 4px solid white;
+  border-radius: 20px;
   font-family: "Bungee", Arial, sans-serif;
-  font-size: 18px;
+  font-size: 21px;
   letter-spacing: .5px;
   cursor: pointer;
-  background: linear-gradient(#22c55e, #15803d);
-  color: #fff;
+  background: linear-gradient(90deg, #ffde59, #ff914d);
+  color: black;
   box-shadow: 0 5px 0 rgba(0,0,0,0.35);
 }
 @media (max-width: 600px) {
@@ -197,6 +197,35 @@ button,
   overflow: hidden;
   display: none;
 }
+
+.menu-btn {
+  width: 280px;
+  height: 54px;
+  border: 5px solid #fff;               /* outer white ring */
+  box-shadow:
+    0 0 0 2px #000 inset,               /* inner black ring */
+    0 5px 0 rgba(0, 0, 0, 0.35);        /* drop shadow */
+  border-radius: 12px;
+  font-family: "Bungee", Arial, sans-serif;
+  font-size: 18px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  background: linear-gradient(90deg, yellow, orange);
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,.35);
+  transition: transform .06s ease, filter .12s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-btn:hover {
+  filter: brightness(1.05);
+}
+
+.menu-btn:active {
+  transform: translateY(2px);
+}
+
 
 /* ======= Score Bar (full width to avoid misalignment) ======= */
 .score-wrapper {
@@ -284,26 +313,44 @@ button,
 }
 
 .start-btn {
-  width: 200px;
-  height: 50px;
-  color: #ffffff;
-  background: url('../images/start-btn.png');
+  
   position: absolute;
-  bottom: 100px;
-  left: 252px;
-  border: 2px solid black;
+  bottom: 70px;
+  left: 38%;
+  transform: translateX(-50%);        /* center horizontally */
+  width: 280px;
+  height: 54px;
+  border: 4px solid white;
+  border-radius: 20px;
+  font-family: "Bungee", Arial, sans-serif;
+  font-size: 21px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  background: linear-gradient(90deg, #ffde59, #ff914d);
+  color: black;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.35);
 }
 .editor-btn {
-  width: 200px;
-  height: 50px;
-  background: url('../images/editor-btn.png');
+  display:none;
   position: absolute;
-  bottom: 100px;
-  left: 530px;
-  color: #ffffff;
-  border: 2px solid black;
+  bottom: 70px;
+  left: 65%;
+  transform: translateX(-50%);        /* center horizontally */
+  width: 280px;
+  height: 54px;
+  border: 2px solid #000;
+  border-radius: 12px;
+  font-family: "Bungee", Arial, sans-serif;
+  font-size: 18px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  background: linear-gradient(#9da618, #15803d);
+  color: black;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.35);
+  
 }
 .created-btn {
+  display: none;
   width: 200px;
   height: 50px;
   background: url('../images/saved-btn.png');

@@ -8,7 +8,7 @@ var MarioMaker = (function() {
     // UI elements
     var mainWrapper, startScreen, btnWrapper;
     var editorButton, startGameButton, createdLevelsButton, backToMenuBtn;
-    var onboardDirectButton; // NEW
+    var onboardDirectButton;
 
     // state
     var editorStarted = false;
@@ -68,29 +68,50 @@ var MarioMaker = (function() {
       startGameButton = view.create('button');
       createdLevelsButton = view.create('button');
       backToMenuBtn = view.create('button');
-      onboardDirectButton = view.create('button'); // NEW
+      onboardDirectButton = view.create('button');
 
       if (!startScreen || !btnWrapper || !editorButton || !startGameButton || !createdLevelsButton || !backToMenuBtn || !onboardDirectButton) {
         console.error('Failed to create UI elements');
         return;
       }
 
+      // layout containers
       view.addClass(startScreen, 'start-screen');
       view.addClass(btnWrapper, 'btn-wrapper');
+
+      // shared look: make menu buttons match onboard button style
+      view.addClass(editorButton, 'menu-btn');
+      view.addClass(startGameButton, 'menu-btn');
+      view.addClass(createdLevelsButton, 'menu-btn');
+
+      // keep legacy classes if you style them elsewhere too
       view.addClass(editorButton, 'editor-btn');
       view.addClass(startGameButton, 'start-btn');
       view.addClass(createdLevelsButton, 'created-btn');
-      view.addClass(backToMenuBtn, 'back-btn');
-      view.addClass(onboardDirectButton, 'onboard-btn'); // NEW
 
-      
-      onboardDirectButton.textContent = 'Onboard me directly'; // NEW
+      // back and onboard CTA
+      view.addClass(backToMenuBtn, 'back-btn');
+      view.addClass(onboardDirectButton, 'onboard-btn');
+
+      // labels
+      startGameButton.textContent = 'BRING YOUR A GAME';
+      startGameButton.setAttribute('aria-label', 'Start Game');
+
+      editorButton.textContent = 'Level Editor';
+      editorButton.setAttribute('aria-label', 'Level Editor');
+
+      createdLevelsButton.textContent = 'Saved Levels';
+      createdLevelsButton.setAttribute('aria-label', 'Saved Levels');
+
+      onboardDirectButton.textContent = 'KEEP IT SIMPLE';
+      onboardDirectButton.setAttribute('aria-label', 'Onboard me directly');
 
       // Compose DOM
-      view.append(startScreen, editorButton);
+      // Center stack the three main buttons; onboard stays docked at bottom
       view.append(startScreen, startGameButton);
+      view.append(startScreen, editorButton);
       view.append(startScreen, createdLevelsButton);
-      view.append(startScreen, onboardDirectButton); // NEW (center bottom)
+      view.append(startScreen, onboardDirectButton);
       view.append(btnWrapper, backToMenuBtn);
       view.append(mainWrapper, startScreen);
       view.append(mainWrapper, btnWrapper);
@@ -110,18 +131,15 @@ var MarioMaker = (function() {
 
     this.tryAutoResume = function() {
       var s = readState();
-      if (!s.inGame) return; // nothing to do
+      if (!s.inGame) return;
 
-      // show back button and hide main menu
       if (backToMenuBtn) view.style(backToMenuBtn, { display: 'block' });
       that.hideMainMenu();
 
-      // Ensure name step is initialized once
       qflow.ensureName()
         .then(function() {
           currentLevel = s.currentLevel || 1;
 
-          // If we were in the middle of the milestone animation, replay it, then proceed to questions.
           if (s.pendingMilestone) {
             return new Promise(function(resolve) {
               if (window.MilestoneScreen && MilestoneScreen.getInstance) {
@@ -170,7 +188,6 @@ var MarioMaker = (function() {
             });
           }
 
-          // Otherwise just reload the saved current level
           return that.fetchLevels(currentLevel).then(function(map) {
             if (Object.keys(map).length === 0) {
               console.warn('No levels fetched, using fallback map');
@@ -183,7 +200,6 @@ var MarioMaker = (function() {
         })
         .catch(function(err) {
           console.error('Auto-resume failed:', err);
-          // fall back to start screen
           that.showMainMenu();
           if (backToMenuBtn) view.style(backToMenuBtn, { display: 'none' });
           clearState();
@@ -191,12 +207,12 @@ var MarioMaker = (function() {
     };
 
     this.fetchLevels = function(levelNumber) {
-      console.log(`Fetching level ${levelNumber} from: /api/levels/${levelNumber}`);
+      console.log("Fetching level " + levelNumber + " from: /api/levels/" + levelNumber);
       levelsCache = null;
-      return fetch(`/api/levels/${levelNumber}`)
+      return fetch("/api/levels/" + levelNumber)
         .then(function(res) {
           if (!res.ok) {
-            throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+            throw new Error("Server returned " + res.status + ": " + res.statusText);
           }
           return res.json();
         })
@@ -205,12 +221,12 @@ var MarioMaker = (function() {
           if (!data || !data.map || !Array.isArray(data.map)) {
             throw new Error('Invalid level data: map is missing or not an array');
           }
-          var normalized = { [levelNumber]: JSON.stringify(data.map) };
+          var normalized = {}; normalized[levelNumber] = JSON.stringify(data.map);
           levelsCache = normalized;
           return levelsCache;
         })
         .catch(function(err) {
-          console.error(`Fetch level ${levelNumber} failed:`, err.message);
+          console.error("Fetch level " + levelNumber + " failed:", err.message);
           return {};
         });
     };
@@ -222,12 +238,9 @@ var MarioMaker = (function() {
         console.error('backToMenuBtn is undefined');
       }
 
-      // BEFORE LEVEL 1: ensure name (only once)
       qflow.ensureName().then(function() {
         currentLevel = 1;
-        // mark inGame + current level
         writeState({ inGame: true, currentLevel: currentLevel, pendingAfterComplete: false, pendingMilestone: false });
-
         return that.fetchLevels(currentLevel);
       })
       .then(function(map) {
@@ -246,7 +259,6 @@ var MarioMaker = (function() {
 
     // NEW: Onboarding-only path (no gameplay)
     this.startOnboardingOnly = function() {
-      // Make back button visible, hide main menu, and make sure no game screen is running
       if (backToMenuBtn) view.style(backToMenuBtn, { display: 'block' });
       that.hideMainMenu();
       marioGame.pauseGame && marioGame.pauseGame();
@@ -255,16 +267,13 @@ var MarioMaker = (function() {
       if (editorStarted) editor.removeEditorScreen();
       createdLevels.removeCreatedLevelsScreen();
 
-      // Ensure we don't auto-resume game
       writeState({ inGame: false, pendingAfterComplete: false, pendingMilestone: false, currentLevel: 1 });
 
-      // Run questionnaire sequence only
       qflow.ensureName()
         .then(function(){ return qflow.afterLevelComplete(1); })
         .then(function(){ return qflow.afterLevelComplete(2); })
         .then(function(){ return qflow.afterLevelComplete(3); })
         .then(function(){
-          // Done; return to menu (or keep back button so user can return)
           that.showMainMenu();
           if (backToMenuBtn) view.style(backToMenuBtn, { display: 'none' });
         })
@@ -276,7 +285,8 @@ var MarioMaker = (function() {
     };
 
     this.loadMainGameMap = function() {
-      return { [currentLevel]: '[[0,0,0],[0,1,0]]' };
+      var obj = {}; obj[currentLevel] = '[[0,0,0],[0,1,0]]';
+      return obj;
     };
 
     this.startGame = function(levelMap) {
@@ -288,26 +298,20 @@ var MarioMaker = (function() {
         editor.removeEditorScreen();
       }
       createdLevels.removeCreatedLevelsScreen();
-
       that.hookLevelComplete();
     };
 
     this.hookLevelComplete = function() {
       marioGame.onLevelComplete = function() {
-        // Mark that we completed currentLevel and are about to run Milestone, then inter-level Qs
         writeState({ inGame: true, currentLevel: currentLevel, pendingMilestone: true, pendingAfterComplete: false });
 
-        // 1) Milestone celebration (if available)
         var afterMilestone = function() {
           writeState({ pendingMilestone: false, pendingAfterComplete: true, inGame: true, currentLevel: currentLevel });
 
-          // 2) Inter-level questions (role, details, etc.)
           qflow.afterLevelComplete(currentLevel)
             .then(function() {
-              // 3) Advance to next level
               currentLevel++;
               writeState({ inGame: true, currentLevel: currentLevel, pendingAfterComplete: false, pendingMilestone: false });
-
               return that.fetchLevels(currentLevel);
             })
             .then(function(map) {
@@ -330,7 +334,6 @@ var MarioMaker = (function() {
           var step = Math.min(3, currentLevel);
           milestone.show({ level: currentLevel, step: step }, afterMilestone);
         } else {
-          // Fallback: no milestone script loaded
           afterMilestone();
         }
       };
@@ -351,7 +354,6 @@ var MarioMaker = (function() {
       that.hideMainMenu();
       marioGame.removeGameScreen();
       createdLevels.removeCreatedLevelsScreen();
-      // leaving editor does not toggle inGame state
     };
 
     this.startCreatedLevels = function() {
@@ -386,7 +388,6 @@ var MarioMaker = (function() {
       } else {
         console.error('backToMenuBtn is undefined');
       }
-      // explicitly clear inGame state when going back to menu
       writeState({ inGame: false, pendingAfterComplete: false, pendingMilestone: false });
     };
 

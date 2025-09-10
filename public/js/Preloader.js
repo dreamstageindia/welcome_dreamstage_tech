@@ -27,7 +27,7 @@ function Preloader() {
       9: 'images/enemies.png',
       10: 'images/flag-pole.png',
       11: 'images/flag.png',
-      12: 'images/bg1.jpg',
+      12: 'images/bg2.webp',
       13: 'images/grid-large-btn.png',
       14: 'images/grid-medium-btn.png',
       15: 'images/grid-small-btn.png',

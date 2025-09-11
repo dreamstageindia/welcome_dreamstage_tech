@@ -14,6 +14,48 @@ var QuestionFlow = (function () {
     var playerKey  = 'QF_PLAYER_ID';
     var apiBase    = ''; // same origin
 
+    // ---- UX helpers to prevent mobile zoom stickiness ----
+    function blurActive() {
+      try {
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
+      } catch (_) {}
+    }
+    function sizeForMobile(el) {
+      if (!el || !el.style) return;
+      // 17px avoids iOS Safari auto-zoom while remaining compact
+      el.style.fontSize = '17px';
+      // give controls a bit more hit area so users don’t double-tap
+      if (!/input|textarea|select/i.test(el.tagName)) return;
+      el.style.lineHeight = '1.35';
+    }
+    function ensureViewportAndStyles() {
+      // Correct the viewport to a mobile-friendly value
+      var meta = document.querySelector('meta[name="viewport"]');
+      var desired = 'width=device-width, initial-scale=1, viewport-fit=cover';
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', 'viewport');
+        document.head.appendChild(meta);
+      }
+      if (meta.getAttribute('content') !== desired) {
+        meta.setAttribute('content', desired);
+      }
+      // Inject CSS to lock text-size-adjust and enforce minimum control sizes
+      var already = document.getElementById('qf-mobile-zoom-guard');
+      if (!already) {
+        var st = document.createElement('style');
+        st.id = 'qf-mobile-zoom-guard';
+        st.textContent = `
+          html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+          .qf-input, .qf-btn, .qf-option, .qf-label, .qf-type { font-size: 17px; }
+          .qf-btn { touch-action: manipulation; }
+        `;
+        document.head.appendChild(st);
+      }
+    }
+
     // lazy MilestoneScreen accessor
     function getMilestone() {
       try {
@@ -224,6 +266,7 @@ var QuestionFlow = (function () {
       closeBtn.className = 'qf-close';
       closeBtn.textContent = '×';
       closeBtn.disabled = true;
+      sizeForMobile(closeBtn);
 
       logoEl = document.createElement('img');
       logoEl.alt = 'Dream Stage';
@@ -235,9 +278,11 @@ var QuestionFlow = (function () {
 
       titleEl = document.createElement('div');
       titleEl.className = 'qf-title';
+      sizeForMobile(titleEl);
 
       typeEl = document.createElement('div');
       typeEl.className = 'qf-type';
+      sizeForMobile(typeEl);
 
       bodyEl = document.createElement('div');
       bodyEl.className = 'qf-body';
@@ -277,7 +322,11 @@ var QuestionFlow = (function () {
       var b = document.createElement('button');
       b.className = 'qf-btn';
       b.textContent = label;
-      b.onclick = onClick;
+      sizeForMobile(b);
+      b.onclick = function(e) {
+        blurActive();
+        onClick && onClick(e);
+      };
       return b;
     }
 
@@ -306,11 +355,13 @@ var QuestionFlow = (function () {
       var label = document.createElement('label');
       label.className = 'qf-label';
       label.textContent = question;
+      sizeForMobile(label);
 
       inputEl = document.createElement('input');
       inputEl.type = 'text';
       inputEl.className = 'qf-input';
       inputEl.placeholder = placeholder || '';
+      sizeForMobile(inputEl);
 
       bodyEl.appendChild(label);
       bodyEl.appendChild(inputEl);
@@ -343,6 +394,7 @@ var QuestionFlow = (function () {
         d.tabIndex = 0;
         d.textContent = opt.label;
         d.setAttribute('data-value', opt.value);
+        sizeForMobile(d);
         function select(){
           selected = opt.value;
           [].slice.call(grid.children).forEach(function(x){ x.classList.remove('selected'); });
@@ -372,11 +424,13 @@ var QuestionFlow = (function () {
       var label = document.createElement('label');
       label.className = 'qf-label';
       label.textContent = question;
+      sizeForMobile(label);
 
       inputEl = document.createElement('input');
       inputEl.type = 'text';
       inputEl.className = 'qf-input';
       inputEl.placeholder = placeholder || 'Type your art form...';
+      sizeForMobile(inputEl);
 
       suggestBox = document.createElement('div');
       suggestBox.className = 'qf-suggest qf-hide';
@@ -387,6 +441,7 @@ var QuestionFlow = (function () {
       newCta.className = 'qf-link qf-new-art-cta';
       newCta.style.marginTop = '8px';
       newCta.textContent = "";
+      sizeForMobile(newCta);
 
       // Inline new-art form (hidden by default)
       var newForm = document.createElement('div');
@@ -397,12 +452,14 @@ var QuestionFlow = (function () {
       newName.type = 'text';
       newName.className = 'qf-input';
       newName.placeholder = 'New art form name';
+      sizeForMobile(newName);
 
       var newDesc = document.createElement('textarea');
       newDesc.className = 'qf-input';
       newDesc.placeholder = 'Short description (optional)';
       newDesc.rows = 2;
       newDesc.style.resize = 'vertical';
+      sizeForMobile(newDesc);
 
       var newActions = document.createElement('div');
       newActions.style.display = 'flex';
@@ -413,11 +470,13 @@ var QuestionFlow = (function () {
       addBtn.type = 'button';
       addBtn.className = 'qf-btn';
       addBtn.textContent = 'Add';
+      sizeForMobile(addBtn);
 
       var cancelBtn = document.createElement('button');
       cancelBtn.type = 'button';
       cancelBtn.className = 'qf-btn qf-btn-secondary';
       cancelBtn.textContent = 'Cancel';
+      sizeForMobile(cancelBtn);
 
       newActions.appendChild(addBtn);
       newActions.appendChild(cancelBtn);
@@ -453,6 +512,8 @@ var QuestionFlow = (function () {
           var nUse = document.createElement('div');
           nUse.className = 'qf-s-name';
           nUse.textContent = 'Use "' + q + '"';
+          sizeForMobile(useRow);
+          sizeForMobile(nUse);
           useRow.appendChild(nUse);
           useRow.onclick = function(){
             inputEl.value = q;
@@ -477,6 +538,9 @@ var QuestionFlow = (function () {
           var d = document.createElement('div');
           d.className = 'qf-s-desc';
           d.textContent = item.description || '';
+          sizeForMobile(row);
+          sizeForMobile(n);
+          sizeForMobile(d);
           row.appendChild(n); row.appendChild(d);
           row.onclick = function(){
             inputEl.value = item.name;
@@ -516,6 +580,7 @@ var QuestionFlow = (function () {
         newForm.classList.add('qf-hide');
       };
       addBtn.onclick = function() {
+        blurActive();
         var name = (newName.value || '').trim();
         var desc = (newDesc.value || '').trim();
         if (!name || name.length < 2) {
@@ -579,6 +644,7 @@ var QuestionFlow = (function () {
               and <a class="qf-link" href="https://dreamstage.tech/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
 
             </span>`;
+      sizeForMobile(msg);
       bodyEl.appendChild(msg);
 
       var resolveWait;
@@ -618,10 +684,12 @@ var QuestionFlow = (function () {
       var lab1 = document.createElement('label');
       lab1.className = 'qf-label';
       lab1.textContent = '';
+      sizeForMobile(lab1);
 
       var lab2 = document.createElement('label');
       lab2.className = 'qf-label';
       lab2.textContent = 'Phone number';
+      sizeForMobile(lab2);
 
       var cc = document.createElement('select');
       cc.className = 'qf-input';
@@ -632,11 +700,13 @@ var QuestionFlow = (function () {
         cc.appendChild(opt);
       });
       cc.value = '91';
+      sizeForMobile(cc);
 
       var phoneInput = document.createElement('input');
       phoneInput.type = 'tel';
       phoneInput.className = 'qf-input';
       phoneInput.placeholder = 'e.g., 98765 43210';
+      sizeForMobile(phoneInput);
 
       bodyEl.appendChild(lab1);
       bodyEl.appendChild(lab2);
@@ -663,17 +733,20 @@ var QuestionFlow = (function () {
           var p = document.createElement('div');
           p.className = 'qf-label';
           p.textContent = 'We sent an OTP to ' + e164;
+          sizeForMobile(p);
 
           var code = document.createElement('input');
           code.type = 'text';
           code.className = 'qf-input';
           code.placeholder = '6-digit code';
+          sizeForMobile(code);
 
           if (!devOtpHint) {
             devOtpHint = document.createElement('div');
             devOtpHint.className = 'qf-dev-otp';
           }
           devOtpHint.textContent = 'Dev OTP: ' + (r.devOtp || 'sent');
+          sizeForMobile(devOtpHint);
 
           bodyEl.appendChild(p);
           bodyEl.appendChild(code);
@@ -934,6 +1007,9 @@ var QuestionFlow = (function () {
     // Called once on app boot
     this.init = function () {
       if (!overlay) createOverlay();
+
+      // Fix viewport + font sizes to stop iOS auto-zoom
+      ensureViewportAndStyles();
 
       // Hydrate from server, possibly auto-redirect if already verified
       ensureSession()

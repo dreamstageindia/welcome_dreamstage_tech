@@ -133,6 +133,7 @@
 /* ======= Canvas rendering ======= */
 .game-screen {
   width: 1280px;
+  z-index: -20;
   height: 490px;
   border: 1px solid black;      /* now counted via border-box */
   border-top: none;
@@ -359,6 +360,9 @@
   margin: 10px;
   display: none;
   border-radius: 15px;
+  position: fixed;
+  bottom: 0;
+  right: 43%;
 }
 
 .level-btn {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8" />
   <meta
@@ -9,57 +10,53 @@
   <title>Mario Maker</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
 
   <!-- CSS -->
-  <link rel="stylesheet" type="text/css" href="css/reset.css">
+  <!-- <link rel="stylesheet" type="text/css" href="css/reset.css"> -->
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link rel="stylesheet" type="text/css" href="css/qf.css">
 
-  <!-- Keep inline CSS tiny and correct -->
+  <!-- Bullet-proof centering shell (inline so it always wins) -->
   <style>
     html, body {
       height: 100%;
       overflow: hidden;
-      background: #9ecbf2;
+      background: #9ecbf2;                 /* sky blue */
       overscroll-behavior: none;
       -webkit-text-size-adjust: 100%;
     }
-
     /* Fullscreen shell that respects safe areas and centers content */
     #stage-center {
-      position: fixed;
-      inset: 0;
-      display: grid;                 /* must be grid for place-items to work */
-      place-items: center;
-      width: 100vw;
-      height: 100dvh;
-      min-height: 100svh;
-      box-sizing: border-box;
-      /* keep the stage visually centered on iPhone XR in landscape */
-      padding-top: max(0px, env(safe-area-inset-top));
-      padding-right: max(0px, env(safe-area-inset-right));
-      padding-bottom: max(0px, env(safe-area-inset-bottom));
-      padding-left: max(0px, env(safe-area-inset-left));
-      z-index: 50;
-    }
-
-    /* Fixed-size stage that the scaler targets */
+  position: fixed;
+  inset: 0;                   /* full viewport */
+  display: block;              /* <-- was block; grid is required for place-items */
+  place-items: center;        /* perfect center on both axes */
+  width: 100vw;
+  height: 100dvh;             /* handles mobile URL bars; fallbacks below */
+  min-height: 100svh;
+  z-index: 50;
+}
+    /* Fixed-size stage that we scale */
     #scale-root {
-      width: 1280px;
-      height: 540px;                 /* 50 score + 490 canvas = 540 */
-      transform: scale(var(--mm-scale, 1));
-      transform-origin: center center;
-      will-change: transform;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      backface-visibility: hidden;
-      -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
-    }
+  width: 1280px;
+  height: 30px;              /* 50 score + 480 canvas */
+  transform: scale(var(--mm-scale, 1));
+  transform-origin: center center;
+  will-change: transform;
+
+  /* keep internal content perfectly centered too */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  /* avoids subpixel blur on some mobile GPUs */
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
+}
   </style>
 </head>
 
@@ -114,6 +111,7 @@
 
   <!-- Fit-to-screen scaler (must load before Preloader) -->
   <script src="js/Scaler.js"></script>
+
   <script src="js/Preloader.js"></script>
 
   <script>
@@ -139,5 +137,6 @@
     document.addEventListener('visibilitychange', checkOrientation, { passive: true });
     checkOrientation();
   </script>
+
 </body>
 </html>

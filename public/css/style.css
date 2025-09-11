@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
 
+
 /* === Force ALL game buttons to use white text === */
 
 .start-btn,
@@ -21,20 +22,14 @@
 /* ========= Mobile-proof centering shell ========= */
 #stage-center {
   position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
+  inset: 0;                   /* full viewport */
+  display: grid;              /* grid enables place-items */
+  place-items: center;        /* perfect center on both axes */
   width: 100vw;
-  height: 100dvh;
+  height: 100dvh;             /* handles mobile URL bars */
   min-height: 100svh;
   z-index: 50;
-  box-sizing: border-box;
-  padding-top: max(0px, env(safe-area-inset-top));
-  padding-right: max(0px, env(safe-area-inset-right));
-  padding-bottom: max(0px, env(safe-area-inset-bottom));
-  padding-left: max(0px, env(safe-area-inset-left));
 }
-
 
 /* The fixed-size stage we scale */
 #scale-root {

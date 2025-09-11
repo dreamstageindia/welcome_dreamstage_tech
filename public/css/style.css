@@ -41,7 +41,6 @@
 /* Any fixed-size stage child must include its own border in the set size */
 .start-screen,
 .editor-screen,
-.game-screen,
 .levels-wrapper,
 .score-wrapper {
   box-sizing: border-box;
@@ -121,7 +120,7 @@
 
 /* ======= Start / Editor ======= */
 .start-screen {
-  width: 1280px;
+  width: 100%;
   height: 581px;
   border: 1px solid black;      /* counted in 1280x530 now */
   background: url('../images/bg2.webp');

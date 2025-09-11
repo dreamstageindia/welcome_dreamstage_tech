@@ -11,7 +11,7 @@ html, body {
 }
 
 /* === Force ALL game buttons to use white text === */
-button,
+
 .start-btn,
 .editor-btn,
 .created-btn,
@@ -24,7 +24,7 @@ button,
 .clear-map-btn,
 .level-btn,         /* clickable  tile-like buttons */
 .control-btn {      /* mobile controls */
-  color: black !important;
+  color: white !important;
 }
 
 /* ========= Mobile-proof centering shell ========= */
@@ -74,8 +74,7 @@ button,
 .editor-screen,
 .game-screen,
 .levels-wrapper,
-.score-wrapper,
-.btn-wrapper {
+.score-wrapper {
   box-sizing: border-box;
   margin-left: 0 !important;
   margin-right: 0 !important;
@@ -365,9 +364,9 @@ button,
   height: 50px;
   background: url('../images/back-btn.png');
   color: #ffffff;
-  border: 2px solid black;
   margin: 10px;
   display: none;
+  border-radius: 15px;
 }
 
 .level-btn {
@@ -387,7 +386,7 @@ button,
 }
 .delete-all-btn { width: 100px; height: 100px; background: url('../images/delete-all-btn.png'); color: #ffffff; border: 2px solid black; margin: 10px; position: absolute; bottom: 10px; right: 10px; }
 
-.btn-wrapper { width: 1280px; height: 100px; margin: 0; }
+.btn-wrapper { width: 1280px; height: 100px; margin: 0; } 
 
 /* ======= Misc ======= */
 .no-maps {
@@ -610,7 +609,7 @@ button,
 .qf-hide { display: none; }
 
 .qf-link {
-  color: #ffcc00;
+  color: black;
   text-decoration: underline;
   font-family: "Bungee", Arial, sans-serif;
  
@@ -675,7 +674,7 @@ button,
   display: inline-block;
   margin: 6px auto 2px;
   padding: 10px 16px;
-  border: 3px solid #000;
+  border: 3px solid white;
   border-radius: 10px;
   background: linear-gradient(#ff3b30, #c1271c);
   color: #fff;
@@ -687,7 +686,6 @@ button,
   width: 180px;
 }
 .ms-next-btn:disabled {
-  filter: grayscale(.5) brightness(.85);
   cursor: not-allowed;
 }
 

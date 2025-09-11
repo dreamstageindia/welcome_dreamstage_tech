@@ -281,6 +281,24 @@ var QuestionFlow = (function () {
       return b;
     }
 
+    // -------------- Artist type suggestion helper --------------
+    function suggestArtForm(name, description) {
+      // Fire-and-forget; do not block flow if API is missing
+      var payload = {
+        name: String(name || '').trim(),
+        description: String(description || '').trim(),
+        source: 'onboarding',
+        playerId: getPlayerId() || null,
+        sessionId: getSessionId() || null
+      };
+      if (!payload.name) return Promise.resolve(null);
+      return fetch(apiBase + '/api/artist-types/suggest', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+    }
+
     // -------------- Question primitives --------------
     function askText(title, question, placeholder, buttonLabel) {
       clearBody();
@@ -363,18 +381,93 @@ var QuestionFlow = (function () {
       suggestBox = document.createElement('div');
       suggestBox.className = 'qf-suggest qf-hide';
 
+      // "Can't find?" CTA
+      var newCta = document.createElement('button');
+      newCta.type = 'button';
+      newCta.className = 'qf-link qf-new-art-cta';
+      newCta.style.marginTop = '8px';
+      newCta.textContent = "";
+
+      // Inline new-art form (hidden by default)
+      var newForm = document.createElement('div');
+      newForm.className = 'qf-new-art-form qf-hide';
+      newForm.style.marginTop = '8px';
+
+      var newName = document.createElement('input');
+      newName.type = 'text';
+      newName.className = 'qf-input';
+      newName.placeholder = 'New art form name';
+
+      var newDesc = document.createElement('textarea');
+      newDesc.className = 'qf-input';
+      newDesc.placeholder = 'Short description (optional)';
+      newDesc.rows = 2;
+      newDesc.style.resize = 'vertical';
+
+      var newActions = document.createElement('div');
+      newActions.style.display = 'flex';
+      newActions.style.gap = '8px';
+      newActions.style.marginTop = '6px';
+
+      var addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'qf-btn';
+      addBtn.textContent = 'Add';
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'qf-btn qf-btn-secondary';
+      cancelBtn.textContent = 'Cancel';
+
+      newActions.appendChild(addBtn);
+      newActions.appendChild(cancelBtn);
+      newForm.appendChild(newName);
+      newForm.appendChild(newDesc);
+      newForm.appendChild(newActions);
+
       bodyEl.appendChild(label);
       bodyEl.appendChild(inputEl);
       bodyEl.appendChild(suggestBox);
+      // bodyEl.appendChild(newCta);
+      bodyEl.appendChild(newForm);
 
       var entries = [];
 
-      function renderSuggest(list) {
+      function findMatch(name) {
+        var q = String(name || '').trim().toLowerCase();
+        if (!q) return null;
+        for (var i = 0; i < entries.length; i++) {
+          var en = String(entries[i].name || '').trim().toLowerCase();
+          if (en === q) return entries[i];
+        }
+        return null;
+      }
+
+      function renderSuggest(list, queryStr) {
         suggestBox.innerHTML = '';
+        var q = String(queryStr || '').trim();
+        // If there are no matches but user has typed something, show a "Use "q"" row
+        if (!list.length && q) {
+          suggestBox.classList.remove('qf-hide');
+          var useRow = document.createElement('div');
+          useRow.className = 'qf-s-item qf-s-use';
+          var nUse = document.createElement('div');
+          nUse.className = 'qf-s-name';
+          nUse.textContent = 'Use "' + q + '"';
+          useRow.appendChild(nUse);
+          useRow.onclick = function(){
+            inputEl.value = q;
+            suggestBox.classList.add('qf-hide');
+          };
+          suggestBox.appendChild(useRow);
+          return;
+        }
+
         if (!list.length) {
           suggestBox.classList.add('qf-hide');
           return;
         }
+
         suggestBox.classList.remove('qf-hide');
         list.slice(0, 12).forEach(function(item){
           var row = document.createElement('div');
@@ -401,18 +494,56 @@ var QuestionFlow = (function () {
 
       inputEl.addEventListener('input', function(){
         var q = inputEl.value.toLowerCase().trim();
-        if (!q) { renderSuggest([]); return; }
+        if (!q) { renderSuggest([], ''); return; }
         var list = entries.filter(function(e){
           return (e.name || '').toLowerCase().includes(q) ||
                  (e.description || '').toLowerCase().includes(q);
         });
-        renderSuggest(list);
+        renderSuggest(list, inputEl.value);
       });
+
+      // Toggle new-art form
+      newCta.onclick = function() {
+        var hidden = newForm.classList.contains('qf-hide');
+        if (hidden) {
+          newForm.classList.remove('qf-hide');
+          newName.value = (inputEl.value || '').trim();
+          setTimeout(function(){ newName.focus(); }, 0);
+        } else {
+          newForm.classList.add('qf-hide');
+        }
+      };
+      cancelBtn.onclick = function() {
+        newForm.classList.add('qf-hide');
+      };
+      addBtn.onclick = function() {
+        var name = (newName.value || '').trim();
+        var desc = (newDesc.value || '').trim();
+        if (!name || name.length < 2) {
+          alert('Please enter a valid art form name.');
+          newName.focus();
+          return;
+        }
+        addBtn.disabled = true;
+        suggestArtForm(name, desc).then(function(){
+          // Update local list so it shows up in suggestions immediately
+          entries.unshift({ name: name, description: desc });
+          inputEl.value = name;
+          renderSuggest([], name); // hide dropdown since we just selected it
+          newForm.classList.add('qf-hide');
+        }).finally(function(){
+          addBtn.disabled = false;
+        });
+      };
 
       var resolveWait;
       var next = makeBtn('Continue', function(){
         var val = (inputEl.value || '').trim();
         if (!val) { inputEl.focus(); return; }
+        // If the entered value is not in the known list, opportunistically suggest it to backend
+        if (!findMatch(val)) {
+          suggestArtForm(val, '');
+        }
         resolveWait(val);
       });
       actionsEl.appendChild(next);
@@ -445,8 +576,10 @@ var QuestionFlow = (function () {
 
       var msg = document.createElement('div');
       msg.className = 'qf-type';
-      msg.innerHTML = 'By using Dream Stage, you agree to our Terms & Community Guidelines and Privacy Policy' +
-        '<br><a class="qf-link" href="/consent.html" target="_blank" rel="noopener">Read Terms & Conditions</a>';
+      msg.innerHTML = `<span>By using Dream Stage, you agree to our               <a class="qf-link" href="https://dreamstage.tech/terms-and-community-guidelines" target="_blank" rel="noopener">Terms & Community Guidelines</a>
+              and <a class="qf-link" href="https://dreamstage.tech/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
+
+            </span>`;
       bodyEl.appendChild(msg);
 
       var resolveWait;
@@ -593,7 +726,7 @@ var QuestionFlow = (function () {
       ).then(function(){
         logoEl.style.display = 'none';
         return askText(
-          "What would you like us to call you",
+          "What would you like us to call you?",
           '',
           'Enter your name',
           'Save'

@@ -148,7 +148,7 @@
   height: 581px;
   border: 1px solid black;      /* counted in 1280x530 now */
   background: url('../images/bg2.webp');
-  background-size: cover;
+  background-size: contain;
   position: relative;
 }
 

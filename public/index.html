@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8" />
   <meta
@@ -10,78 +9,56 @@
   <title>Mario Maker</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
 
   <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="css/reset.css">
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link rel="stylesheet" type="text/css" href="css/qf.css">
 
-  <!-- Bullet-proof centering shell (inline so it always wins) -->
+  <!-- Keep inline CSS tiny and correct -->
   <style>
     html, body {
       height: 100%;
       overflow: hidden;
-      background: #9ecbf2;                 /* sky blue */
+      background: #9ecbf2;
       overscroll-behavior: none;
       -webkit-text-size-adjust: 100%;
-      padding: 0;
-      margin: 0;
     }
-    
-    /* Handle safe areas for iOS devices */
-    @supports(padding: max(0px)) {
-      body {
-        padding-left: max(0px, env(safe-area-inset-left));
-        padding-right: max(0px, env(safe-area-inset-right));
-        padding-top: max(0px, env(safe-area-inset-top));
-        padding-bottom: max(0px, env(safe-area-inset-bottom));
-      }
-    }
-    
+
     /* Fullscreen shell that respects safe areas and centers content */
     #stage-center {
       position: fixed;
-      top: env(safe-area-inset-top, 0px);
-      left: env(safe-area-inset-left, 0px);
-      right: env(safe-area-inset-right, 0px);
-      bottom: env(safe-area-inset-bottom, 0px);
-      display: grid;
+      inset: 0;
+      display: grid;                 /* must be grid for place-items to work */
       place-items: center;
-      width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
-      height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+      width: 100vw;
+      height: 100dvh;
+      min-height: 100svh;
+      box-sizing: border-box;
+      /* keep the stage visually centered on iPhone XR in landscape */
+      padding-top: max(0px, env(safe-area-inset-top));
+      padding-right: max(0px, env(safe-area-inset-right));
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+      padding-left: max(0px, env(safe-area-inset-left));
       z-index: 50;
     }
-    
-    /* Fixed-size stage that we scale */
+
+    /* Fixed-size stage that the scaler targets */
     #scale-root {
       width: 1280px;
-      height: 530px; /* Fixed height for proper scaling */
+      height: 540px;                 /* 50 score + 490 canvas = 540 */
       transform: scale(var(--mm-scale, 1));
       transform-origin: center center;
       will-change: transform;
-
-      /* keep internal content perfectly centered too */
       display: flex;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
-
-      /* avoids subpixel blur on some mobile GPUs */
       backface-visibility: hidden;
       -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
-    }
-    
-    /* iPhone XR specific adjustments */
-    @media only screen 
-      and (device-width: 414px) 
-      and (device-height: 896px) 
-      and (-webkit-device-pixel-ratio: 2) {
-      #stage-center {
-        height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px);
-      }
     }
   </style>
 </head>
@@ -137,43 +114,9 @@
 
   <!-- Fit-to-screen scaler (must load before Preloader) -->
   <script src="js/Scaler.js"></script>
-
   <script src="js/Preloader.js"></script>
 
   <script>
-    // Enhanced scaling function
-    function updateScale() {
-      const scaleRoot = document.getElementById('scale-root');
-      const stageCenter = document.getElementById('stage-center');
-      
-      // Get available space (accounting for safe areas)
-      const safeTop = parseInt(getComputedStyle(document.body).getPropertyValue('padding-top')) || 0;
-      const safeBottom = parseInt(getComputedStyle(document.body).getPropertyValue('padding-bottom')) || 0;
-      const safeLeft = parseInt(getComputedStyle(document.body).getPropertyValue('padding-left')) || 0;
-      const safeRight = parseInt(getComputedStyle(document.body).getPropertyValue('padding-right')) || 0;
-      
-      const availableWidth = window.innerWidth - safeLeft - safeRight;
-      const availableHeight = window.innerHeight - safeTop - safeBottom;
-      
-      // Calculate scale based on available space
-      const scaleX = availableWidth / 1280;
-      const scaleY = availableHeight / 530;
-      const scale = Math.min(scaleX, scaleY);
-      
-      // Apply the scale
-      document.documentElement.style.setProperty('--mm-scale', scale);
-      
-      // Center the content
-      stageCenter.style.display = 'grid';
-    }
-
-    // Update scale on load and resize
-    window.addEventListener('load', updateScale);
-    window.addEventListener('resize', updateScale);
-    window.addEventListener('orientationchange', function() {
-      setTimeout(updateScale, 300);
-    });
-
     // Lock to landscape when allowed
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(function(err){
@@ -181,7 +124,7 @@
       });
     }
 
-    // Show "rotate" overlay if still in portrait on phones/tablets
+    // Show “rotate” overlay if still in portrait on phones/tablets
     function checkOrientation() {
       const overlay = document.getElementById('rotate-overlay');
       if (window.matchMedia("(orientation: portrait) and (max-width: 1024px)").matches) {
@@ -196,6 +139,5 @@
     document.addEventListener('visibilitychange', checkOrientation, { passive: true });
     checkOrientation();
   </script>
-
 </body>
 </html>

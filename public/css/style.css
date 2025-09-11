@@ -21,14 +21,20 @@
 /* ========= Mobile-proof centering shell ========= */
 #stage-center {
   position: fixed;
-  inset: 0;                   /* full viewport */
-  display: grid;              /* grid enables place-items */
-  place-items: center;        /* perfect center on both axes */
+  inset: 0;
+  display: grid;
+  place-items: center;
   width: 100vw;
-  height: 100dvh;             /* handles mobile URL bars */
+  height: 100dvh;
   min-height: 100svh;
   z-index: 50;
+  box-sizing: border-box;
+  padding-top: max(0px, env(safe-area-inset-top));
+  padding-right: max(0px, env(safe-area-inset-right));
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+  padding-left: max(0px, env(safe-area-inset-left));
 }
+
 
 /* The fixed-size stage we scale */
 #scale-root {

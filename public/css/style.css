@@ -21,31 +21,7 @@
 }
 
 /* ========= Mobile-proof centering shell ========= */
-#stage-center {
-  position: fixed;
-  inset: 0;                   /* full viewport */
-  display: grid;              /* grid enables place-items */
-  place-items: center;        /* perfect center on both axes */
-  width: 100%;
-  height: 100dvh;             /* handles mobile URL bars */
-  min-height: 100svh;
-  z-index: 50;
-}
 
-/* The fixed-size stage we scale */
-#scale-root {
-  width: 1280px;
-  height: 530px;                    /* 50 score + 480 canvas */
-  transform: scale(var(--mm-scale, 1));
-  transform-origin: center center;  /* scale around the visual center */
-  will-change: transform;
-
-  /* also center the inner content to avoid any internal drift */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-}
 
 /* The logical stage container should fill the scaled box exactly */
 .main-wrapper {

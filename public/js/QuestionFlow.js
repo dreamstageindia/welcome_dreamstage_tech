@@ -640,7 +640,7 @@ var QuestionFlow = (function () {
 
       var msg = document.createElement('div');
       msg.className = 'qf-type';
-      msg.innerHTML = `<span>By using Dream Stage, you agree to our               <a class="qf-link" href="https://dreamstage.tech/terms-and-community-guidelines" target="_blank" rel="noopener">Terms & Community Guidelines</a>
+      msg.innerHTML = `<span>By using Dream Stage, you agree to our <a class="qf-link" href="https://dreamstage.tech/terms-and-community-guidelines" target="_blank" rel="noopener">Terms & Community Guidelines</a>
               and <a class="qf-link" href="https://dreamstage.tech/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
 
             </span>`;

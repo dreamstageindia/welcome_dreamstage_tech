@@ -23,9 +23,9 @@
   <style>
     html, body {
       height: 100%;
-      overflow: scroll;
+      overflow: hidden;
       background: #9ecbf2;                 /* sky blue */
-      overscroll-behavior: scroll;
+      overscroll-behavior: none;
       -webkit-text-size-adjust: 100%;
     }
     /* Fullscreen shell that respects safe areas and centers content */
@@ -34,7 +34,7 @@
   inset: 0;                   /* full viewport */
   display: block;              /* <-- was block; grid is required for place-items */
   place-items: center;        /* perfect center on both axes */
-  width: auto;
+  width: 100vw;
   height: 100dvh;             /* handles mobile URL bars; fallbacks below */
   min-height: 100svh;
   z-index: 50;
@@ -68,12 +68,13 @@
   </div>
 
   <!-- Centering shell + scalable stage -->
-
+  <div id="stage-center">
     <div id="scale-root">
       <div class="main-wrapper">
         <canvas class="game-screen"></canvas>
       </div>
     </div>
+  </div>
 
   <!-- on-screen touch controls (mobile only) -->
   <div class="mobile-controls">

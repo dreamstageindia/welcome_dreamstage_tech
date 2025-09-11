@@ -1,14 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
-/* ======= FULLSCREEN SCALE ROOT ======= */
-html, body {
-  height: 100%;
-  overflow: hidden;                 /* prevent scroll */
-  background: #9ecbf2;              /* sky blue (no white gutters) */
-  overscroll-behavior: none;
-  font-family: "Bungee";
-  -webkit-text-size-adjust: 100%;
-}
 
 /* === Force ALL game buttons to use white text === */
 

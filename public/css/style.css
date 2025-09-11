@@ -1,10 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
 /* ======= FULLSCREEN SCALE ROOT ======= */
-
+/* base handled inline in index.html to guarantee load order */
 
 /* === Force ALL game buttons to use white text === */
-
 .start-btn,
 .editor-btn,
 .created-btn,
@@ -15,13 +14,13 @@
 .grid-large-btn,
 .save-map-btn,
 .clear-map-btn,
-.level-btn,         /* clickable  tile-like buttons */
-.control-btn {      /* mobile controls */
+.level-btn,
+.control-btn {
   color: white !important;
 }
 
 /* ========= Mobile-proof centering shell ========= */
-
+/* handled in index.html */
 
 /* The logical stage container should fill the scaled box exactly */
 .main-wrapper {
@@ -30,7 +29,6 @@
   position: relative;
   box-sizing: border-box;
 
-  /* kill any stray offsets/margins from earlier CSS */
   margin: 0 !important;
   left: auto !important;
   right: auto !important;
@@ -50,7 +48,7 @@
 
 /* ======= MOBILE CONTROLS: pinned bottom, no drift ======= */
 .mobile-controls {
-  display: none;                /* default hidden (desktop) */
+  display: none;
   position: fixed;
   left: 0;
   right: 0;
@@ -59,46 +57,28 @@
   box-sizing: border-box;
   align-items: center;
   justify-content: space-between;
-  z-index: 3000;                /* above game, below overlays */
-  pointer-events: none;         /* container ignores taps */
+  z-index: 3000;
+  pointer-events: none;
 }
 
 .mobile-controls .nav-buttons {
   display: flex;
   gap: 14px;
-  pointer-events: auto;         /* buttons accept taps */
+  pointer-events: auto;
 }
 
 .control-btn {
-  width: 72px;
-  height: 72px;
+  width: clamp(56px, 9vw, 72px);
+  height: clamp(56px, 9vw, 72px);
   border: 3px solid #000;
   border-radius: 50%;
   background: rgba(0,0,0,0.55);
   color: #fff;
-  font-size: 28px;
+  font-size: clamp(20px, 3.4vw, 28px);
   font-family: "Bungee", Arial, sans-serif;
   touch-action: none;
   pointer-events: auto;
   box-shadow: 0 6px 0 rgba(0,0,0,0.35);
-}
-
-/* Larger targets on small phones */
-@media (max-width: 420px) {
-  .control-btn { width: 64px; height: 64px; font-size: 24px; }
-}
-
-@media (max-width: 1000px) {
-  .game-screen {
-    width: auto;
-    height: auto;
-    border: 1px solid black;      /* now counted via border-box */
-    border-top: none;
-    background: url('../images/bg.png');
-    display: none;
-    margin: 0;                    /* avoid extra centering math */
-    image-rendering: pixelated;   /* crisp pixels when scaled */
-  }
 }
 
 /* Show controls only on touch devices in landscape */
@@ -108,21 +88,21 @@
 
 /* ======= Canvas rendering ======= */
 .game-screen {
-  width: auto;
-  height: auto;
-  border: 1px solid black;      /* now counted via border-box */
+  width: 1280px;               /* intrinsic stage size for crisp scaling */
+  height: 480px;
+  border: 1px solid black;
   border-top: none;
   background: url('../images/bg.png');
-  display: none;
-  margin: 0;                    /* avoid extra centering math */
-  image-rendering: pixelated;   /* crisp pixels when scaled */
+  display: none;               /* toggled by JS */
+  margin: 0;
+  image-rendering: pixelated;  /* crisp pixels when scaled */
 }
 
 /* ======= Start / Editor ======= */
 .start-screen {
-  width: 100%;
-  height: 581px;
-  border: 1px solid black;      /* counted in 1280x530 now */
+  width: 1280px;
+  height: 530px;               /* matches BASE_H for scaler */
+  border: 1px solid black;
   background: url('../images/bg2.webp');
   background-size: cover;
   position: relative;
@@ -133,7 +113,7 @@
   position: absolute;
   bottom: 70px;
   left: 62%;
-  transform: translateX(-50%);        /* center horizontally */
+  transform: translateX(-50%);
   width: 280px;
   height: 54px;
   border: 4px solid white;
@@ -168,10 +148,10 @@
 .menu-btn {
   width: 280px;
   height: 54px;
-  border: 5px solid #fff;               /* outer white ring */
+  border: 5px solid #fff;
   box-shadow:
-    0 0 0 2px #000 inset,               /* inner black ring */
-    0 5px 0 rgba(0, 0, 0, 0.35);        /* drop shadow */
+    0 0 0 2px #000 inset,
+    0 5px 0 rgba(0, 0, 0, 0.35);
   border-radius: 12px;
   font-family: "Bungee", Arial, sans-serif;
   font-size: 18px;
@@ -185,18 +165,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.menu-btn:hover {
-  filter: brightness(1.05);
-}
+.menu-btn:hover { filter: brightness(1.05); }
+.menu-btn:active { transform: translateY(2px); }
 
-.menu-btn:active {
-  transform: translateY(2px);
-}
-
-
-/* ======= Score Bar (full width to avoid misalignment) ======= */
+/* ======= Score Bar ======= */
 .score-wrapper {
-  width: 1280px;                /* full width, not 1240 */
+  width: 1280px;
   height: 50px;
   padding-left: 40px;
   display: none;
@@ -207,7 +181,7 @@
   background-color: #add1f3;
   font-family: "Bungee";
   color: #ffffff;
-  margin: 0;                    /* no auto-centering margins */
+  margin: 0;
 }
 
 .life-count {
@@ -229,7 +203,6 @@
 
 /* ======= Editor Grid & Elements ======= */
 .cell   { width: 31px; height: 31px; border: 1px solid blue; }
-/* .active { width: 31px; height: 31px; border: 1px solid blue; background: red; opacity: 0.5; } */
 
 .element-wrapper {
   width: 1280px;
@@ -280,11 +253,10 @@
 }
 
 .start-btn {
-  
   position: absolute;
   bottom: 70px;
   left: 38%;
-  transform: translateX(-50%);        /* center horizontally */
+  transform: translateX(-50%);
   width: 280px;
   height: 54px;
   border: 4px solid white;
@@ -302,7 +274,7 @@
   position: absolute;
   bottom: 70px;
   left: 65%;
-  transform: translateX(-50%);        /* center horizontally */
+  transform: translateX(-50%);
   width: 280px;
   height: 54px;
   border: 2px solid #000;
@@ -314,7 +286,6 @@
   background: linear-gradient(#9da618, #15803d);
   color: black;
   box-shadow: 0 5px 0 rgba(0,0,0,0.35);
-  
 }
 .created-btn {
   display: none;
@@ -354,7 +325,7 @@
 }
 .delete-all-btn { width: 100px; height: 100px; background: url('../images/delete-all-btn.png'); color: #ffffff; border: 2px solid black; margin: 10px; position: absolute; bottom: 10px; right: 10px; }
 
-.btn-wrapper { width: auto; height: auto; margin: 0; } 
+.btn-wrapper { width: auto; height: auto; margin: 0; }
 
 /* ======= Misc ======= */
 .no-maps {
@@ -381,7 +352,7 @@
 .rotate-overlay {
   position: fixed;
   inset: 0;
-  display: none; /* toggled by JS */
+  display: none;
   align-items: center;
   justify-content: center;
   background: rgba(0,0,0,0.6);
@@ -395,7 +366,7 @@
 
 /* ========== Questionnaire Overlay (Mario Theme) ========== */
 :root {
-  --qf-accent: #ffcc00; /* highlight ring for selected options */
+  --qf-accent: #ffcc00;
 }
 
 .qf-overlay {
@@ -412,7 +383,7 @@
 /* Make the panel a flex column so the action bar can stick on mobile */
 .qf-box {
   width: min(720px, 94vw);
-  max-height: 92vh;              /* keeps it inside small screens */
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
 
@@ -516,7 +487,7 @@
   font-family: "Bungee", Arial, sans-serif;
   letter-spacing: 0.5px;
   box-shadow: 0 4px 0 #6b0000;
-  flex-shrink: 0; /* do not shrink in tight spaces */
+  flex-shrink: 0;
 }
 .qf-btn:hover { filter: brightness(1.05); }
 
@@ -528,30 +499,28 @@
   margin-top: 8px;
 }
 
-/* Option cards — keep size constant no matter state */
+/* Option cards */
 .qf-option {
   padding: 12px 14px;
   border-radius: 10px;
   background: linear-gradient(#15a7d9, #0d87b1);
-  border: 3px solid #000;         /* fixed border width */
+  border: 3px solid #000;
   color: #fff;
   cursor: pointer;
   text-align: left;
   font-weight: 700;
   font-family: "Bungee", Arial, sans-serif;
   box-shadow: 0 4px 0 #0b5672;
-  box-sizing: border-box;         /* preserve width */
-  min-height: 64px;               /* stable vertical rhythm */
+  box-sizing: border-box;
+  min-height: 64px;
   display: flex;
   align-items: center;
 }
 
-/* Hover keeps brightness only (no size change) */
 .qf-option:hover { filter: brightness(1.08); }
 
-/* SELECTED / FOCUSED STATE: add an outline ring that doesn't affect layout */
 .qf-option.selected,
-.qf-option.active,               /* <-- added to match JS toggling class */
+.qf-option.active,
 .qf-option:focus {
   outline: 3px solid var(--qf-accent);
   outline-offset: 0;
@@ -580,7 +549,6 @@
   color: black;
   text-decoration: underline;
   font-family: "Bungee", Arial, sans-serif;
- 
 }
 
 .qf-dev-otp {
@@ -589,10 +557,9 @@
   color: #ffcc00;
   opacity: 0.9;
   font-family: "Bungee", Arial, sans-serif;
-  
 }
 
-/* ===== Minimal Milestone Overlay (title + GIF + Continue) ===== */
+/* ===== Minimal Milestone Overlay ===== */
 .ms-overlay {
   position: fixed;
   inset: 0;
@@ -616,7 +583,7 @@
   position: relative;
   color: #fff;
   text-align: center;
-  z-index: 1; /* above confetti */
+  z-index: 1;
 }
 
 .ms-title {
@@ -647,29 +614,26 @@
   background: linear-gradient(#ff3b30, #c1271c);
   color: #fff;
   font-family: "Bungee", Arial, sans-serif;
-  
   box-shadow: 0 4px 0 #6b0000;
   letter-spacing: .5px;
   cursor: pointer;
   width: 180px;
 }
-.ms-next-btn:disabled {
-  cursor: not-allowed;
-}
+.ms-next-btn:disabled { cursor: not-allowed; }
 
-/* ===== Fullscreen Confetti Background (behind milestone box) ===== */
+/* ===== Fullscreen Confetti Background ===== */
 .confetti {
-  position: absolute; /* or fixed if you want it to cover full viewport */
+  position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 50;
 }
 
-/* OUTER: handles falling (translate/rotate) */
+/* OUTER: handles falling */
 .confetti-piece {
   position: absolute;
-  top: -12px; /* start slightly above viewport */
+  top: -12px;
   left: var(--c-left, 50%);
   width: var(--c-size, 10px);
   height: calc(var(--c-size, 10px) * 0.6);
@@ -681,7 +645,7 @@
   transform: translate3d(0, 0, 0) rotate(0deg);
 }
 
-/* INNER: handles the tilt/flips so it doesn't override translateY */
+/* INNER: tilt/flips */
 .confetti-piece > i {
   display: block;
   width: 100%;

@@ -1,5 +1,3 @@
-// js/mainGame/MarioGame.js
-
 // Main Class of Mario Game
 
 function MarioGame() {
@@ -12,8 +10,8 @@ function MarioGame() {
   var map;
   var originalMaps;
 
-  var translatedDist; // distance translated (side scrolled) as Mario moves to the right
-  var centerPos;      // center position of the viewPort, viewable screen
+  var translatedDist; // distance translated as Mario moves to the right
+  var centerPos;      // center position of the viewPort
   var marioInGround;
 
   // instances
@@ -82,13 +80,12 @@ function MarioGame() {
     that.startGame();
   };
 
+  // FIX: compute world width correctly
   that.calculateMaxWidth = function() {
+    maxWidth = 0;
     for (var row = 0; row < map.length; row++) {
-      for (var column = 0; column < map[row].length; column++) {
-        if (maxWidth < map[row].length * 32) {
-          maxWidth = map[column].length * 32;
-        }
-      }
+      var rowWidth = map[row].length * tileSize;
+      if (rowWidth > maxWidth) maxWidth = rowWidth;
     }
   };
 
@@ -103,40 +100,59 @@ function MarioGame() {
       keys[e.keyCode] = false;
     });
 
+    // helper to normalize touch X to base 1280 space
+    function normX(touch) {
+      var rect = canvas.getBoundingClientRect();
+      var xClamped = Math.max(rect.left, Math.min(touch.clientX, rect.right));
+      var rel = (xClamped - rect.left) / rect.width; // 0..1
+      return rel * 1280;
+    }
+
+    // preventDefault only for single-finger control, not for pinch
+    function isMultiTouch(e) {
+      var t = e.touches || e.changedTouches;
+      return t && t.length > 1;
+    }
+
     // touch binding on the canvas
     canvas.addEventListener('touchstart', function(e) {
-      var touches = e.changedTouches;
+      if (isMultiTouch(e)) return; // let pinch-zoom work
       e.preventDefault();
+      var touches = e.changedTouches;
       for (var i = 0; i < touches.length; i++) {
-        var x = touches[i].pageX;
+        var x = normX(touches[i]);
         if (x <= 200)                      keys[37] = true;   // left
-        if (x > 200 && x < 400)           keys[39] = true;   // right
+        if (x > 200 && x < 400)            keys[39] = true;   // right
         if (x > 640 && x <= 1080) { keys[16] = true; keys[17] = true; } // run & bullet
-        if (x > 1080 && x < 1280)         keys[32] = true;   // jump
+        if (x > 1080 && x < 1280)          keys[32] = true;   // jump
       }
-    });
+    }, { passive: false });
+
     canvas.addEventListener('touchend', function(e) {
-      var touches = e.changedTouches;
+      if (isMultiTouch(e)) return;
       e.preventDefault();
+      var touches = e.changedTouches;
       for (var i = 0; i < touches.length; i++) {
-        var x = touches[i].pageX;
+        var x = normX(touches[i]);
         if (x <= 200)                      keys[37] = false;
         if (x > 200 && x <= 640)           keys[39] = false;
         if (x > 640 && x <= 1080) { keys[16] = false; keys[17] = false; }
         if (x > 1080 && x < 1280)          keys[32] = false;
       }
-    });
+    }, { passive: false });
+
     canvas.addEventListener('touchmove', function(e) {
-      var touches = e.changedTouches;
+      if (isMultiTouch(e)) return;
       e.preventDefault();
+      var touches = e.changedTouches;
       for (var i = 0; i < touches.length; i++) {
-        var x = touches[i].pageX;
+        var x = normX(touches[i]);
         if (x <= 200)                      { keys[37] = true;  keys[39] = false; }
-        if (x > 200 && x < 400)           { keys[39] = true;  keys[37] = false; }
-        if (x > 640 && x <= 1080)         { keys[16] = true;  keys[32] = false; }
-        if (x > 1080 && x < 1280)         { keys[32] = true;  keys[16] = false; keys[17] = false; }
+        if (x > 200 && x < 400)            { keys[39] = true;  keys[37] = false; }
+        if (x > 640 && x <= 1080)          { keys[16] = true;  keys[32] = false; }
+        if (x > 1080 && x < 1280)          { keys[32] = true;  keys[16] = false; keys[17] = false; }
       }
-    });
+    }, { passive: false });
 
     // on-screen button controls (mobile)
     const btnLeft  = document.getElementById('btn-left');
@@ -144,16 +160,16 @@ function MarioGame() {
     const btnJump  = document.getElementById('btn-jump');
 
     if (btnLeft) {
-      btnLeft.addEventListener('touchstart', function(e) { e.preventDefault(); keys[37] = true;  });
-      btnLeft.addEventListener('touchend',   function(e) { e.preventDefault(); keys[37] = false; });
+      btnLeft.addEventListener('touchstart', function(e) { e.preventDefault(); keys[37] = true;  }, { passive: false });
+      btnLeft.addEventListener('touchend',   function(e) { e.preventDefault(); keys[37] = false; }, { passive: false });
     }
     if (btnRight) {
-      btnRight.addEventListener('touchstart', function(e) { e.preventDefault(); keys[39] = true;  });
-      btnRight.addEventListener('touchend',   function(e) { e.preventDefault(); keys[39] = false; });
+      btnRight.addEventListener('touchstart', function(e) { e.preventDefault(); keys[39] = true;  }, { passive: false });
+      btnRight.addEventListener('touchend',   function(e) { e.preventDefault(); keys[39] = false; }, { passive: false });
     }
     if (btnJump) {
-      btnJump.addEventListener('touchstart', function(e) { e.preventDefault(); keys[38] = true;  });
-      btnJump.addEventListener('touchend',   function(e) { e.preventDefault(); keys[38] = false; });
+      btnJump.addEventListener('touchstart', function(e) { e.preventDefault(); keys[38] = true;  }, { passive: false });
+      btnJump.addEventListener('touchend',   function(e) { e.preventDefault(); keys[38] = false; }, { passive: false });
     }
   };
 
@@ -186,8 +202,6 @@ function MarioGame() {
     that.wallCollision();
     marioInGround = mario.grounded;
   };
-
-  
 
   this.renderMap = function() {
     mario.grounded = false;
@@ -435,14 +449,14 @@ function MarioGame() {
             mario.type = (mario.type === 'big' ? 'small' : 'big');
             mario.invulnerable = true;
             gameSound.play('powerDown');
-            setTimeout(() => mario.invulnerable = false, 1000);
+            setTimeout(function(){ mario.invulnerable = false; }, 1000);
           } else {
             that.pauseGame();
             mario.frame = 13;
             score.lifeCount--;
             score.updateLifeCount();
             gameSound.play('marioDie');
-            timeOutId = setTimeout(() => {
+            timeOutId = setTimeout(function() {
               if (score.lifeCount === 0) that.gameOver();
               else that.resetGame();
             }, 3000);
@@ -480,7 +494,7 @@ function MarioGame() {
       gameSound.play('marioDie');
       score.lifeCount--;
       score.updateLifeCount();
-      timeOutId = setTimeout(() => {
+      timeOutId = setTimeout(function() {
         if (score.lifeCount === 0) that.gameOver();
         else that.resetGame();
       }, 3000);
@@ -537,7 +551,7 @@ function MarioGame() {
         bullet.init(mario.x, mario.y, direction);
         bullets.push(bullet);
         gameSound.play('bullet');
-        setTimeout(() => bulletFlag = false, 500);
+        setTimeout(function(){ bulletFlag = false; }, 500);
       }
     }
 

@@ -3,55 +3,64 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=1280" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
   
   <title>Mario Maker</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
 
   <!-- CSS -->
-  <!-- <link rel="stylesheet" type="text/css" href="css/reset.css"> -->
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link rel="stylesheet" type="text/css" href="css/qf.css">
-  <link rel="stylesheet" type="text/css" href="css/reset.css">
-
 
   <!-- Bullet-proof centering shell (inline so it always wins) -->
   <style>
-    
     /* Fullscreen shell that respects safe areas and centers content */
     #stage-center {
-  position: fixed;
-  left: 0;
-  inset: 0;                   /* full viewport */
-  display: block;              /* <-- was block; grid is required for place-items */
-  /* place-items: center;        perfect center on both axes */
-  width: auto;
-  height: 100dvh;             /* handles mobile URL bars; fallbacks below */
-  min-height: 100svh;
-  z-index: 50;
-}
+      position: fixed;
+      left: 0;
+      inset: 0;                   /* full viewport */
+      display: block;             /* leave as-is if you don't want grid centering */
+      /* place-items: center; */   /* perfect center on both axes (needs display:grid) */
+      width: auto;
+      height: 100dvh;             /* handles mobile URL bars; fallbacks below */
+      min-height: 100svh;
+      z-index: 50;
+    }
+
     /* Fixed-size stage that we scale */
     #scale-root {
-  width: auto ;
-  height: 30px;              /* 50 score + 480 canvas */
-  transform: scale(var(--mm-scale, 1));
-  transform-origin: center center;
-  will-change: transform;
+      width: auto;
+      height: 30px;               /* 50 score + 480 canvas (keep your value if intentional) */
+      transform: scale(var(--mm-scale, 1));
+      transform-origin: center center;
+      will-change: transform;
 
-  /* keep internal content perfectly centered too */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
+      /* keep internal content perfectly centered too */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
 
-  /* avoids subpixel blur on some mobile GPUs */
-  backface-visibility: hidden;
-  -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
-}
+      /* avoids subpixel blur on some mobile GPUs */
+      backface-visibility: hidden;
+      -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
+    }
+
+    /* HARD DISABLE touch/pointer interaction on the game canvas */
+    .game-screen {
+      pointer-events: none;          /* canvas won't receive clicks/touches */
+      touch-action: none;            /* disable browser gestures within its box */
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
   </style>
 </head>
 
@@ -63,11 +72,11 @@
   </div>
 
   <!-- Centering shell + scalable stage -->
-  <!-- <div id="stage-center"> -->
+  <div id="scale-root">
     <div class="main-wrapper">
-      <canvas class="game-screen"></canvas>
+      <canvas class="game-screen"></canvas> 
     </div>
-  <!-- </div> -->
+  </div>
 
   <!-- on-screen touch controls (mobile only) -->
   <div class="mobile-controls">
@@ -129,6 +138,47 @@
     window.addEventListener('resize', checkOrientation, { passive: true });
     document.addEventListener('visibilitychange', checkOrientation, { passive: true });
     checkOrientation();
+
+    // ======= TOUCH/PTR/MOUSE GUARD: disable any input inside the canvas rect =======
+    (function touchBlocker() {
+      const canvas = document.querySelector('canvas.game-screen');
+      if (!canvas) return;
+
+      function inCanvas(clientX, clientY) {
+        const r = canvas.getBoundingClientRect();
+        return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
+      }
+
+      function kill(ev) {
+        let x, y;
+
+        if (ev.type.startsWith('touch')) {
+          const t = ev.touches[0] || ev.changedTouches[0];
+          if (!t) return;
+          x = t.clientX; y = t.clientY;
+        } else if ('clientX' in ev && 'clientY' in ev) {
+          x = ev.clientX; y = ev.clientY;
+        } else {
+          return;
+        }
+
+        if (inCanvas(x, y)) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+          return false;
+        }
+      }
+
+      const opts = { capture: true, passive: false };
+      [
+        'touchstart','touchmove','touchend','touchcancel',
+        'pointerdown','pointermove','pointerup','pointercancel',
+        'mousedown','mousemove','mouseup','click','dblclick','contextmenu'
+      ].forEach(type => {
+        window.addEventListener(type, kill, opts);
+      });
+    })();
   </script>
 
 </body>

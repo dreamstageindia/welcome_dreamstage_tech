@@ -19,38 +19,45 @@
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <link rel="stylesheet" type="text/css" href="css/qf.css">
 
+  <!-- Bullet-proof centering shell (inline so it always wins) -->
   <style>
-    /* Fullscreen shell that respects safe areas */
+    /* Fullscreen shell that respects safe areas and centers content */
     #stage-center {
       position: fixed;
       left: 0;
-      inset: 0;
-      display: block;
+      inset: 0;                   /* full viewport */
+      display: block;             /* leave as-is if you don't want grid centering */
+      /* place-items: center; */   /* perfect center on both axes (needs display:grid) */
       width: auto;
-      height: 100dvh;
+      height: 100dvh;             /* handles mobile URL bars; fallbacks below */
       min-height: 100svh;
       z-index: 50;
     }
 
-    /* Scaler root */
+    /* Fixed-size stage that we scale */
     #scale-root {
       width: auto;
-      height: 30px; /* keep whatever you need here */
+      height: 30px;               /* 50 score + 480 canvas (keep your value if intentional) */
       transform: scale(var(--mm-scale, 1));
       transform-origin: center center;
       will-change: transform;
+
+      /* keep internal content perfectly centered too */
       display: flex;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
+
+      /* avoids subpixel blur on some mobile GPUs */
       backface-visibility: hidden;
       -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
     }
 
-    /* IMPORTANT: allow pinch-zoom on the canvas, but no text selection */
+    /* HARD DISABLE touch/pointer interaction on the game canvas */
     .game-screen {
-      pointer-events: auto;
-      touch-action: pinch-zoom; /* allow browser pinch zoom */
+      pointer-events: none;          /* canvas won't receive clicks/touches */
+      touch-action: none;            /* disable browser gestures within its box */
+      -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
     }
@@ -132,69 +139,45 @@
     document.addEventListener('visibilitychange', checkOrientation, { passive: true });
     checkOrientation();
 
-    /* ===========================================================
-       ALLOW PINCH-ZOOM, BLOCK SINGLE-FINGER CANVAS INPUT
-       Works on both iOS (Touch Events) and Android/Chrome (Pointer Events)
-       =========================================================== */
-    (function pinchZoomAllowedButNoSingleTouch() {
+    // ======= TOUCH/PTR/MOUSE GUARD: disable any input inside the canvas rect =======
+    (function touchBlocker() {
       const canvas = document.querySelector('canvas.game-screen');
       if (!canvas) return;
 
-      // Ensure CSS wins even if other scripts set touchAction
-      canvas.style.touchAction = 'pinch-zoom';
-
-      /* --- Pointer Events path (Chrome/Android, modern iOS) --- */
-      let activeTouchPointers = new Set();
-
-      function isTouchPointer(ev) {
-        return ev && ev.pointerType === 'touch';
+      function inCanvas(clientX, clientY) {
+        const r = canvas.getBoundingClientRect();
+        return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
       }
 
-      canvas.addEventListener('pointerdown', function(ev) {
-        if (!isTouchPointer(ev)) return;
-        activeTouchPointers.add(ev.pointerId);
-        // Do NOT prevent default here, so a second finger can join to start a pinch
-      }, { passive: true });
+      function kill(ev) {
+        let x, y;
 
-      canvas.addEventListener('pointermove', function(ev) {
-        if (!isTouchPointer(ev)) return;
-        // If exactly one finger is on the canvas, block its move so the game can't read it.
-        if (activeTouchPointers.size === 1) {
+        if (ev.type.startsWith('touch')) {
+          const t = ev.touches[0] || ev.changedTouches[0];
+          if (!t) return;
+          x = t.clientX; y = t.clientY;
+        } else if ('clientX' in ev && 'clientY' in ev) {
+          x = ev.clientX; y = ev.clientY;
+        } else {
+          return;
+        }
+
+        if (inCanvas(x, y)) {
           ev.preventDefault();
           ev.stopPropagation();
+          if (typeof ev.stopImmediatePropagation === 'function') ev.stopImmediatePropagation();
+          return false;
         }
-      }, { capture: true, passive: false });
-
-      function endPointer(ev) {
-        if (!isTouchPointer(ev)) return;
-        activeTouchPointers.delete(ev.pointerId);
       }
-      canvas.addEventListener('pointerup', endPointer, { passive: true, capture: true });
-      canvas.addEventListener('pointercancel', endPointer, { passive: true, capture: true });
 
-      /* --- Touch Events path (iOS Safari) --- */
-      canvas.addEventListener('touchstart', function(ev) {
-        // Don't block; allow a second finger to join for pinch
-      }, { passive: true });
-
-      canvas.addEventListener('touchmove', function(ev) {
-        // Let two+ fingers do pinch zoom
-        if (ev.touches && ev.touches.length >= 2) return;
-        // Single-finger move: block so gameplay doesn't react to swipes/taps on canvas
-        ev.preventDefault();
-        ev.stopPropagation();
-      }, { capture: true, passive: false });
-
-      canvas.addEventListener('touchend', function(ev) {
-        // nothing special; keep default so pinch can settle
-      }, { passive: true, capture: true });
-
-      // Optional: block click synthesis on the canvas (from taps), just in case
-      canvas.addEventListener('click', function(ev) {
-        ev.stopPropagation();
-        // no preventDefault so links outside still work after zoom
-      }, { capture: true });
-
+      const opts = { capture: true, passive: false };
+      [
+        'touchstart','touchmove','touchend','touchcancel',
+        'pointerdown','pointermove','pointerup','pointercancel',
+        'mousedown','mousemove','mouseup','click','dblclick','contextmenu'
+      ].forEach(type => {
+        window.addEventListener(type, kill, opts);
+      });
     })();
   </script>
 

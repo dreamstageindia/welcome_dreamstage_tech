@@ -83,7 +83,7 @@ var MilestoneScreen = (function () {
 
       nextBtn = document.createElement('button');
       nextBtn.className = 'ms-next-btn';
-      nextBtn.textContent = 'GO BACK';
+      nextBtn.textContent = 'Continue';
       nextBtn.disabled = true;
 
       // Order: confetti first (background), then box (foreground)

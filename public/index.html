@@ -23,9 +23,9 @@
   <style>
     html, body {
       height: 100%;
-      overflow: hidden;
+      overflow: scroll;
       background: #9ecbf2;                 /* sky blue */
-      overscroll-behavior: none;
+      overscroll-behavior: scroll;
       -webkit-text-size-adjust: 100%;
     }
     /* Fullscreen shell that respects safe areas and centers content */
@@ -34,8 +34,8 @@
   inset: 0;                   /* full viewport */
   display: block;              /* <-- was block; grid is required for place-items */
   place-items: center;        /* perfect center on both axes */
-  width: 100vw;
-  height: 100dvh;             /* handles mobile URL bars; fallbacks below */
+  width: fit-content;
+  height: fit-content;             /* handles mobile URL bars; fallbacks below */
   min-height: 100svh;
   z-index: 50;
 }

@@ -428,7 +428,6 @@ var QuestionFlow = (function () {
       bodyEl.appendChild(label);
       bodyEl.appendChild(inputEl);
       bodyEl.appendChild(suggestBox);
-      // bodyEl.appendChild(newCta);
       bodyEl.appendChild(newForm);
 
       var entries = [];

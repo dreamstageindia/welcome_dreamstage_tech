@@ -175,7 +175,7 @@ html, body {
   letter-spacing: .5px;
   cursor: pointer;
   background: linear-gradient(90deg, #ffde59, #ff914d);
-  color: black;
+  color: white;
   box-shadow: 0 5px 0 rgba(0,0,0,0.35);
 }
 @media (max-width: 600px) {

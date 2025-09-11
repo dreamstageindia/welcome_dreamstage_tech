@@ -27,36 +27,62 @@
       background: #9ecbf2;                 /* sky blue */
       overscroll-behavior: none;
       -webkit-text-size-adjust: 100%;
+      padding: 0;
+      margin: 0;
     }
+    
+    /* Handle safe areas for iOS devices */
+    @supports(padding: max(0px)) {
+      body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+      }
+    }
+    
     /* Fullscreen shell that respects safe areas and centers content */
     #stage-center {
-  position: fixed;
-  inset: 0;                   /* full viewport */
-  display: block;              /* <-- was block; grid is required for place-items */
-  place-items: center;        /* perfect center on both axes */
-  width: 100vw;
-  height: 100dvh;             /* handles mobile URL bars; fallbacks below */
-  min-height: 100svh;
-  z-index: 50;
-}
+      position: fixed;
+      top: env(safe-area-inset-top, 0px);
+      left: env(safe-area-inset-left, 0px);
+      right: env(safe-area-inset-right, 0px);
+      bottom: env(safe-area-inset-bottom, 0px);
+      display: grid;
+      place-items: center;
+      width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+      height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+      z-index: 50;
+    }
+    
     /* Fixed-size stage that we scale */
     #scale-root {
-  width: 1280px;
-  height: 30px;              /* 50 score + 480 canvas */
-  transform: scale(var(--mm-scale, 1));
-  transform-origin: center center;
-  will-change: transform;
+      width: 1280px;
+      height: 530px; /* Fixed height for proper scaling */
+      transform: scale(var(--mm-scale, 1));
+      transform-origin: center center;
+      will-change: transform;
 
-  /* keep internal content perfectly centered too */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
+      /* keep internal content perfectly centered too */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
 
-  /* avoids subpixel blur on some mobile GPUs */
-  backface-visibility: hidden;
-  -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
-}
+      /* avoids subpixel blur on some mobile GPUs */
+      backface-visibility: hidden;
+      -webkit-transform: translateZ(0) scale(var(--mm-scale, 1));
+    }
+    
+    /* iPhone XR specific adjustments */
+    @media only screen 
+      and (device-width: 414px) 
+      and (device-height: 896px) 
+      and (-webkit-device-pixel-ratio: 2) {
+      #stage-center {
+        height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px);
+      }
+    }
   </style>
 </head>
 
@@ -115,6 +141,39 @@
   <script src="js/Preloader.js"></script>
 
   <script>
+    // Enhanced scaling function
+    function updateScale() {
+      const scaleRoot = document.getElementById('scale-root');
+      const stageCenter = document.getElementById('stage-center');
+      
+      // Get available space (accounting for safe areas)
+      const safeTop = parseInt(getComputedStyle(document.body).getPropertyValue('padding-top')) || 0;
+      const safeBottom = parseInt(getComputedStyle(document.body).getPropertyValue('padding-bottom')) || 0;
+      const safeLeft = parseInt(getComputedStyle(document.body).getPropertyValue('padding-left')) || 0;
+      const safeRight = parseInt(getComputedStyle(document.body).getPropertyValue('padding-right')) || 0;
+      
+      const availableWidth = window.innerWidth - safeLeft - safeRight;
+      const availableHeight = window.innerHeight - safeTop - safeBottom;
+      
+      // Calculate scale based on available space
+      const scaleX = availableWidth / 1280;
+      const scaleY = availableHeight / 530;
+      const scale = Math.min(scaleX, scaleY);
+      
+      // Apply the scale
+      document.documentElement.style.setProperty('--mm-scale', scale);
+      
+      // Center the content
+      stageCenter.style.display = 'grid';
+    }
+
+    // Update scale on load and resize
+    window.addEventListener('load', updateScale);
+    window.addEventListener('resize', updateScale);
+    window.addEventListener('orientationchange', function() {
+      setTimeout(updateScale, 300);
+    });
+
     // Lock to landscape when allowed
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(function(err){
@@ -122,7 +181,7 @@
       });
     }
 
-    // Show “rotate” overlay if still in portrait on phones/tablets
+    // Show "rotate" overlay if still in portrait on phones/tablets
     function checkOrientation() {
       const overlay = document.getElementById('rotate-overlay');
       if (window.matchMedia("(orientation: portrait) and (max-width: 1024px)").matches) {

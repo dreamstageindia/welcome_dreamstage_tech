@@ -100,22 +100,22 @@
   #s1 .why-card{
     position:absolute;top:calc(100% + 10px);left:0;width:min(420px,92vw);
     background:#fff;border:1px solid var(--border);border-radius:12px;
-    box-shadow:var(--shadow);padding:12px;z-index:5;opacity:0;transform:translateY(-6px);pointer-events:none;
+    box-shadow:var(--shadow);padding:12px;z-index:70;opacity:0;transform:translateY(-6px);pointer-events:none;
     transition:opacity .16s ease,transform .16s ease
   }
   @media (hover:hover){ #s1 .why-wrap:hover .why-card{opacity:1;transform:translateY(0);pointer-events:auto} }
   #s1 .why-wrap.open .why-card, #s1 .why-wrap:focus-within .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
   @media (max-width:600px){
-    #s1 .why-card{position:fixed;left:0;right:0;bottom:0;top:auto;width:100vw;max-height:60vh;overflow:auto;border-radius:16px 16px 0 0;margin:0;padding:18px 16px;transform:translateY(8px)}
+    #s1 .why-card{position:fixed;left:0;right:0;bottom:0;top:auto;width:100vw;max-height:60vh;overflow:auto;border-radius:16px 16px 0 0;margin:0;padding:18px 16px;transform:translateY(8px);z-index:90}
   }
 
   /* ------------------ S2 ------------------ */
   #s2 .pledge{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--border);border-radius:14px;background:#fff;cursor:pointer;box-shadow:var(--shadow)}
   #s2 .pledge input{width:22px;height:22px}
-  #s2 .pill{display:inline-block;padding:0px 2px;border:1px solid var(--border);border-radius:999px;background:var(--chip);font-weight:500;color:var(--brand); font-size:x-small;}
+  #s2 .pill{display:inline-block;padding:0 6px;border:1px solid var(--border);border-radius:999px;background:var(--chip);font-weight:600;color:var(--brand);font-size:12px}
   #s2 .pill.ok{border-color:var(--brand);background:var(--chip);color:var(--brand)}
   #s2 .why-wrap{position:relative}
-  #s2 .why-card{position:absolute;top:calc(100% + 10px);left:0;width:min(420px,92vw);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:12px;z-index:5;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
+  #s2 .why-card{position:absolute;top:calc(100% + 10px);left:0;width:min(420px,92vw);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:12px;z-index:70;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
   @media (hover:hover){ #s2 .why-wrap:hover .why-card{opacity:1;transform:translateY(0);pointer-events:auto} }
   #s2 .why-wrap.open .why-card,#s2 .why-wrap:focus-within .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
 
@@ -130,7 +130,7 @@
   #s3 .badge-new{position:absolute;top:12px;right:12px;font-size:12px;font-weight:800;border:1px solid var(--border);background:var(--chip);color:var(--brand);border-radius:999px;padding:4px 8px}
   #s3 .preview-anchor{position:relative}
   #s3 .preview-link{font-weight:900;text-decoration:underline;color:var(--brand)}
-  #s3 .preview-pop{position:absolute;left:0;top:100%;margin-top:10px;width:min(360px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.12);padding:14px;z-index:5;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .14s ease,transform .14s ease}
+  #s3 .preview-pop{position:absolute;left:0;top:100%;margin-top:10px;width:min(360px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.12);padding:14px;z-index:70;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .14s ease,transform .14s ease}
   #s3 .preview-pop.show{opacity:1;transform:translateY(0);pointer-events:auto}
   #s3 .mini-epk{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#faf5ff}
   #s3 .mini-epk header{height:100px;background:linear-gradient(135deg,#f5d0fe,#e9d5ff)}
@@ -152,7 +152,7 @@
   #s4 .badge{font-size:13px;padding:6px 10px;border:1px solid var(--border);background:var(--chip);border-radius:999px;font-weight:900;color:var(--brand)}
   #s4 .details{position:relative;display:inline-block}
   #s4 .details .btn{background:transparent;color:var(--brand);border-color:transparent;padding:0}
-  #s4 .card{position:absolute;top:calc(100% + 10px);left:0;width:min(520px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease;z-index:5}
+  #s4 .card{position:absolute;top:calc(100% + 10px);left:0;width:min(520px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease;z-index:70}
   @media (hover:hover){ #s4 .details:hover .card{opacity:1;transform:translateY(0);pointer-events:auto} }
   #s4 .details.open .card,#s4 .details:focus-within .card{opacity:1;transform:translateY(0);pointer-events:auto}
 
@@ -184,7 +184,7 @@
   #s6 .feat li::before{content:"";position:absolute;left:0;top:.65em;width:9px;height:9px;border-radius:999px;background:var(--brand)}
   #s6 .why{position:relative;margin-bottom:10px}
   #s6 .why .why-btn{background:transparent;border:0;color:var(--brand);font-weight:900;cursor:pointer;padding:0}
-  #s6 .why .pop{position:absolute;right:0;top:calc(100% + 8px);width:min(460px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:5}
+  #s6 .why .pop{position:absolute;right:0;top:calc(100% + 8px);width:min(460px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:70}
   @media (hover:hover){ #s6 .why:hover .pop{opacity:1;transform:translateY(0);pointer-events:auto} }
   #s6 .why.open .pop,#s6 .why:focus-within .pop{opacity:1;transform:translateY(0);pointer-events:auto}
 
@@ -213,7 +213,6 @@
     .topbar-inner,.steps-inner,.fp-stage{padding-left:12px;padding-right:12px}
     .brand span{font-size:22px}
     .steps a{--sz:36px}
-    /* S4: narrow the label column a bit */
     :root{ --s4-left:110px; --s4-gap:14px; }
     #s4 .items{gap:10px}
     #s4 .item{padding:11px}
@@ -221,7 +220,6 @@
     #s4 .label{font-size:15px}
   }
   @media (max-width:560px){
-    /* S4: tighter still to avoid shrink/overflow */
     :root{ --s4-left:88px; --s4-gap:10px; }
     #s4 .label{font-size:14px}
     #s4 .label::before{width:8px;height:8px;left:-11px}
@@ -235,11 +233,10 @@
     .brand img{width:34px;height:34px}
     .brand span{font-size:20px}
     .steps a{--sz:32px}
-    /* S4: smallest phones */
     :root{ --s4-left:72px; --s4-gap:8px; }
     #s4 .items{gap:8px}
     #s4 .item{padding:10px;border-radius:12px}
-    #s4 .badge{font-size:8px;padding:4px 8px}
+    #s4 .badge{font-size:6px;padding:4px 8px}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -293,7 +290,7 @@
                 <a class="btn" href="#s2">Begin</a>
                 <span class="why-wrap">
                   <button class="btn outline" id="why1" type="button" aria-expanded="false" aria-controls="whyCard1">Why Dream Stage?</button>
-                  <div class="why-card" id="whyCard1" role="tooltip">
+                  <div class="why-card" id="whyCard1" role="dialog" aria-modal="false">
                     <ul class="fancy" style="margin:0">
                       <li>Artist-first</li>
                       <li>Right gigs, less hustle</li>
@@ -336,7 +333,7 @@
 
             <span class="why-wrap">
               <button class="btn outline" id="why2" type="button" aria-expanded="false" aria-controls="whyCard2">Why this?</button>
-              <div class="why-card" id="whyCard2" role="tooltip" aria-label="Why this pledge matters">
+              <div class="why-card" id="whyCard2" role="dialog" aria-label="Why this pledge matters">
                 <ul class="fancy" style="margin-top:0">
                   <li>Commit to happiness, growth, and learning</li>
                   <li>Be supported, challenged, and celebrated</li>
@@ -375,7 +372,7 @@
               <div class="title" id="t-epk">Customizable EPK/Profiles</div>
               <div class="desc" id="d-epk">
                 Build your online artist presence and reach the world.
-                <a href="#" class="preview-link" id="epkLink" aria-controls="epkPop" aria-expanded="false">Preview →</a>
+                <a href="https://app.dreamstage.tech/epks/" class="preview-link" id="epkLink" aria-controls="epkPop" aria-expanded="false">Preview →</a>
               </div>
               <span class="badge-new">New</span>
 
@@ -523,7 +520,7 @@
             <h1>Choose your plan — early commitment rewards you</h1>
             <span class="pill">Dynamic pricing from your Creator Code</span>
           </div>
-          <p class="sub">Yearly price updates from your rank: ≤100 → ₹49 • 101–500 → ₹100 • 501+ → ₹199.</p>
+
 
           <div class="grid">
             <div class="plan" aria-label="Monthly">
@@ -620,12 +617,14 @@
 (function(){
   var btn = document.getElementById('why1'); if(!btn) return;
   var wrap = btn.parentElement;
-  btn.addEventListener('click', function(e){
-    e.preventDefault();
+  function toggle(e){
+    e && e.preventDefault();
     var open = !wrap.classList.contains('open');
     wrap.classList.toggle('open', open);
     btn.setAttribute('aria-expanded', String(open));
-  });
+  }
+  btn.addEventListener('click', toggle, {passive:false});
+  btn.addEventListener('touchend', toggle, {passive:false});
   document.addEventListener('click', function(e){
     if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
   }, { passive:true });
@@ -639,11 +638,15 @@
   var next = document.getElementById('pledgeNext');
 
   function update(){
-    var on = !!chk.checked;
-    pill.textContent = on ? "You're in ✓" : "Pending";
-    pill.classList.toggle('ok', on);
-    next.setAttribute('aria-disabled', String(!on));
-    next.classList.toggle('ghost', !on);
+    var on = !!(chk && chk.checked);
+    if(pill){
+      pill.textContent = on ? "You're in ✓" : "Pending";
+      pill.classList.toggle('ok', on);
+    }
+    if(next){
+      next.setAttribute('aria-disabled', String(!on));
+      next.classList.toggle('ghost', !on);
+    }
   }
   row.addEventListener('click', function(e){
     if(e.target.tagName==='INPUT'||e.target.tagName==='LABEL') return;
@@ -655,15 +658,13 @@
   chk.addEventListener('change', update);
   update();
 
+  /* S2 “Why this?” pop – touch friendly */
   (function(){
     var btn = document.getElementById('why2'); if(!btn) return;
     var wrap = btn.parentElement;
-    btn.addEventListener('click', function(e){
-      e.preventDefault();
-      var open = !wrap.classList.contains('open');
-      wrap.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', String(open));
-    });
+    function toggle(e){ e && e.preventDefault(); var open=!wrap.classList.contains('open'); wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded', String(open)); }
+    btn.addEventListener('click', toggle, {passive:false});
+    btn.addEventListener('touchend', toggle, {passive:false});
     document.addEventListener('click', function(e){
       if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
     }, { passive:true });
@@ -877,6 +878,7 @@
   function applyRank(rank, confetti=false){
     ccBig.textContent = pad(rank||0);
     setTier(rank||0); setPercentile(rank||0); setYearly(rank||0);
+    document.body.classList.toggle('rank-seen', !!rank);
     if(confetti && rank>0 && !sessionStorage.getItem('CONFETTI_ONCE')){
       sessionStorage.setItem('CONFETTI_ONCE','1'); fireConfetti();
     }
@@ -904,6 +906,14 @@
     if(!(rank>0)){
       openRecover();
     }
+
+    /* Fallback: if rank still empty after a beat, ensure the modal is visible */
+    setTimeout(function(){
+      const current = (ccBig.textContent||'').trim();
+      if(!/#[0-9]{4}/.test(current) || current==='#0000'){
+        if(!document.querySelector('.recover-modal.recover-show')) openRecover();
+      }
+    }, 1200);
   }
   init();
 
@@ -923,7 +933,9 @@
 (function(){
   var w = document.getElementById('whyD')?.parentElement; if(!w) return;
   var b = document.getElementById('whyD');
-  b.addEventListener('click', function(e){ e.preventDefault(); w.classList.toggle('open'); b.setAttribute('aria-expanded', String(w.classList.contains('open'))); });
+  function toggle(e){ e && e.preventDefault(); w.classList.toggle('open'); b.setAttribute('aria-expanded', String(w.classList.contains('open'))); }
+  b.addEventListener('click', toggle, {passive:false});
+  b.addEventListener('touchend', toggle, {passive:false});
   document.addEventListener('click', function(e){ if(!w.contains(e.target)){ w.classList.remove('open'); b.setAttribute('aria-expanded','false'); } }, { passive:true });
 })();
 </script>

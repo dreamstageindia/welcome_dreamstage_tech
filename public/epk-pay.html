@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8"/>
 <title>Dream Stage | Early Access</title>
-
 <meta name="color-scheme" content="light">
 <style>
   :root{
@@ -21,6 +20,30 @@
     --mx:clamp(20px,6vw,64px);
     --radius:18px;
   }
+
+  @media (max-width: 980px) {
+  :root {
+    --maxw: 100vw;
+    --mx: 0;
+  }
+  .topbar-inner,
+  .steps-inner,
+  .fp-stage {
+    margin: 0;
+    width: 100%;
+  }
+  .section {
+    margin-inline: 0;
+    border-radius: 0;
+  }
+  #s1 .row.two {
+    grid-template-columns: 1fr; /* Stack items vertically on mobile */
+    gap: 20px; /* Add vertical spacing */
+  }
+  #s1 .video-shell {
+    width: 100%; /* Ensure video takes full width */
+  }
+}
 
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -60,31 +83,6 @@
   .btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
   @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
   .shake{animation:shake .35s; }
-
-
-  @media (max-width: 980px) {
-  :root {
-    --maxw: 100vw;
-    --mx: 0;
-  }
-  .topbar-inner,
-  .steps-inner,
-  .fp-stage {
-    margin: 0;
-    width: 100%;
-  }
-  .section {
-    margin-inline: 0;
-    border-radius: 0;
-  }
-  #s1 .row.two {
-    grid-template-columns: 1fr; /* Stack items vertically on mobile */
-    gap: 20px; /* Add vertical spacing */
-  }
-  #s1 .video-shell {
-    width: 100%; /* Ensure video takes full width */
-  }
-}
 
   /* Fancy bullets */
   ul.fancy{margin:10px 0 0;padding-left:0;list-style:none}
@@ -538,6 +536,7 @@
                 <li>Cancel anytime</li>
               </ul>
               <div class="fine">100% secure • No-questions-asked refund</div>
+              <div style="margin-top:12px"><a class="btn outline" href="#s5">Choose Monthly</a></div>
             </div>
 
             <div class="plan best" aria-label="Yearly (dynamic)">
@@ -578,6 +577,7 @@
     <div class="recover-box">
       <header>
         <div id="recoverTitle">Find your Creator Code</div>
+        <button class="recover-x" id="recoverClose" aria-label="Close">✕</button>
       </header>
       <main>
         <div class="recover-row">

@@ -1,307 +1,1282 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"/>
-<title>Dream Stage | Early Access</title>
-<meta name="color-scheme" content="light">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>
-  /* ------------------ THEME + TOKENS ------------------ */
-  :root{
-    /* Colors */
-    --bg:#ffffff; --card:#ffffff; --text:#111827; --muted:#6b7280;
-    --brand:#d946ef; --brand-600:#c026d3; --brand-700:#a21caf;
-    --chip:#fae8ff; --border:#f5d0fe; --shadow:0 14px 36px rgba(0,0,0,.08);
+  <meta charset="utf-8" />
+  <title>Dream Stage | Early Access</title>
+  <meta name="color-scheme" content="light">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <style>
+    /* ------------------ THEME + TOKENS ------------------ */
+    :root {
+      /* Colors */
+      --bg: #ffffff;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --brand: #d946ef;
+      --brand-600: #c026d3;
+      --brand-700: #a21caf;
+      --chip: #fae8ff;
+      --border: #f5d0fe;
+      --shadow: 0 14px 36px rgba(0, 0, 0, .08);
 
-    /* Layout scales */
-    --sticky:72px;        /* topbar height */
-    --stepsH:56px;        /* progress height */
-    --container: min(1200px, 100vw);
-    --gap:clamp(16px, 2.6vw, 28px);
-    --pad:clamp(24px, 4.5vw, 40px);
-    --radius:18px;
+      /* Layout scales */
+      --sticky: 72px;
+      /* topbar height */
+      --stepsH: 56px;
+      /* progress height */
+      --container: min(1200px, 100vw);
+      --gap: clamp(16px, 2.6vw, 28px);
+      --pad: clamp(24px, 4.5vw, 40px);
+      --radius: 18px;
 
-    /* S4 timeline layout (responsive) */
-    --s4-left:130px;      /* left column width for labels: Near/Mid/Vision */
-    --s4-gap:16px;        /* gap between label column and cards */
-  }
-
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  html,body{
-    margin:0;background:var(--bg);color:var(--text);
-    font:20px/1.75 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif;
-    width:100%;overflow-x:hidden;
-  }
-  img,video{max-width:100%;height:auto;display:block}
-
-  /* Prevent text spill anywhere */
-  h1,h2,p,li,.title,.desc,.fine,.label,.pill,.sub,.btn,.badge,.price,.per{
-    overflow-wrap:normal; word-break:normal; hyphens:auto;
-  }
-
-  /* ------------------ TOP BAR ------------------ */
-  .topbar{position:fixed;inset:0 0 auto 0;z-index:30;background:#fff;border-bottom:1px solid var(--border);height:var(--sticky)}
-  .topbar-inner{
-    max-width:var(--container); width:100%; margin:0 auto; height:100%;
-    padding:0 16px; display:flex; align-items:center; gap:14px;
-  }
-  .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);font-weight:900}
-  .brand img{width:40px;height:40px;object-fit:contain}
-  .brand span{font-size:24px}
-
-  /* ------------------ STEP PROGRESS (tube) ------------------ */
-  .steps{position:fixed;top:var(--sticky);left:0;right:0;height:var(--stepsH);z-index:25;}
-  .steps-inner{
-    max-width:var(--container); width:100%; margin:0 auto; height:100%;
-    padding:0 0; display:flex; align-items:center; justify-content:center; gap:0;
-  }
-  .steps a{display:none}
-  .tube{
-    width:100%;
-    height:14px;
-    border-radius:999px;
-    background:#faf5ff;
-    position:relative;
-    overflow:hidden;
-    margin:0;
-    padding:0;
-    border:none;
-    box-shadow:none;
-  }
-  .tube .fill{
-    position:absolute;left:0;top:0;bottom:0;
-    width:calc(var(--tube,0) * 100%);
-    background:linear-gradient(90deg,#f0abfc,#d946ef);
-    border-radius:inherit;
-    transition:width .25s ease;
-  }
-
-  /* ------------------ PAGE STACK ------------------ */
-  .fullpage{padding-top:calc(var(--sticky) + var(--stepsH))}
-  .step{min-height:calc(100dvh - var(--sticky) - var(--stepsH));display:flex;align-items:center;justify-content:center;padding-block:clamp(28px,8vh,72px)}
-  .fp-stage{
-    max-width:var(--container); width:100%; margin:0 auto; height:100%;
-    display:flex; align-items:center; justify-content:center; padding:0 16px;
-  }
-  .section{width:100%;padding:var(--pad);border:1px solid var(--border);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow)}
-
-  h1{margin:0 0 12px;font-size:clamp(26px,6.2vw,48px);letter-spacing:.2px}
-  h2{margin:14px 0 8px;font-size:clamp(20px,4.8vw,30px)}
-  .sub{color:var(--muted);margin:6px 0 18px}
-  .muted{color:var(--muted)}
-
-  /* ------------------ BUTTONS ------------------ */
-  .btn{text-decoration:none;appearance:none;border:2px solid var(--brand);background:var(--brand);color:#fff;padding:14px 20px;border-radius:16px;font-weight:900;cursor:pointer;font-size:18px;transition:transform .05s ease, background .15s ease,border-color .15s ease}
-  .btn:hover{background:var(--brand-600);border-color:var(--brand-600)}
-  .btn:active{transform:translateY(1px)}
-  .btn.outline{background:#fff;color:var(--brand)}
-  .btn.ghost{background:#fff;border-color:#efdffd;color:var(--text)}
-  .btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
-  @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
-  .shake{animation:shake .35s}
-
-  /* ------------------ LIST BULLETS ------------------ */
-  ul.fancy{margin:10px 0 0;padding-left:0;list-style:none}
-  ul.fancy li{position:relative;padding-left:18px;margin:8px 0}
-  ul.fancy li::before{content:"";position:absolute;left:0;top:.65em;width:9px;height:9px;border-radius:999px;background:var(--brand)}
-
-  /* ------------------ S1 ------------------ */
-  .row{display:grid;gap:var(--gap)}
-  @media (min-width:900px){ .row.two{grid-template-columns:1.15fr .85fr;align-items:center} }
-  #s1 .video-shell{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:#faf5ff;aspect-ratio:16/10}
-  #s1 .video{width:100%;height:100%;object-fit:cover}
-  @media (max-width:899.98px){ #s1 .row.two>:nth-child(2){order:-1} }
-
-  /* “Why Dream Stage?” pop */
-  #s1 .why-wrap{position:relative}
-  #s1 .why-card{
-    position:absolute;top:calc(100% + 10px);left:0;width:min(420px,92vw);
-    background:#fff;border:1px solid var(--border);border-radius:12px;
-    box-shadow:var(--shadow);padding:12px;z-index:70;opacity:0;transform:translateY(-6px);pointer-events:none;
-    transition:opacity .16s ease,transform .16s ease
-  }
-  @media (hover:hover){ #s1 .why-wrap:hover .why-card{opacity:1;transform:translateY(0);pointer-events:auto} }
-  #s1 .why-wrap.open .why-card, #s1 .why-wrap:focus-within .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
-  @media (max-width:600px){
-    #s1 .why-card{position:fixed;left:0;right:0;bottom:0;top:auto;width:100vw;max-height:60vh;overflow:auto;border-radius:16px 16px 0 0;margin:0;padding:18px 16px;transform:translateY(8px);z-index:90}
-  }
-
-  /* ------------------ S2 ------------------ */
-  #s2 .pledge{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--border);border-radius:14px;background:#fff;cursor:pointer;box-shadow:var(--shadow)}
-  #s2 .pledge input{width:22px;height:22px}
-  #s2 .pill{display:inline-block;padding:0 6px;border:1px solid var(--border);border-radius:999px;background:var(--chip);font-weight:600;color:var(--brand);font-size:12px}
-  #s2 .pill.ok{border-color:var(--brand);background:var(--chip);color:var(--brand)}
-  #s2 .why-wrap{position:relative}
-  #s2 .why-card{position:absolute;top:calc(100% + 10px);left:0;width:min(420px,92vw);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:12px;z-index:70;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
-  @media (hover:hover){ #s2 .why-wrap:hover .why-card{opacity:1;transform:translateY(0);pointer-events:auto} }
-  #s2 .why-wrap.open .why-card,#s2 .why-wrap:focus-within .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
-
-  /* ------------------ S3 ------------------ */
-  #s3 .grid{display:grid;gap:var(--gap)}
-  @media (min-width:420px){ #s3 .grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
-  #s3 .card-btn{position:relative;display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow);text-align:left;cursor:pointer;transition:box-shadow .12s ease,border-color .12s ease;min-height:200px}
-  #s3 .card-btn:hover{border-color:#f0abfc;box-shadow:0 14px 30px rgba(0,0,0,.08)}
-  #s3 .icon{width:22px;height:22px;border-radius:999px;background:radial-gradient(circle at 30% 30%,#f0abfc,#d946ef);opacity:.95;margin-top:2px;flex:0 0 22px}
-  #s3 .title{font-weight:900;font-size:clamp(16px,4.4vw,18px);line-height:1.3}
-  #s3 .desc{color:var(--muted);font-size:clamp(14px,4vw,16px);line-height:1.55;margin-top:4px}
-  #s3 .badge-new{position:absolute;top:12px;right:12px;font-size:12px;font-weight:800;border:1px solid var(--border);background:var(--chip);color:var(--brand);border-radius:999px;padding:4px 8px}
-  #s3 .preview-anchor{position:relative}
-  #s3 .preview-link{font-weight:900;text-decoration:underline;color:var(--brand)}
-  /* if you add #epkPop back later, it will work with the JS below */
-  #s3 .preview-pop{position:absolute;left:0;top:100%;margin-top:10px;width:min(360px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.12);padding:14px;z-index:70;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .14s ease,transform .14s ease}
-  #s3 .preview-pop.show{opacity:1;transform:translateY(0);pointer-events:auto}
-  #s3 .mini-epk{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#faf5ff}
-  #s3 .mini-epk header{height:100px;background:linear-gradient(135deg,#f5d0fe,#e9d5ff)}
-  #s3 .grid>:nth-child(5){grid-column:1/-1;max-width:min(560px,100%);justify-self:center}
-
-  /* ------------------ S4 (Timeline) ------------------ */
-  #s4 .phase{
-    position:relative;display:grid;
-    grid-template-columns:var(--s4-left) 1fr;
-    gap:var(--s4-gap);
-    padding-left:14px;margin-top:16px
-  }
-  #s4 .phase::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--border)}
-  #s4 .label{position:relative;padding-left:10px;font-weight:900;color:#4b5563}
-  #s4 .label::before{content:"";position:absolute;left:-12px;top:.55em;width:10px;height:10px;border-radius:999px;background:var(--brand)}
-  #s4 .items{display:grid;gap:12px}
-  #s4 .item{border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow);padding:12px}
-  #s4 .item .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  #s4 .badge{font-size:13px;padding:6px 10px;border:1px solid var(--border);background:var(--chip);border-radius:999px;font-weight:900;color:var(--brand);white-space:nowrap}
-  #s4 .details{position:relative;display:inline-block}
-  #s4 .details .btn{background:transparent;color:var(--brand);border-color:transparent;padding:0}
-  #s4 .card{position:absolute;top:calc(100% + 10px);left:0;width:min(520px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease;z-index:70}
-  @media (hover:hover){ #s4 .details:hover .card{opacity:1;transform:translateY(0);pointer-events:auto} }
-  #s4 .details.open .card,#s4 .details:focus-within .card{opacity:1;transform:translateY(0);pointer-events:auto}
-
-  /* ------------------ S5 ------------------ */
-  #s5 .cc-big{display:grid;place-items:center;text-align:center;margin:6px 0 12px}
-  #s5 .cc-label{font-weight:800;color:var(--muted);margin-bottom:6px}
-  #s5 #ccBig{font-weight:1000;font-size:clamp(34px,8vw,68px);letter-spacing:.5px}
-  #s5 .tier{display:inline-block;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:#ecfdf5;color:#065f46;font-weight:900;font-size:clamp(12px,3.6vw,14px)}
-  #s5 .prog{margin:14px 0 18px}
-  #s5 .prog .label{font-size:clamp(12px,3.8vw,14px);color:var(--muted);margin-bottom:8px;text-align:center}
-  #s5 .bar{height:12px;background:#faf5ff;border:1px solid var(--border);border-radius:999px;overflow:hidden}
-  #s5 .bar>span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#f0abfc,#d946ef);transition:width .4s ease}
-  #s5 .code-row{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
-  #s5 .tiny{font-size:clamp(12px,3.6vw,14px);color:var(--muted);margin-top:12px}
-  #s5 .confetti-wrap{position:relative}
-  #s5 canvas.confetti{position:absolute;inset:0;pointer-events:none}
-
-  /* ------------------ S6 ------------------ */
-  #s6 .grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
-  @media (max-width:820px){ #s6 .grid{grid-template-columns:1fr} }
-  #s6 .plan{border:2px solid var(--border);border-radius:18px;padding:18px;background:#fff;box-shadow:var(--shadow)}
-  #s6 .plan.best{border-color:#f0abfc;box-shadow:0 12px 34px rgba(217,70,239,.12)}
-  #s6 .strike{text-decoration:line-through;color:var(--muted)}
-  #s6 .price{font-weight:900;font-size:clamp(24px,6vw,36px)}
-  #s6 .per{color:var(--muted);font-weight:700;margin-left:8px}
-  #s6 .fine{font-size:clamp(12px,3.6vw,14px);color:var(--muted);margin-top:10px}
-  #s6 .feat{margin:12px 0 0;padding-left:0;list-style:none}
-  #s6 .feat li{position:relative;padding-left:18px;margin:8px 0}
-  #s6 .feat li::before{content:"";position:absolute;left:0;top:.65em;width:9px;height:9px;border-radius:999px;background:var(--brand)}
-  #s6 .why{position:relative;margin-bottom:10px}
-  #s6 .why .why-btn{background:transparent;border:0;color:var(--brand);font-weight:900;cursor:pointer;padding:0}
-  #s6 .why .pop{position:absolute;right:0;top:calc(100% + 8px);width:min(460px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:70}
-  @media (hover:hover){ #s6 .why:hover .pop{opacity:1;transform:translateY(0);pointer-events:auto} }
-  #s6 .why.open .pop,#s6 .why:focus-within .pop{opacity:1;transform:translateY(0);pointer-events:auto}
-
-  /* ---- Payment promo layout (Section 6) ---- */
-  #s6 .deal-note{margin:10px 0 8px;font-weight:900}
-  #s6 .deal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
-  #s6 .deal-col{border:1px solid var(--border);border-radius:14px;padding:12px;background:#fff}
-  #s6 .deal-h{font-weight:900;margin-bottom:6px}
-  @media (max-width:820px){ #s6 .deal-grid{grid-template-columns:1fr} }
-
-  /* ------------------ MOBILE: keep popovers inside the viewport ------------------ */
-  @media (max-width:600px){
-    #s2 .why-card,
-    #s3 .preview-pop,
-    #s4 .card,
-    #s6 .why .pop{
-      position:fixed;left:0;right:0;bottom:0;top:auto;width:100vw;
-      max-height:60vh;overflow:auto;border-radius:16px 16px 0 0;margin:0;
-      padding:18px 16px;transform:translateY(8px);z-index:90
+      /* S4 timeline layout (responsive) */
+      --s4-left: 130px;
+      /* left column width for labels: Near/Mid/Vision */
+      --s4-gap: 16px;
+      /* gap between label column and cards */
     }
-  }
 
-  /* ------------------ RECOVERY MODAL ------------------ */
-  .recover-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none}
-  .recover-modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
-  .recover-box{width:min(520px,96vw);background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
-  .recover-box header,.recover-box footer{padding:14px 16px}
-  .recover-box header{background:#f3f4f6;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;font-weight:800}
-  .recover-box main{padding:14px 16px;display:grid;gap:12px}
-  .recover-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;align-items:center}
-  .recover-row select,.recover-row input{padding:12px 12px;border:1px solid #e5e7eb;border-radius:10px;font:inherit}
-  .recover-err{display:none;margin-top:4px;padding:10px;border:1px solid #fecaca;border-radius:10px;background:#fef2f2;color:#7f1d1d;font-size:16px}
-  .recover-actions{display:flex;gap:10px;justify-content:flex-end}
-  .recover-btn{background:#0b1220;border:1px solid #0b1220;color:#fff;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:800}
-  .recover-btn.secondary{background:#fff;color:#0b1220;border-color:#e5e7eb}
-  .recover-x{background:transparent;border:0;font-size:20px;cursor:pointer}
-  .recover-show{display:flex !important}
-  @media (max-width:700px){ .recover-row{grid-template-columns:1fr} }
+    * {
+      box-sizing: border-box
+    }
 
-  /* ------------------ SMALL-SCREEN LAYOUT TUNING ------------------ */
-  @media (max-width:900px){
-    .step{min-height:auto}
-    .btn{font-size:16px;padding:12px 16px;border-radius:14px}
-    .section{padding:clamp(18px,5vw,28px); border-left:0;border-right:0;border-radius:12px}
-    .topbar-inner,.steps-inner,.fp-stage{padding-left:12px;padding-right:12px}
-    .brand span{font-size:22px}
-    .steps a{--sz:36px}
-    :root{ --s4-left:110px; --s4-gap:14px; }
-    #s4 .items{gap:10px}
-    #s4 .item{padding:11px}
-    #s4 .badge{font-size:12px;padding:5px 9px}
-    #s4 .label{font-size:15px}
-  }
-  @media (max-width:560px){
-    :root{ --s4-left:88px; --s4-gap:10px; }
-    #s4 .label{font-size:14px}
-    #s4 .label::before{width:8px;height:8px;left:-11px}
-    #s4 .card{width:min(420px,94vw)}
-  }
-  @media (max-width:380px){
-    html,body{font-size:16px}
-    h1{font-size:clamp(22px,7.2vw,32px)}
-    h2{font-size:clamp(18px,6vw,26px)}
-    .btn{font-size:15px;padding:10px 14px}
-    .brand img{width:34px;height:34px}
-    .brand span{font-size:20px}
-    .steps a{--sz:32px}
-    :root{ --s4-left:72px; --s4-gap:8px; }
-    #s4 .items{gap:8px}
-    #s4 .item{padding:10px;border-radius:12px}
-    #s4 .badge{font-size:6px;padding:4px 8px}
-  }
+    html {
+      scroll-behavior: smooth
+    }
 
-  @media (prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    #s5 .bar>span{transition:none}
-  }
+    html,
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 20px/1.75 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      width: 100%;
+      overflow-x: hidden;
+    }
 
-  .perks-wrap{position:relative;display:inline-block}
-.perks-card{
-  position:absolute;top:calc(100% + 10px);left:0;width:min(420px,92vw);
-  background:#fff;border:1px solid var(--border);border-radius:12px;
-  box-shadow:var(--shadow);padding:12px;z-index:70;opacity:0;
-  transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease
-}
-@media (hover:hover){ .perks-wrap:hover .perks-card{opacity:1;transform:translateY(0);pointer-events:auto} }
-.perks-wrap.open .perks-card, .perks-wrap:focus-within .perks-card{opacity:1;transform:translateY(0);pointer-events:auto}
+    img,
+    video {
+      max-width: 100%;
+      height: auto;
+      display: block
+    }
 
-@media (max-width:600px){
-  .perks-card{
-    position:fixed;left:0;right:0;bottom:0;top:auto;width:100vw;
-    max-height:60vh;overflow:auto;border-radius:16px 16px 0 0;margin:0;
-    padding:18px 16px;transform:translateY(8px);z-index:90
-  }
-}
+    /* Prevent text spill anywhere */
+    h1,
+    h2,
+    p,
+    li,
+    .title,
+    .desc,
+    .fine,
+    .label,
+    .pill,
+    .sub,
+    .btn,
+    .badge,
+    .price,
+    .per {
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: auto;
+    }
 
-</style>
+    /* ------------------ TOP BAR ------------------ */
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 30;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      height: var(--sticky)
+    }
+
+    .topbar-inner {
+      max-width: var(--container);
+      width: 100%;
+      margin: 0 auto;
+      height: 100%;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 900
+    }
+
+    .brand img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain
+    }
+
+    .brand span {
+      font-size: 24px
+    }
+
+    /* ------------------ STEP PROGRESS (tube) ------------------ */
+    .steps {
+      position: fixed;
+      top: var(--sticky);
+      left: 0;
+      right: 0;
+      height: var(--stepsH);
+      z-index: 25;
+    }
+
+    .steps-inner {
+      max-width: var(--container);
+      width: 100%;
+      margin: 0 auto;
+      height: 100%;
+      padding: 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .steps a {
+      display: none
+    }
+
+    .tube {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: #faf5ff;
+      position: relative;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+    }
+
+    .tube .fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: calc(var(--tube, 0) * 100%);
+      background: linear-gradient(90deg, #f0abfc, #d946ef);
+      border-radius: inherit;
+      transition: width .25s ease;
+    }
+
+    /* ------------------ PAGE STACK ------------------ */
+    .fullpage {
+      padding-top: calc(var(--sticky) + var(--stepsH))
+    }
+
+    .step {
+      min-height: calc(100dvh - var(--sticky) - var(--stepsH));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-block: clamp(28px, 8vh, 72px)
+    }
+
+    .fp-stage {
+      max-width: var(--container);
+      width: 100%;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+    }
+
+    .section {
+      width: 100%;
+      padding: var(--pad);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow)
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 6.2vw, 48px);
+      letter-spacing: .2px
+    }
+
+    h2 {
+      margin: 14px 0 8px;
+      font-size: clamp(20px, 4.8vw, 30px)
+    }
+
+    .sub {
+      color: var(--muted);
+      margin: 6px 0 18px
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    /* ------------------ BUTTONS ------------------ */
+    .btn {
+      text-decoration: none;
+      appearance: none;
+      border: 2px solid var(--brand);
+      background: var(--brand);
+      color: #fff;
+      padding: 14px 20px;
+      border-radius: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease
+    }
+
+    .btn:hover {
+      background: var(--brand-600);
+      border-color: var(--brand-600)
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    .btn.outline {
+      background: #fff;
+      color: var(--brand)
+    }
+
+    .btn.ghost {
+      background: #fff;
+      border-color: #efdffd;
+      color: var(--text)
+    }
+
+    .btn[aria-disabled="true"] {
+      opacity: .55;
+      cursor: not-allowed
+    }
+
+    @keyframes shake {
+
+      10%,
+      90% {
+        transform: translateX(-1px)
+      }
+
+      20%,
+      80% {
+        transform: translateX(2px)
+      }
+
+      30%,
+      50%,
+      70% {
+        transform: translateX(-4px)
+      }
+
+      40%,
+      60% {
+        transform: translateX(4px)
+      }
+    }
+
+    .shake {
+      animation: shake .35s
+    }
+
+    /* ------------------ LIST BULLETS ------------------ */
+    ul.fancy {
+      margin: 10px 0 0;
+      padding-left: 0;
+      list-style: none
+    }
+
+    ul.fancy li {
+      position: relative;
+      padding-left: 18px;
+      margin: 8px 0
+    }
+
+    ul.fancy li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .65em;
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--brand)
+    }
+
+    /* ------------------ S1 ------------------ */
+    .row {
+      display: grid;
+      gap: var(--gap)
+    }
+
+    @media (min-width:900px) {
+      .row.two {
+        grid-template-columns: 1.15fr .85fr;
+        align-items: center
+      }
+    }
+
+    #s1 .video-shell {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #faf5ff;
+      aspect-ratio: 16/10
+    }
+
+    #s1 .video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    @media (max-width:899.98px) {
+      #s1 .row.two>:nth-child(2) {
+        order: -1
+      }
+    }
+
+    /* “Why Dream Stage?” pop */
+    #s1 .why-wrap {
+      position: relative
+    }
+
+    #s1 .why-card {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      width: min(420px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      z-index: 70;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease
+    }
+
+    @media (hover:hover) {
+      #s1 .why-wrap:hover .why-card {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto
+      }
+    }
+
+    #s1 .why-wrap.open .why-card,
+    #s1 .why-wrap:focus-within .why-card {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto
+    }
+
+    @media (max-width:600px) {
+      #s1 .why-card {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        width: 100vw;
+        max-height: 60vh;
+        overflow: auto;
+        border-radius: 16px 16px 0 0;
+        margin: 0;
+        padding: 18px 16px;
+        transform: translateY(8px);
+        z-index: 90
+      }
+    }
+
+    /* ------------------ S2 ------------------ */
+    #s2 .pledge {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: var(--shadow)
+    }
+
+    #s2 .pledge input {
+      width: 22px;
+      height: 22px
+    }
+
+    #s2 .pill {
+      display: inline-block;
+      padding: 0 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--chip);
+      font-weight: 600;
+      color: var(--brand);
+      font-size: 12px
+    }
+
+    #s2 .pill.ok {
+      border-color: var(--brand);
+      background: var(--chip);
+      color: var(--brand)
+    }
+
+    #s2 .why-wrap {
+      position: relative
+    }
+
+    #s2 .why-card {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      width: min(420px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      z-index: 70;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease
+    }
+
+    @media (hover:hover) {
+      #s2 .why-wrap:hover .why-card {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto
+      }
+    }
+
+    #s2 .why-wrap.open .why-card,
+    #s2 .why-wrap:focus-within .why-card {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto
+    }
+
+    /* ------------------ S3 ------------------ */
+    #s3 .grid {
+      display: grid;
+      gap: var(--gap)
+    }
+
+    @media (min-width:420px) {
+      #s3 .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+    }
+
+    #s3 .card-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      text-align: left;
+      cursor: pointer;
+      transition: box-shadow .12s ease, border-color .12s ease;
+      min-height: 200px
+    }
+
+    #s3 .card-btn:hover {
+      border-color: #f0abfc;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .08)
+    }
+
+    #s3 .icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #f0abfc, #d946ef);
+      opacity: .95;
+      margin-top: 2px;
+      flex: 0 0 22px
+    }
+
+    #s3 .title {
+      font-weight: 900;
+      font-size: clamp(16px, 4.4vw, 18px);
+      line-height: 1.3
+    }
+
+    #s3 .desc {
+      color: var(--muted);
+      font-size: clamp(14px, 4vw, 16px);
+      line-height: 1.55;
+      margin-top: 4px
+    }
+
+    #s3 .badge-new {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid var(--border);
+      background: var(--chip);
+      color: var(--brand);
+      border-radius: 999px;
+      padding: 4px 8px
+    }
+
+    #s3 .preview-anchor {
+      position: relative
+    }
+
+    #s3 .preview-link {
+      font-weight: 900;
+      text-decoration: underline;
+      color: var(--brand)
+    }
+
+    /* if you add #epkPop back later, it will work with the JS below */
+    #s3 .preview-pop {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      margin-top: 10px;
+      width: min(360px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+      padding: 14px;
+      z-index: 70;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .14s ease, transform .14s ease
+    }
+
+    #s3 .preview-pop.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto
+    }
+
+    #s3 .mini-epk {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #faf5ff
+    }
+
+    #s3 .mini-epk header {
+      height: 100px;
+      background: linear-gradient(135deg, #f5d0fe, #e9d5ff)
+    }
+
+    #s3 .grid>:nth-child(5) {
+      grid-column: 1/-1;
+      max-width: min(560px, 100%);
+      justify-self: center
+    }
+
+    /* ------------------ S4 (Timeline) ------------------ */
+    #s4 .phase {
+      position: relative;
+      display: grid;
+      grid-template-columns: var(--s4-left) 1fr;
+      gap: var(--s4-gap);
+      padding-left: 14px;
+      margin-top: 16px
+    }
+
+    #s4 .phase::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border)
+    }
+
+    #s4 .label {
+      position: relative;
+      padding-left: 10px;
+      font-weight: 900;
+      color: #4b5563
+    }
+
+    #s4 .label::before {
+      content: "";
+      position: absolute;
+      left: -12px;
+      top: .55em;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--brand)
+    }
+
+    #s4 .items {
+      display: grid;
+      gap: 12px
+    }
+
+    #s4 .item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      padding: 12px
+    }
+
+    #s4 .item .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px
+    }
+
+    #s4 .badge {
+      font-size: 13px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--chip);
+      border-radius: 999px;
+      font-weight: 900;
+      color: var(--brand);
+      white-space: nowrap
+    }
+
+    #s4 .details {
+      position: relative;
+      display: inline-block
+    }
+
+    #s4 .details .btn {
+      background: transparent;
+      color: var(--brand);
+      border-color: transparent;
+      padding: 0
+    }
+
+    #s4 .card {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      width: min(520px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, .18);
+      padding: 12px;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+      z-index: 70
+    }
+
+    @media (hover:hover) {
+      #s4 .details:hover .card {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto
+      }
+    }
+
+    #s4 .details.open .card,
+    #s4 .details:focus-within .card {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto
+    }
+
+    /* ------------------ S5 ------------------ */
+    #s5 .cc-big {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      margin: 6px 0 12px
+    }
+
+    #s5 .cc-label {
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 6px
+    }
+
+    #s5 #ccBig {
+      font-weight: 1000;
+      font-size: clamp(34px, 8vw, 68px);
+      letter-spacing: .5px
+    }
+
+    #s5 .tier {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #ecfdf5;
+      color: #065f46;
+      font-weight: 900;
+      font-size: clamp(12px, 3.6vw, 14px)
+    }
+
+    #s5 .prog {
+      margin: 14px 0 18px
+    }
+
+    #s5 .prog .label {
+      font-size: clamp(12px, 3.8vw, 14px);
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-align: center
+    }
+
+    #s5 .bar {
+      height: 12px;
+      background: #faf5ff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden
+    }
+
+    #s5 .bar>span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f0abfc, #d946ef);
+      transition: width .4s ease
+    }
+
+    #s5 .code-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px
+    }
+
+    #s5 .tiny {
+      font-size: clamp(12px, 3.6vw, 14px);
+      color: var(--muted);
+      margin-top: 12px
+    }
+
+    #s5 .confetti-wrap {
+      position: relative
+    }
+
+    #s5 canvas.confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none
+    }
+
+    /* ------------------ S6 ------------------ */
+    #s6 .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap)
+    }
+
+    @media (max-width:820px) {
+      #s6 .grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    #s6 .plan {
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      background: #fff;
+      box-shadow: var(--shadow)
+    }
+
+    #s6 .plan.best {
+      border-color: #f0abfc;
+      box-shadow: 0 12px 34px rgba(217, 70, 239, .12)
+    }
+
+    #s6 .strike {
+      text-decoration: line-through;
+      color: var(--muted)
+    }
+
+    #s6 .price {
+      font-weight: 900;
+      font-size: clamp(24px, 6vw, 36px)
+    }
+
+    #s6 .per {
+      color: var(--muted);
+      font-weight: 700;
+      margin-left: 8px
+    }
+
+    #s6 .fine {
+      font-size: clamp(12px, 3.6vw, 14px);
+      color: var(--muted);
+      margin-top: 10px
+    }
+
+    #s6 .feat {
+      margin: 12px 0 0;
+      padding-left: 0;
+      list-style: none
+    }
+
+    #s6 .feat li {
+      position: relative;
+      padding-left: 18px;
+      margin: 8px 0
+    }
+
+    #s6 .feat li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .65em;
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--brand)
+    }
+
+    #s6 .why {
+      position: relative;
+      margin-bottom: 10px
+    }
+
+    #s6 .why .why-btn {
+      background: transparent;
+      border: 0;
+      color: var(--brand);
+      font-weight: 900;
+      cursor: pointer;
+      padding: 0
+    }
+
+    #s6 .why .pop {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: min(460px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, .18);
+      padding: 12px;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .15s ease, transform .15s ease;
+      z-index: 70
+    }
+
+    @media (hover:hover) {
+      #s6 .why:hover .pop {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto
+      }
+    }
+
+    #s6 .why.open .pop,
+    #s6 .why:focus-within .pop {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto
+    }
+
+    /* ---- Payment promo layout (Section 6) ---- */
+    #s6 .deal-note {
+      margin: 10px 0 8px;
+      font-weight: 900
+    }
+
+    #s6 .deal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px
+    }
+
+    #s6 .deal-col {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff
+    }
+
+    #s6 .deal-h {
+      font-weight: 900;
+      margin-bottom: 6px
+    }
+
+    @media (max-width:820px) {
+      #s6 .deal-grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    /* ------------------ MOBILE: keep popovers inside the viewport ------------------ */
+    @media (max-width:600px) {
+
+      #s2 .why-card,
+      #s3 .preview-pop,
+      #s4 .card,
+      #s6 .why .pop {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        width: 100vw;
+        max-height: 60vh;
+        overflow: auto;
+        border-radius: 16px 16px 0 0;
+        margin: 0;
+        padding: 18px 16px;
+        transform: translateY(8px);
+        z-index: 90
+      }
+    }
+
+    /* ------------------ RECOVERY MODAL ------------------ */
+    .recover-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 80;
+      display: none
+    }
+
+    .recover-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px
+    }
+
+    .recover-box {
+      width: min(520px, 96vw);
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+      overflow: hidden
+    }
+
+    .recover-box header,
+    .recover-box footer {
+      padding: 14px 16px
+    }
+
+    .recover-box header {
+      background: #f3f4f6;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 800
+    }
+
+    .recover-box main {
+      padding: 14px 16px;
+      display: grid;
+      gap: 12px
+    }
+
+    .recover-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 10px;
+      align-items: center
+    }
+
+    .recover-row select,
+    .recover-row input {
+      padding: 12px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      font: inherit
+    }
+
+    .recover-err {
+      display: none;
+      margin-top: 4px;
+      padding: 10px;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      background: #fef2f2;
+      color: #7f1d1d;
+      font-size: 16px
+    }
+
+    .recover-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end
+    }
+
+    .recover-btn {
+      background: #0b1220;
+      border: 1px solid #0b1220;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 800
+    }
+
+    .recover-btn.secondary {
+      background: #fff;
+      color: #0b1220;
+      border-color: #e5e7eb
+    }
+
+    .recover-x {
+      background: transparent;
+      border: 0;
+      font-size: 20px;
+      cursor: pointer
+    }
+
+    .recover-show {
+      display: flex !important
+    }
+
+    @media (max-width:700px) {
+      .recover-row {
+        grid-template-columns: 1fr
+      }
+    }
+
+    /* ------------------ SMALL-SCREEN LAYOUT TUNING ------------------ */
+    @media (max-width:900px) {
+      .step {
+        min-height: auto
+      }
+
+      .btn {
+        font-size: 16px;
+        padding: 12px 16px;
+        border-radius: 14px
+      }
+
+      .section {
+        padding: clamp(18px, 5vw, 28px);
+        border-left: 0;
+        border-right: 0;
+        border-radius: 12px
+      }
+
+      .topbar-inner,
+      .steps-inner,
+      .fp-stage {
+        padding-left: 12px;
+        padding-right: 12px
+      }
+
+      .brand span {
+        font-size: 22px
+      }
+
+      .steps a {
+        --sz: 36px
+      }
+
+      :root {
+        --s4-left: 110px;
+        --s4-gap: 14px;
+      }
+
+      #s4 .items {
+        gap: 10px
+      }
+
+      #s4 .item {
+        padding: 11px
+      }
+
+      #s4 .badge {
+        font-size: 12px;
+        padding: 5px 9px
+      }
+
+      #s4 .label {
+        font-size: 15px
+      }
+    }
+
+    @media (max-width:560px) {
+      :root {
+        --s4-left: 88px;
+        --s4-gap: 10px;
+      }
+
+      #s4 .label {
+        font-size: 14px
+      }
+
+      #s4 .label::before {
+        width: 8px;
+        height: 8px;
+        left: -11px
+      }
+
+      #s4 .card {
+        width: min(420px, 94vw)
+      }
+    }
+
+    @media (max-width:380px) {
+
+      html,
+      body {
+        font-size: 16px
+      }
+
+      h1 {
+        font-size: clamp(22px, 7.2vw, 32px)
+      }
+
+      h2 {
+        font-size: clamp(18px, 6vw, 26px)
+      }
+
+      .btn {
+        font-size: 15px;
+        padding: 10px 14px
+      }
+
+      .brand img {
+        width: 34px;
+        height: 34px
+      }
+
+      .brand span {
+        font-size: 20px
+      }
+
+      .steps a {
+        --sz: 32px
+      }
+
+      :root {
+        --s4-left: 72px;
+        --s4-gap: 8px;
+      }
+
+      #s4 .items {
+        gap: 8px
+      }
+
+      #s4 .item {
+        padding: 10px;
+        border-radius: 12px
+      }
+
+      #s4 .badge {
+        font-size: 6px;
+        padding: 4px 8px
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      html {
+        scroll-behavior: auto
+      }
+
+      #s5 .bar>span {
+        transition: none
+      }
+    }
+
+    .perks-wrap {
+      position: relative;
+      display: inline-block
+    }
+
+    .perks-card {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      width: min(420px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      z-index: 70;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease
+    }
+
+    @media (hover:hover) {
+      .perks-wrap:hover .perks-card {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto
+      }
+    }
+
+    .perks-wrap.open .perks-card,
+    .perks-wrap:focus-within .perks-card {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto
+    }
+
+    @media (max-width:600px) {
+      .perks-card {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        width: 100vw;
+        max-height: 60vh;
+        overflow: auto;
+        border-radius: 16px 16px 0 0;
+        margin: 0;
+        padding: 18px 16px;
+        transform: translateY(8px);
+        z-index: 90
+      }
+    }
+  </style>
 </head>
+
 <body>
 
   <!-- Top brand bar -->
@@ -338,16 +1313,17 @@
             <div>
               <h2>A Home For Creative Humans</h2>
               <p class="muted">
-                Welcome to Dream Stage– a space where your creative dreams are not just supported, they’re celebrated.
-                Artists are the heartbeat of society. You’re joining a movement to transform the creative economy.
-                Whether you're a musician, painter, dancer, or visionary, your growth, happiness, and learning take
-                center stage here.
+                Welcome to Dream Stage– a space where your creative dreams are not just supported-they’re celebrated.
+                Here, we believe that artists are the heartbeat of society, and you’re about to join a movement that
+                will transform the creative economy. Whether you're a musician, painter, dancer, or visionary, Dream
+                Stage is the place where your growth, happiness, and learning will take center stage.
               </p>
 
               <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px">
                 <a class="btn" href="#s2">Begin</a>
                 <span class="why-wrap">
-                  <button class="btn outline" id="why1" type="button" aria-expanded="false" aria-controls="whyCard1">Why Dream Stage?</button>
+                  <button class="btn outline" id="why1" type="button" aria-expanded="false" aria-controls="whyCard1">Why
+                    Dream Stage?</button>
                   <div class="why-card" id="whyCard1" role="dialog" aria-modal="false">
                     <ul class="fancy" style="margin:0">
                       <li>Artist-first</li>
@@ -364,8 +1340,9 @@
                 <video class="video" autoplay muted loop playsinline preload="metadata"
                   controlslist="nodownload noplaybackrate nofullscreen"
                   poster="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' width='1280' height='800'><rect width='100%' height='100%' fill='%23faf5ff'/><circle cx='640' cy='400' r='220' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='180' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='140' fill='none' stroke='%23f5d0fe' stroke-width='2'/></svg>">
-                  <source src="/media/ambient/dreamstage-ambient.mp4" type="video/mp4"/>
-                  <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4"/>
+                  <source src="/media/ambient/dreamstage-ambient.mp4" type="video/mp4" />
+                  <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+                    type="video/mp4" />
                 </video>
               </div>
             </div>
@@ -383,14 +1360,16 @@
 
           <div class="pledge" id="pledgeRow" role="button" tabindex="0" aria-controls="pledgeChk">
             <input id="pledgeChk" type="checkbox" aria-describedby="pledgeState">
-            <label for="pledgeChk" style="font-weight:800;cursor:pointer">I agree to commit to my journey of happiness, growth, and learning with Dream Stage.</label>
+            <label for="pledgeChk" style="font-weight:800;cursor:pointer">I agree to commit to my journey of happiness,
+              growth, and learning with Dream Stage.</label>
           </div>
 
           <div style="display:flex;gap:14px;margin-top:16px;align-items:center;flex-wrap:wrap">
             <a class="btn ghost" id="pledgeNext" aria-disabled="true" href="#s3">Continue</a>
 
             <span class="why-wrap">
-              <button class="btn outline" id="why2" type="button" aria-expanded="false" aria-controls="whyCard2">Why this?</button>
+              <button class="btn outline" id="why2" type="button" aria-expanded="false" aria-controls="whyCard2">Why
+                this?</button>
               <div class="why-card" id="whyCard2" role="dialog" aria-label="Why this pledge matters">
                 <ul class="fancy" style="margin-top:0">
                   <li>Commit to happiness, growth, and learning </li>
@@ -430,7 +1409,8 @@
               <div class="title" id="t-epk">Customizable EPK/Profiles</div>
               <div class="desc" id="d-epk">
                 Build your online artist presence and reach the world.
-                <a href="https://app.dreamstage.tech/epks/" class="preview-link" id="epkLink" aria-controls="epkPop" aria-expanded="false">Preview →</a>
+                <a href="https://app.dreamstage.tech/epks/" class="preview-link" id="epkLink" aria-controls="epkPop"
+                  aria-expanded="false">Preview →</a>
               </div>
             </div>
 
@@ -443,7 +1423,8 @@
             <button class="card-btn" type="button" aria-labelledby="t-global" aria-describedby="d-global">
               <span class="icon" aria-hidden="true"></span>
               <div class="title" id="t-global">Global Collective</div>
-              <div class="desc" id="d-global">A revolution is happening, and you can be one of its earliest members.</div>
+              <div class="desc" id="d-global">A revolution is happening, and you can be one of its earliest members.
+              </div>
             </button>
           </div>
         </div>
@@ -461,23 +1442,50 @@
             <div class="label">Near</div>
             <div class="items">
               <div class="item">
-                <div class="top"><div style="font-weight:900">Language-agnostic EPK/Profile</div><span class="badge">In progress</span></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Your profile is accessible worldwide without language barriers.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Language-agnostic EPK/Profile</div><span class="badge">In progress</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Your profile is accessible worldwide without language barriers.</div>
+                </div>
               </div>
 
               <div class="item">
-                <div class="top"><div style="font-weight:900">Right work finds you when you want them</div><span class="badge">In progress</span></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Matching engine surfaces gigs when you want them.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Right work finds you when you want them</div><span class="badge">In
+                    progress</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Matching engine surfaces gigs when you want them.</div>
+                </div>
               </div>
 
               <div class="item">
-                <div class="top"><div style="font-weight:900">Right people will come to you when you want them</div><span class="badge">In progress</span></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Connect with collaborators, mentors, and crews on Dream Stage when you are ready.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Right people will come to you when you want them</div><span
+                    class="badge">In progress</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Connect with collaborators, mentors, and crews on Dream Stage when
+                    you are ready.</div>
+                </div>
               </div>
 
               <div class="item">
-                <div class="top"><div style="font-weight:900">Frictionless payments</div></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Smooth, instant, on-time payouts with blockchain rails.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Frictionless payments</div>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Smooth, instant, on-time payouts with blockchain rails.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -486,9 +1494,14 @@
             <div class="label">Mid</div>
             <div class="items">
               <div class="item">
-                <div class="top"><div style="font-weight:900">Encrypted Physical Key</div><span class="badge">Planned</span></div>
-                <p class="muted" style="margin:8px 0">Your portable, secure identity to smooth experiences everywhere.</p>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button>
+                <div class="top">
+                  <div style="font-weight:900">Encrypted Physical Key</div><span class="badge">Planned</span>
+                </div>
+                <p class="muted" style="margin:8px 0">Your portable, secure identity to smooth experiences everywhere.
+                </p>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
                   <div class="card" role="tooltip">
                     <ul class="fancy" style="margin:8px 0">
                       <li>Your portable, secure identity to smooth experiences everywhere </li>
@@ -505,7 +1518,9 @@
             <div class="label">Vision</div>
             <div class="items">
               <div class="item">
-                <div class="top"><div style="font-weight:900">Explore • Learn • Recognize • Earn • Teach</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Explore • Learn • Recognize • Earn • Teach</div>
+                </div>
                 <p class="muted" style="margin:8px 0">Unified hub for growth across artforms.</p>
               </div>
             </div>
@@ -519,7 +1534,8 @@
       <div class="fp-stage">
         <div class="section">
           <h1>Claim your Creator Code - Your Gateway to Dream Stage.</h1>
-          <p class="sub">Early creators receive immediate rewards, preferred treatment, and early access, while later joiners may have to wait for some benefits to arrive. </p>
+          <p class="sub">Early creators receive immediate rewards, preferred treatment, and early access, while later
+            joiners may have to wait for some benefits to arrive. </p>
 
           <div class="cc-big">
             <div class="cc-label">Your Creator Code</div>
@@ -535,7 +1551,8 @@
           <!-- Perks -->
           <div style="margin-top:12px">
             <span class="perks-wrap">
-              <button class="btn outline" id="perksBtn" type="button" aria-expanded="false" aria-controls="perksCard">Perks:</button>
+              <button class="btn outline" id="perksBtn" type="button" aria-expanded="false"
+                aria-controls="perksCard">Perks:</button>
               <div class="perks-card" id="perksCard" role="dialog" aria-modal="false">
                 <ul class="fancy" style="margin-top:0">
                   <li>Early access to new features and pilots</li>
@@ -550,7 +1567,7 @@
               </div>
             </span>
           </div>
-          
+
 
           <div class="confetti-wrap" style="margin-top:10px">
             <canvas id="confetti" class="confetti" width="10" height="10" aria-hidden="true"></canvas>
@@ -566,7 +1583,8 @@
       <div class="fp-stage">
         <div class="section">
           <h1>Founders Discount For Early Codes.</h1>
-          <p class="sub">Get 75% off the yearly plan for the next 2 years for joining early with a creator code under 100.</p>
+          <p class="sub">Get 75% off the yearly plan for the next 2 years for joining early with a creator code under
+            100.</p>
 
           <div class="grid">
             <!-- Left card -->
@@ -632,363 +1650,365 @@
     </div>
   </div>
 
-<script>
-/* ---------- Top progress: tube loader fills per section ---------- */
-(function(){
-  const nav = document.getElementById('stepNav');
-  const links = Array.from(nav.querySelectorAll('a')); // still used invisibly
-  const total = 6;
-  const map = {s1:1,s2:2,s3:3,s4:4,s5:5,s6:6};
+  <script>
+    /* ---------- Top progress: tube loader fills per section ---------- */
+    (function () {
+      const nav = document.getElementById('stepNav');
+      const links = Array.from(nav.querySelectorAll('a')); // still used invisibly
+      const total = 6;
+      const map = { s1: 1, s2: 2, s3: 3, s4: 4, s5: 5, s6: 6 };
 
-  function setActive(step){
-    links.forEach(a => a.classList.toggle('active', Number(a.dataset.step)===step));
-    document.documentElement.style.setProperty('--tube', step/total);
-  }
-
-  const obs = new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){
-        const step = map[e.target.id]||1;
-        setActive(step);
+      function setActive(step) {
+        links.forEach(a => a.classList.toggle('active', Number(a.dataset.step) === step));
+        document.documentElement.style.setProperty('--tube', step / total);
       }
-    });
-  }, { root:null, rootMargin:"-30% 0px -40% 0px", threshold:0.01 });
 
-  Object.keys(map).forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) obs.observe(el);
-  });
-
-  links.forEach(a=>{
-    a.addEventListener('click', ()=> setActive(Number(a.dataset.step)));
-  });
-})();
-
-/* ---------- S1 “Why Dream Stage?” pop (hover + tap for mobile) ---------- */
-(function(){
-  var btn = document.getElementById('why1'); if(!btn) return;
-  var wrap = btn.parentElement;
-  function toggle(e){
-    e && e.preventDefault();
-    var open = !wrap.classList.contains('open');
-    wrap.classList.toggle('open', open);
-    btn.setAttribute('aria-expanded', String(open));
-  }
-  btn.addEventListener('click', toggle, {passive:false});
-  btn.addEventListener('touchend', toggle, {passive:false});
-  document.addEventListener('click', function(e){
-    if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
-  }, { passive:true });
-})();
-
-/* ---------- S2 pledge: gate “Continue” ---------- */
-(function(){
-  var row  = document.getElementById('pledgeRow');
-  var chk  = document.getElementById('pledgeChk');
-  var pill = document.getElementById('pledgeState');
-  var next = document.getElementById('pledgeNext');
-
-  function update(){
-    var on = !!(chk && chk.checked);
-    if(pill){
-      pill.textContent = on ? "You're in ✓" : "Pending";
-      pill.classList.toggle('ok', on);
-    }
-    if(next){
-      next.setAttribute('aria-disabled', String(!on));
-      next.classList.toggle('ghost', !on);
-    }
-  }
-  row.addEventListener('click', function(e){
-    if(e.target.tagName==='INPUT'||e.target.tagName==='LABEL') return;
-    chk.checked = !chk.checked; update();
-  });
-  row.addEventListener('keydown', function(e){
-    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); chk.checked=!chk.checked; update(); }
-  });
-  chk.addEventListener('change', update);
-  update();
-
-  /* S2 “Why this?” pop – touch friendly */
-  (function(){
-    var btn = document.getElementById('why2'); if(!btn) return;
-    var wrap = btn.parentElement;
-    function toggle(e){ e && e.preventDefault(); var open=!wrap.classList.contains('open'); wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded', String(open)); }
-    btn.addEventListener('click', toggle, {passive:false});
-    btn.addEventListener('touchend', toggle, {passive:false});
-    document.addEventListener('click', function(e){
-      if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
-    }, { passive:true });
-  })();
-})();
-
-/* ---------- S3 EPK preview (if re-enabled) ---------- */
-(function(){
-  var link = document.getElementById('epkLink');
-  var pop  = document.getElementById('epkPop');
-  if(!link||!pop) return;
-  function close(){ pop.classList.remove('show'); link.setAttribute('aria-expanded','false'); }
-  link.addEventListener('click', function(e){
-    e.preventDefault();
-    var open = !pop.classList.contains('show');
-    if(open){
-      pop.classList.add('show'); link.setAttribute('aria-expanded','true');
-      var rect = pop.getBoundingClientRect();
-      if(rect.right > innerWidth - 12){ pop.style.left='auto'; pop.style.right='0'; }
-    } else close();
-  });
-  document.addEventListener('click', function(e){ if(!pop.contains(e.target) && e.target!==link) close(); }, { passive:true });
-  addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
-})();
-
-/* ---------- S4 details toggles ---------- */
-(function(){
-  document.querySelectorAll('#s4 .details .btn').forEach(function(btn){
-    var wrap = btn.parentElement;
-    btn.addEventListener('click', function(e){
-      e.preventDefault();
-      var open = !wrap.classList.contains('open');
-      document.querySelectorAll('#s4 .details.open').forEach(function(w){ if(w!==wrap) w.classList.remove('open'); });
-      wrap.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', String(open));
-    });
-  });
-  document.addEventListener('click', function(e){
-    var opened = document.querySelector('#s4 .details.open');
-    if(opened && !opened.contains(e.target)) opened.classList.remove('open');
-  }, { passive:true });
-})();
-
-/* ---------- S5 Creator Code + Recovery (backend-compatible) ---------- */
-(function(){
-  const TOTAL_USERS = 10000;
-  const ccBig = document.getElementById('ccBig');
-  const tier  = document.getElementById('ccTier');
-  const pctEl = document.getElementById('ccPct');
-  const bar   = document.getElementById('ccBar');
-  const canvas= document.getElementById('confetti');
-  const ctx   = canvas.getContext('2d');
-
-  /* S6 deal price elements */
-  const dealYearEl = document.getElementById('dealYear');
-  const dealMonthlyEl = document.getElementById('dealMonthly');
-
-  function resizeCanvas(){
-    const box = canvas.parentElement.getBoundingClientRect();
-    canvas.width = Math.max(1, Math.floor(box.width));
-    canvas.height = Math.max(1, Math.floor(box.height));
-  }
-  resizeCanvas(); addEventListener('resize', resizeCanvas, {passive:true});
-
-  function fireConfetti(ms=1000, count=160){
-    const parts = Array.from({length:count}).map(()=>({
-      x: Math.random()*canvas.width, y: -10 - Math.random()*40,
-      w: 7, h: 7, vx: -1 + Math.random()*2, vy: 1 + Math.random()*2, a: Math.random()*Math.PI*2
-    }));
-    const colors = ['#d946ef','#f0abfc','#c026d3','#a21caf']; const t0 = performance.now();
-    (function frame(t){
-      const d = t - t0; ctx.clearRect(0,0,canvas.width,canvas.height);
-      parts.forEach((p,i)=>{ p.x+=p.vx; p.y+=p.vy+1.35; p.a+=0.12;
-        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a);
-        ctx.fillStyle = colors[i%colors.length]; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
-      });
-      if(d<ms) requestAnimationFrame(frame);
-    })(t0);
-  }
-
-  function pad(rank){ return '#'+String(Math.max(0,Math.floor(rank||0))).padStart(4,'0'); }
-  function setTier(rank){
-    if(rank && rank<=100){ tier.textContent='Founding Member'; tier.style.display='inline-block'; }
-    else tier.style.display='none';
-  }
-  function setPercentile(rank){
-    let pct = 0;
-    if(typeof rank==='number' && rank>0){ pct = Math.max(0, Math.min(1, (TOTAL_USERS - rank) / TOTAL_USERS)); }
-    pctEl.textContent = Math.round(pct*100);
-    bar.style.width = (pct*100)+'%';
-  }
-  function setDeal(rank){
-    let price = 199;
-    if(rank>0 && rank<=100) price = 49;
-    else if(rank>100 && rank<=3000) price = 99;
-    if (dealYearEl) dealYearEl.textContent = String(price);
-    if (dealMonthlyEl) dealMonthlyEl.textContent = (price/12).toFixed(2);
-  }
-
-  function q(k){ return new URLSearchParams(location.search).get(k) || ''; }
-  const SESSION_KEY = 'QF_SESSION_ID';
-  function ensureSessionId(){
-    let sid = q('sessionId') ||
-              localStorage.getItem('sessionId') ||
-              localStorage.getItem('SESSION_ID') ||
-              localStorage.getItem('MM_SESSION_ID') ||
-              localStorage.getItem(SESSION_KEY);
-    if(!sid){ sid = 'ds_' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
-    localStorage.setItem(SESSION_KEY, sid);
-    return sid;
-  }
-
-  async function fetchRankFromSession(){
-    const sessionId = ensureSessionId();
-    const r = await fetch('/api/player/session', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ sessionId })
-    }).catch(()=>null);
-
-    let rank = 0, playerId = '';
-    if(r && r.ok){
-      const j = await r.json();
-      rank = Number(j.joinOrder||0);
-      playerId = j.playerId || '';
-    }
-    if((!rank || rank<=0) && playerId){
-      try{
-        const r2 = await fetch(`/api/community/me/${playerId}`);
-        if(r2.ok){ const j2 = await r2.json(); rank = Number(j2.joinOrder||0); }
-      }catch{}
-    }
-    return rank;
-  }
-
-  const rBackdrop = document.getElementById('recoverBackdrop');
-  const rModal    = document.getElementById('recoverModal');
-  const rClose    = document.getElementById('recoverClose');
-  const rCancel   = document.getElementById('recoverCancel');
-  const rSubmit   = document.getElementById('recoverSubmit');
-  const rCountry  = document.getElementById('recoverCountry');
-  const rPhone    = document.getElementById('recoverPhone');
-  const rErr      = document.getElementById('recoverErr');
-
-  const COUNTRY_CODES = [
-    { code:'IN', dial:'91',  name:'India (+91)',                pattern:/^[6-9]\d{9}$/ },
-    { code:'US', dial:'1',   name:'United States (+1)',         pattern:/^\d{10}$/ },
-    { code:'GB', dial:'44',  name:'United Kingdom (+44)',       pattern:/^\d{10}$/ },
-    { code:'AE', dial:'971', name:'United Arab Emirates (+971)',pattern:/^\d{7,9}$/ },
-    { code:'SG', dial:'65',  name:'Singapore (+65)',            pattern:/^\d{8}$/ },
-    { code:'AU', dial:'61',  name:'Australia (+61)',            pattern:/^\d{9}$/ }
-  ];
-  function fillCountrySelect(sel){
-    sel.innerHTML = '';
-    COUNTRY_CODES.forEach(c=>{ const o=document.createElement('option'); o.value=c.dial; o.textContent=c.name; sel.appendChild(o); });
-    sel.value='91';
-  }
-  fillCountrySelect(rCountry);
-
-  function digits(s){ return String(s||'').replace(/\D+/g,''); }
-  function toE164(dial, national){
-    const cc=digits(dial), nn=digits(national); const total=cc+nn;
-    if (total.length<5 || total.length>15) return null; return '+'+total;
-  }
-  function validNational(dial, national){
-    const c=COUNTRY_CODES.find(x=>x.dial===String(dial)); if (!c||!c.pattern) return digits(national).length>=6;
-    return c.pattern.test(digits(national));
-  }
-
-  function openRecover(){ rBackdrop.classList.add('recover-show'); rModal.classList.add('recover-show'); rErr.style.display='none'; rErr.textContent=''; }
-  function closeRecover(){ rBackdrop.classList.remove('recover-show'); rModal.classList.remove('recover-show'); }
-
-  rClose.addEventListener('click', closeRecover);
-  rCancel.addEventListener('click', closeRecover);
-  rBackdrop.addEventListener('click', (e)=>{ if(e.target===rBackdrop) closeRecover(); });
-
-  async function tryRecover(){
-    rErr.style.display='none'; rErr.textContent='';
-    const dial = rCountry.value; const national = rPhone.value.trim();
-    if(!validNational(dial, national)){
-      rErr.textContent='That number looks invalid for the selected country.'; rErr.style.display='block'; return;
-    }
-    const e164 = toE164(dial, national);
-    try{
-      const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
-      if(!res.ok){ rErr.textContent='We couldn’t find an account with that number.'; rErr.style.display='block'; return; }
-      const p = await res.json();
-
-      localStorage.setItem('RECOVERED_PLAYER_ID', p._id);
-      localStorage.setItem('RECOVERED_PHONE', p.phone?.number || e164);
-      localStorage.setItem('CREATOR_CODE', String(p.joinOrder || 0));
-
-      const sessionId = ensureSessionId();
-      try{
-        await fetch(`/api/player/${encodeURIComponent(sessionId)}`, {
-          method:'PATCH', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ phone: p.phone?.number || e164 })
-        }).then(async r=>{
-          if(!r.ok){
-            const j = await r.json().catch(()=>({}));
-            if (j && j.error === 'PHONE_EXISTS') { return; }
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const step = map[e.target.id] || 1;
+            setActive(step);
           }
         });
-      }catch{}
+      }, { root: null, rootMargin: "-30% 0px -40% 0px", threshold: 0.01 });
 
-      applyRank(p.joinOrder||0, true);
-      closeRecover();
-    }catch{
-      rErr.textContent='Something went wrong. Please try again.'; rErr.style.display='block';
-    }
-  }
-  rSubmit.addEventListener('click', tryRecover);
-  rPhone.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryRecover(); });
+      Object.keys(map).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) obs.observe(el);
+      });
 
-  function applyRank(rank, confetti=false){
-    ccBig.textContent = pad(rank||0);
-    setTier(rank||0); setPercentile(rank||0); setDeal(rank||0);
-    document.body.classList.toggle('rank-seen', !!rank);
-    if(confetti && rank>0 && !sessionStorage.getItem('CONFETTI_ONCE')){
-      sessionStorage.setItem('CONFETTI_ONCE','1'); fireConfetti();
-    }
-  }
+      links.forEach(a => {
+        a.addEventListener('click', () => setActive(Number(a.dataset.step)));
+      });
+    })();
 
-  async function init(){
-    const pid = q('playerId') || q('id');
-    let rank = 0;
-
-    if (pid){
-      try{ const r = await fetch(`/api/community/me/${pid}`); if(r.ok){ const j = await r.json(); rank = Number(j.joinOrder||0); } }catch{}
-    }
-    if(!(rank>0)){
-      rank = await fetchRankFromSession().catch(()=>0);
-    }
-    if(!(rank>0)){
-      const cached = Number(localStorage.getItem('CREATOR_CODE')||0);
-      if (cached>0) rank = cached;
-    } else {
-      localStorage.setItem('CREATOR_CODE', String(rank));
-    }
-
-    applyRank(rank||0, false);
-
-    if(!(rank>0)){
-      openRecover();
-    }
-
-    setTimeout(function(){
-      const current = (ccBig.textContent||'').trim();
-      if(!/#[0-9]{4}/.test(current) || current==='#0000'){
-        if(!document.querySelector('.recover-modal.recover-show')) openRecover();
+    /* ---------- S1 “Why Dream Stage?” pop (hover + tap for mobile) ---------- */
+    (function () {
+      var btn = document.getElementById('why1'); if (!btn) return;
+      var wrap = btn.parentElement;
+      function toggle(e) {
+        e && e.preventDefault();
+        var open = !wrap.classList.contains('open');
+        wrap.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', String(open));
       }
-    }, 1200);
-  }
-  init();
-})();
+      btn.addEventListener('click', toggle, { passive: false });
+      btn.addEventListener('touchend', toggle, { passive: false });
+      document.addEventListener('click', function (e) {
+        if (!wrap.contains(e.target)) { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+      }, { passive: true });
+    })();
 
-/* ---------- S6 tooltip (kept if needed later) ---------- */
-(function(){
-  var w = document.getElementById('whyD')?.parentElement; if(!w) return;
-  var b = document.getElementById('whyD');
-  function toggle(e){ e && e.preventDefault(); w.classList.toggle('open'); b.setAttribute('aria-expanded', String(w.classList.contains('open'))); }
-  b.addEventListener('click', toggle, {passive:false});
-  b.addEventListener('touchend', toggle, {passive:false});
-  document.addEventListener('click', function(e){ if(!w.contains(e.target)){ w.classList.remove('open'); b.setAttribute('aria-expanded','false'); } }, { passive:true });
-})();
+    /* ---------- S2 pledge: gate “Continue” ---------- */
+    (function () {
+      var row = document.getElementById('pledgeRow');
+      var chk = document.getElementById('pledgeChk');
+      var pill = document.getElementById('pledgeState');
+      var next = document.getElementById('pledgeNext');
 
-(function(){
-  var btn = document.getElementById('perksBtn'); if(!btn) return;
-  var wrap = btn.parentElement;
-  function toggle(e){ e && e.preventDefault(); var open=!wrap.classList.contains('open'); wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded', String(open)); }
-  btn.addEventListener('click', toggle, {passive:false});
-  btn.addEventListener('touchend', toggle, {passive:false});
-  document.addEventListener('click', function(e){ if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); } }, { passive:true });
-})();
-</script>
+      function update() {
+        var on = !!(chk && chk.checked);
+        if (pill) {
+          pill.textContent = on ? "You're in ✓" : "Pending";
+          pill.classList.toggle('ok', on);
+        }
+        if (next) {
+          next.setAttribute('aria-disabled', String(!on));
+          next.classList.toggle('ghost', !on);
+        }
+      }
+      row.addEventListener('click', function (e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+        chk.checked = !chk.checked; update();
+      });
+      row.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chk.checked = !chk.checked; update(); }
+      });
+      chk.addEventListener('change', update);
+      update();
+
+      /* S2 “Why this?” pop – touch friendly */
+      (function () {
+        var btn = document.getElementById('why2'); if (!btn) return;
+        var wrap = btn.parentElement;
+        function toggle(e) { e && e.preventDefault(); var open = !wrap.classList.contains('open'); wrap.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); }
+        btn.addEventListener('click', toggle, { passive: false });
+        btn.addEventListener('touchend', toggle, { passive: false });
+        document.addEventListener('click', function (e) {
+          if (!wrap.contains(e.target)) { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+        }, { passive: true });
+      })();
+    })();
+
+    /* ---------- S3 EPK preview (if re-enabled) ---------- */
+    (function () {
+      var link = document.getElementById('epkLink');
+      var pop = document.getElementById('epkPop');
+      if (!link || !pop) return;
+      function close() { pop.classList.remove('show'); link.setAttribute('aria-expanded', 'false'); }
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        var open = !pop.classList.contains('show');
+        if (open) {
+          pop.classList.add('show'); link.setAttribute('aria-expanded', 'true');
+          var rect = pop.getBoundingClientRect();
+          if (rect.right > innerWidth - 12) { pop.style.left = 'auto'; pop.style.right = '0'; }
+        } else close();
+      });
+      document.addEventListener('click', function (e) { if (!pop.contains(e.target) && e.target !== link) close(); }, { passive: true });
+      addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    })();
+
+    /* ---------- S4 details toggles ---------- */
+    (function () {
+      document.querySelectorAll('#s4 .details .btn').forEach(function (btn) {
+        var wrap = btn.parentElement;
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var open = !wrap.classList.contains('open');
+          document.querySelectorAll('#s4 .details.open').forEach(function (w) { if (w !== wrap) w.classList.remove('open'); });
+          wrap.classList.toggle('open', open);
+          btn.setAttribute('aria-expanded', String(open));
+        });
+      });
+      document.addEventListener('click', function (e) {
+        var opened = document.querySelector('#s4 .details.open');
+        if (opened && !opened.contains(e.target)) opened.classList.remove('open');
+      }, { passive: true });
+    })();
+
+    /* ---------- S5 Creator Code + Recovery (backend-compatible) ---------- */
+    (function () {
+      const TOTAL_USERS = 10000;
+      const ccBig = document.getElementById('ccBig');
+      const tier = document.getElementById('ccTier');
+      const pctEl = document.getElementById('ccPct');
+      const bar = document.getElementById('ccBar');
+      const canvas = document.getElementById('confetti');
+      const ctx = canvas.getContext('2d');
+
+      /* S6 deal price elements */
+      const dealYearEl = document.getElementById('dealYear');
+      const dealMonthlyEl = document.getElementById('dealMonthly');
+
+      function resizeCanvas() {
+        const box = canvas.parentElement.getBoundingClientRect();
+        canvas.width = Math.max(1, Math.floor(box.width));
+        canvas.height = Math.max(1, Math.floor(box.height));
+      }
+      resizeCanvas(); addEventListener('resize', resizeCanvas, { passive: true });
+
+      function fireConfetti(ms = 1000, count = 160) {
+        const parts = Array.from({ length: count }).map(() => ({
+          x: Math.random() * canvas.width, y: -10 - Math.random() * 40,
+          w: 7, h: 7, vx: -1 + Math.random() * 2, vy: 1 + Math.random() * 2, a: Math.random() * Math.PI * 2
+        }));
+        const colors = ['#d946ef', '#f0abfc', '#c026d3', '#a21caf']; const t0 = performance.now();
+        (function frame(t) {
+          const d = t - t0; ctx.clearRect(0, 0, canvas.width, canvas.height);
+          parts.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy + 1.35; p.a += 0.12;
+            ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
+            ctx.fillStyle = colors[i % colors.length]; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+          });
+          if (d < ms) requestAnimationFrame(frame);
+        })(t0);
+      }
+
+      function pad(rank) { return '#' + String(Math.max(0, Math.floor(rank || 0))).padStart(4, '0'); }
+      function setTier(rank) {
+        if (rank && rank <= 100) { tier.textContent = 'Founding Member'; tier.style.display = 'inline-block'; }
+        else tier.style.display = 'none';
+      }
+      function setPercentile(rank) {
+        let pct = 0;
+        if (typeof rank === 'number' && rank > 0) { pct = Math.max(0, Math.min(1, (TOTAL_USERS - rank) / TOTAL_USERS)); }
+        pctEl.textContent = Math.round(pct * 100);
+        bar.style.width = (pct * 100) + '%';
+      }
+      function setDeal(rank) {
+        let price = 199;
+        if (rank > 0 && rank <= 100) price = 49;
+        else if (rank > 100 && rank <= 3000) price = 99;
+        if (dealYearEl) dealYearEl.textContent = String(price);
+        if (dealMonthlyEl) dealMonthlyEl.textContent = (price / 12).toFixed(2);
+      }
+
+      function q(k) { return new URLSearchParams(location.search).get(k) || ''; }
+      const SESSION_KEY = 'QF_SESSION_ID';
+      function ensureSessionId() {
+        let sid = q('sessionId') ||
+          localStorage.getItem('sessionId') ||
+          localStorage.getItem('SESSION_ID') ||
+          localStorage.getItem('MM_SESSION_ID') ||
+          localStorage.getItem(SESSION_KEY);
+        if (!sid) { sid = 'ds_' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+        localStorage.setItem(SESSION_KEY, sid);
+        return sid;
+      }
+
+      async function fetchRankFromSession() {
+        const sessionId = ensureSessionId();
+        const r = await fetch('/api/player/session', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId })
+        }).catch(() => null);
+
+        let rank = 0, playerId = '';
+        if (r && r.ok) {
+          const j = await r.json();
+          rank = Number(j.joinOrder || 0);
+          playerId = j.playerId || '';
+        }
+        if ((!rank || rank <= 0) && playerId) {
+          try {
+            const r2 = await fetch(`/api/community/me/${playerId}`);
+            if (r2.ok) { const j2 = await r2.json(); rank = Number(j2.joinOrder || 0); }
+          } catch { }
+        }
+        return rank;
+      }
+
+      const rBackdrop = document.getElementById('recoverBackdrop');
+      const rModal = document.getElementById('recoverModal');
+      const rClose = document.getElementById('recoverClose');
+      const rCancel = document.getElementById('recoverCancel');
+      const rSubmit = document.getElementById('recoverSubmit');
+      const rCountry = document.getElementById('recoverCountry');
+      const rPhone = document.getElementById('recoverPhone');
+      const rErr = document.getElementById('recoverErr');
+
+      const COUNTRY_CODES = [
+        { code: 'IN', dial: '91', name: 'India (+91)', pattern: /^[6-9]\d{9}$/ },
+        { code: 'US', dial: '1', name: 'United States (+1)', pattern: /^\d{10}$/ },
+        { code: 'GB', dial: '44', name: 'United Kingdom (+44)', pattern: /^\d{10}$/ },
+        { code: 'AE', dial: '971', name: 'United Arab Emirates (+971)', pattern: /^\d{7,9}$/ },
+        { code: 'SG', dial: '65', name: 'Singapore (+65)', pattern: /^\d{8}$/ },
+        { code: 'AU', dial: '61', name: 'Australia (+61)', pattern: /^\d{9}$/ }
+      ];
+      function fillCountrySelect(sel) {
+        sel.innerHTML = '';
+        COUNTRY_CODES.forEach(c => { const o = document.createElement('option'); o.value = c.dial; o.textContent = c.name; sel.appendChild(o); });
+        sel.value = '91';
+      }
+      fillCountrySelect(rCountry);
+
+      function digits(s) { return String(s || '').replace(/\D+/g, ''); }
+      function toE164(dial, national) {
+        const cc = digits(dial), nn = digits(national); const total = cc + nn;
+        if (total.length < 5 || total.length > 15) return null; return '+' + total;
+      }
+      function validNational(dial, national) {
+        const c = COUNTRY_CODES.find(x => x.dial === String(dial)); if (!c || !c.pattern) return digits(national).length >= 6;
+        return c.pattern.test(digits(national));
+      }
+
+      function openRecover() { rBackdrop.classList.add('recover-show'); rModal.classList.add('recover-show'); rErr.style.display = 'none'; rErr.textContent = ''; }
+      function closeRecover() { rBackdrop.classList.remove('recover-show'); rModal.classList.remove('recover-show'); }
+
+      rClose.addEventListener('click', closeRecover);
+      rCancel.addEventListener('click', closeRecover);
+      rBackdrop.addEventListener('click', (e) => { if (e.target === rBackdrop) closeRecover(); });
+
+      async function tryRecover() {
+        rErr.style.display = 'none'; rErr.textContent = '';
+        const dial = rCountry.value; const national = rPhone.value.trim();
+        if (!validNational(dial, national)) {
+          rErr.textContent = 'That number looks invalid for the selected country.'; rErr.style.display = 'block'; return;
+        }
+        const e164 = toE164(dial, national);
+        try {
+          const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
+          if (!res.ok) { rErr.textContent = 'We couldn’t find an account with that number.'; rErr.style.display = 'block'; return; }
+          const p = await res.json();
+
+          localStorage.setItem('RECOVERED_PLAYER_ID', p._id);
+          localStorage.setItem('RECOVERED_PHONE', p.phone?.number || e164);
+          localStorage.setItem('CREATOR_CODE', String(p.joinOrder || 0));
+
+          const sessionId = ensureSessionId();
+          try {
+            await fetch(`/api/player/${encodeURIComponent(sessionId)}`, {
+              method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone: p.phone?.number || e164 })
+            }).then(async r => {
+              if (!r.ok) {
+                const j = await r.json().catch(() => ({}));
+                if (j && j.error === 'PHONE_EXISTS') { return; }
+              }
+            });
+          } catch { }
+
+          applyRank(p.joinOrder || 0, true);
+          closeRecover();
+        } catch {
+          rErr.textContent = 'Something went wrong. Please try again.'; rErr.style.display = 'block';
+        }
+      }
+      rSubmit.addEventListener('click', tryRecover);
+      rPhone.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryRecover(); });
+
+      function applyRank(rank, confetti = false) {
+        ccBig.textContent = pad(rank || 0);
+        setTier(rank || 0); setPercentile(rank || 0); setDeal(rank || 0);
+        document.body.classList.toggle('rank-seen', !!rank);
+        if (confetti && rank > 0 && !sessionStorage.getItem('CONFETTI_ONCE')) {
+          sessionStorage.setItem('CONFETTI_ONCE', '1'); fireConfetti();
+        }
+      }
+
+      async function init() {
+        const pid = q('playerId') || q('id');
+        let rank = 0;
+
+        if (pid) {
+          try { const r = await fetch(`/api/community/me/${pid}`); if (r.ok) { const j = await r.json(); rank = Number(j.joinOrder || 0); } } catch { }
+        }
+        if (!(rank > 0)) {
+          rank = await fetchRankFromSession().catch(() => 0);
+        }
+        if (!(rank > 0)) {
+          const cached = Number(localStorage.getItem('CREATOR_CODE') || 0);
+          if (cached > 0) rank = cached;
+        } else {
+          localStorage.setItem('CREATOR_CODE', String(rank));
+        }
+
+        applyRank(rank || 0, false);
+
+        if (!(rank > 0)) {
+          openRecover();
+        }
+
+        setTimeout(function () {
+          const current = (ccBig.textContent || '').trim();
+          if (!/#[0-9]{4}/.test(current) || current === '#0000') {
+            if (!document.querySelector('.recover-modal.recover-show')) openRecover();
+          }
+        }, 1200);
+      }
+      init();
+    })();
+
+    /* ---------- S6 tooltip (kept if needed later) ---------- */
+    (function () {
+      var w = document.getElementById('whyD')?.parentElement; if (!w) return;
+      var b = document.getElementById('whyD');
+      function toggle(e) { e && e.preventDefault(); w.classList.toggle('open'); b.setAttribute('aria-expanded', String(w.classList.contains('open'))); }
+      b.addEventListener('click', toggle, { passive: false });
+      b.addEventListener('touchend', toggle, { passive: false });
+      document.addEventListener('click', function (e) { if (!w.contains(e.target)) { w.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); } }, { passive: true });
+    })();
+
+    (function () {
+      var btn = document.getElementById('perksBtn'); if (!btn) return;
+      var wrap = btn.parentElement;
+      function toggle(e) { e && e.preventDefault(); var open = !wrap.classList.contains('open'); wrap.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); }
+      btn.addEventListener('click', toggle, { passive: false });
+      btn.addEventListener('touchend', toggle, { passive: false });
+      document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); } }, { passive: true });
+    })();
+  </script>
 </body>
+
 </html>

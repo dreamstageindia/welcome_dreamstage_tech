@@ -1,877 +1,945 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dream Stage | Subscription</title>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <style>
-    :root{
-      --bg: #f6f7fb;
-      --card-bg: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --brand: #0b1220;
-      --brand-accent: #111827;
-      --border: #e5e7eb;
-      --radius: 14px;
-      --shadow: 0 10px 30px rgba(0,0,0,.08);
-      --maxw: min(820px, 94vw);
-      --gap: clamp(10px, 2vw, 16px);
-      --pad: clamp(16px, 2.2vw, 24px);
-      --green:#16a34a;
-      --red:#dc2626;
-      --blue:#2563eb;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin:0; min-height:100%; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif; }
+<meta charset="utf-8"/>
+<title>Dream Stage | Early Access</title>
 
-    /* Top bar */
-    .topbar{ position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--border); }
-    .topbar-inner{ max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
-    .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; color: var(--brand); font-weight: 700; letter-spacing:.2px; font-size: 18px; }
-    .brand img{ width: 28px; height: 28px; object-fit: contain; display:block; }
-    .brand span{ color: var(--brand); }
+<meta name="color-scheme" content="light">
+<style>
+  :root{
+    /* Theme */
+    --bg:#ffffff; --card:#ffffff; --text:#111827; --muted:#6b7280;
+    --brand:#d946ef; --brand-600:#c026d3; --brand-700:#a21caf;
+    --chip:#fae8ff; --border:#f5d0fe; --shadow:0 12px 36px rgba(0,0,0,.08);
 
     /* Layout */
-    .wrap{ min-height: calc(100svh - 52px); display:grid; place-items:center; padding: clamp(16px, 3vh, 40px) 12px; }
-    .card{ width: var(--maxw); border: 1px solid var(--border); border-radius: var(--radius); background: var(--card-bg); box-shadow: var(--shadow); padding: var(--pad); }
+    --sticky:64px;         /* topbar height */
+    --stepsH:44px;         /* numbered section progress height */
+    --maxw:min(1200px,96vw);
+    --gap:clamp(16px,3vw,28px);
+    --pad:clamp(28px,4vw,42px);
+    --mx:clamp(20px,6vw,64px);
+    --radius:18px;
+  }
 
-    h1{ margin:0 0 8px; font-size: clamp(22px, 3.2vw, 30px); letter-spacing:.2px; }
-    h2{ margin:10px 0 6px; font-size: clamp(18px, 2.6vw, 22px); }
-    .muted{ color: var(--muted); }
-    p{ margin: 6px 0; }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  html,body{margin:0;background:var(--bg);color:var(--text);font:18px/1.65 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif}
+  img,video{max-width:100%;height:auto;display:block}
 
-    /* Progress */
-    .progress{ display:flex; align-items:center; gap:12px; margin-bottom: 12px; }
-    .progress .label{ font-weight:700; font-size:14px; }
-    .progressbar{ flex:1; height:10px; background:#eef2f7; border-radius:999px; overflow:hidden; border:1px solid var(--border); }
-    .progressbar > span{ display:block; height:100%; width:0%; background:linear-gradient(90deg, #0b1220, #1f2937); }
+  /* Top bar */
+  .topbar{position:fixed;inset:0 0 auto 0;z-index:30;background:#fff;border-bottom:1px solid var(--border);height:var(--sticky)}
+  .topbar-inner{max-width:var(--maxw);margin:0 auto;height:100%;padding:0 var(--mx);display:flex;align-items:center;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);font-weight:900}
+  .brand img{width:32px;height:32px;object-fit:contain}
 
-    /* Alerts */
-    .panel{ margin-top:12px; padding:12px; border:1px solid var(--border); border-radius:12px; background:#fff; }
-    .ok{ background:#f0fdf4; border-color:#86efac; color:#14532d; }
-    .err{ background:#fef2f2; border-color:#fecaca; color:#7f1d1d; }
+  /* Section number progress (1–6) */
+  .steps{position:fixed;top:var(--sticky);left:0;right:0;height:var(--stepsH);z-index:25;background:#fff;border-bottom:1px solid var(--border)}
+  .steps-inner{max-width:var(--maxw);height:100%;margin:0 auto;padding:0 var(--mx);display:flex;align-items:center;justify-content:center;gap:10px}
+  .steps a{--sz:32px;width:var(--sz);height:var(--sz);border-radius:999px;border:1.5px solid var(--border);display:grid;place-items:center;font-weight:900;text-decoration:none;color:var(--text);background:#fff;transition:transform .05s ease, background .15s ease,border-color .15s ease}
+  .steps a.active{background:var(--brand);border-color:var(--brand);color:#fff;transform:translateY(-1px)}
+  @media (max-width:520px){ .steps a{--sz:28px;font-size:14px} }
 
-    /* Forms */
-    .row{ display:grid; grid-template-columns: 1fr 2fr; gap: var(--gap); align-items:center; }
-    .row + .row { margin-top: 10px; }
-    label{ font-weight: 600; }
-    input, select, textarea{ width:auto; padding:12px 12px; border:1px solid var(--border); border-radius:10px; background:#fff; font: inherit; }
-    input:focus, select:focus, textarea:focus{ border-color:#93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,.2); outline:none; }
-    textarea{ min-height: 100px; resize: vertical; }
-    .hint{ margin-top:6px; font-size:12px; color: var(--muted); }
+  /* Full-page stack */
+  .fullpage{scroll-snap-type:y mandatory;padding-top:calc(var(--sticky) + var(--stepsH))}
+  .step{min-height:calc(100dvh - var(--sticky) - var(--stepsH));display:flex;align-items:center;justify-content:center;padding-block:clamp(28px,8vh,72px);scroll-snap-align:start}
+  .fp-stage{width:100%;max-width:var(--maxw);margin:0 auto;height:100%;display:flex;align-items:center;justify-content:center}
+  .section{width:100%;margin-inline:var(--mx);padding:var(--pad);border:1px solid var(--border);border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow)}
 
-    /* Price UI */
-    .price{ display:flex; align-items:baseline; gap:8px; margin-top:10px; font-weight:700; }
-    .price .amt{ font-size: clamp(22px, 3.5vw, 28px); }
-    .price .cut{ color: var(--muted); text-decoration: line-through; margin-right: 6px; }
-    .price .deal{ font-weight:900; }
-    .green{ color: var(--green); }
-    .red{ color: var(--red); }
+  h1{margin:0 0 10px;font-size:clamp(28px,4.2vw,46px);letter-spacing:.2px}
+  h2{margin:14px 0 8px;font-size:clamp(22px,3.2vw,28px)}
+  .sub{color:var(--muted);margin:6px 0 18px}
+  .muted{color:var(--muted)}
 
-    /* Buttons */
-    .actions{ display:flex; gap:12px; justify-content:space-between; margin-top: 14px; flex-wrap:wrap; }
-    .right{ margin-left:auto; display:flex; gap:12px; flex-wrap:wrap; }
-    .btn{ background: var(--brand); border: 1px solid #0b1220; color:#fff; padding: 10px 16px; border-radius:10px; cursor:pointer; font-weight:700; }
-    .btn.secondary{ background:#111827; }
-    .btn.ghost{ background:#374151; }
-    .btn.link{ background:transparent; color:var(--brand); border:0; padding:0; text-decoration:underline; cursor:pointer; }
-    .btn.outline{ background:#fff; color:var(--brand); border:1px solid var(--border); }
-    .btn.success{ background: var(--green); border-color: var(--green); }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+  /* Buttons */
+  .btn{appearance:none;border:2px solid var(--brand);background:var(--brand);color:#fff;padding:12px 18px;border-radius:14px;font-weight:900;cursor:pointer;font-size:16px;transition:transform .05s ease, background .15s ease,border-color .15s ease}
+  .btn:hover{background:var(--brand-600);border-color:var(--brand-600)}
+  .btn:active{transform:translateY(1px)}
+  .btn.outline{background:#fff;color:var(--brand)}
+  .btn.ghost{background:#fff;border-color:var(--border);color:var(--text)}
+  .btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+  @keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+  .shake{animation:shake .35s; }
 
-    .hidden{ display:none !important; }
 
-    /* Step sections */
-    .step{ margin-top:12px; }
-    .commit-block{ display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--border); border-radius:10px; background:#fff; }
-    .commit-block input[type="checkbox"]{ margin-top:2px; transform: scale(1.1); }
+  @media (max-width: 980px) {
+  :root {
+    --maxw: 100vw;
+    --mx: 0;
+  }
+  .topbar-inner,
+  .steps-inner,
+  .fp-stage {
+    margin: 0;
+    width: 100%;
+  }
+  .section {
+    margin-inline: 0;
+    border-radius: 0;
+  }
+  #s1 .row.two {
+    grid-template-columns: 1fr; /* Stack items vertically on mobile */
+    gap: 20px; /* Add vertical spacing */
+  }
+  #s1 .video-shell {
+    width: 100%; /* Ensure video takes full width */
+  }
+}
 
-    /* Lists */
-    ul.clean{ margin:8px 0 0 0; padding-left: 18px; }
-    ul.clean li{ margin:6px 0; }
+  /* Fancy bullets */
+  ul.fancy{margin:10px 0 0;padding-left:0;list-style:none}
+  ul.fancy li{position:relative;padding-left:18px;margin:8px 0}
+  ul.fancy li::before{content:"";position:absolute;left:0;top:.65em;width:9px;height:9px;border-radius:999px;background:var(--brand)}
 
-    /* Modal */
-    .backdrop{ position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 30; display:none; }
-    .modal{ position: fixed; inset: 0; display:none; z-index: 40; align-items:center; justify-content:center; padding: 24px; }
-    .modal .box{ width: min(560px, 96vw); background:#fff; border:1px solid var(--border); border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden; }
-    .modal header, .modal footer{ padding: 14px 16px; }
-    .modal header{ background:#f3f4f6; border-bottom: 1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-weight:700; }
-    .modal main{ padding: 14px 16px; display:grid; gap:10px; }
-    .kv{ display:flex; gap:10px; }
-    .kv .k{ width: 120px; font-weight:600; color: var(--muted); }
-    .modal .panel{ margin:0; }
-    .modal .row{ grid-template-columns: 120px 1fr; }
-    .modal footer{ display:flex; gap:10px; justify-content:flex-end; border-top: 1px solid var(--border); }
-    .x{ background:transparent; border:0; font-size:20px; cursor:pointer; }
-    .pill{ display:inline-block; padding:4px 8px; border:1px solid var(--border); border-radius:999px; background:#f9fafb; font-weight:700; }
-    .show{ display:flex !important; }
+  /* ===== S1 ===== */
+  .row{display:grid;gap:var(--gap)}
+  @media (min-width:900px){ .row.two{grid-template-columns:1.15fr .85fr;align-items:center} }
+  #s1 .video-shell{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:#faf5ff;aspect-ratio:16/10}
+  #s1 .video{width:100%;height:100%;object-fit:cover}
 
-    @media (max-width: 720px){
-      .row{ grid-template-columns: 1fr; }
-      .actions{ flex-direction: column; align-items: stretch; }
-      .right{ margin-left:0; }
-      .btn{ width: 100%; }
-      .progress{ flex-direction: column; align-items: stretch; gap:8px; }
+  /* Mobile: video first */
+  @media (max-width:899.98px){ #s1 .row.two>:nth-child(2){order:-1} }
+
+  /* “Why Dream Stage?” pop — ONLY the 3 points, responsive */
+  #s1 .why-wrap{position:relative}
+  #s1 .why-card{
+    position:absolute;top:calc(100% + 10px);left:0;
+    width:min(420px,92vw);
+    background:#fff;border:1px solid var(--border);border-radius:12px;
+    box-shadow:var(--shadow);padding:12px;z-index:5;
+    opacity:0;transform:translateY(-6px);pointer-events:none;
+    transition:opacity .16s ease,transform .16s ease
+  }
+  @media (hover:hover){
+    #s1 .why-wrap:hover .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
+  }
+  #s1 .why-wrap.open .why-card,
+  #s1 .why-wrap:focus-within .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
+
+  /* Mobile bottom sheet: full width & responsive height */
+  @media (max-width:600px){
+    #s1 .why-card{
+      position:fixed; left:0; right:0; bottom:0; top:auto;
+      width:100vw; max-height:60vh; overflow:auto;
+      border-radius:16px 16px 0 0; margin:0; padding:18px 16px;
+      transform:translateY(8px);
     }
-  </style>
+  }
+
+  /* ===== S2 ===== */
+  #s2 .pledge{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--border);border-radius:14px;background:#fff;cursor:pointer;box-shadow:var(--shadow)}
+  #s2 .pledge input{width:22px;height:22px}
+  #s2 .pill{display:inline-block;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--chip);font-weight:900;color:var(--brand)}
+  #s2 .pill.ok{background:var(--chip);border-color:var(--brand);color:var(--brand)}
+  #s2 .why-wrap{position:relative}
+  #s2 .why-card{position:absolute;top:calc(100% + 10px);left:0;width:min(420px,92vw);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:12px;z-index:5;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
+  @media (hover:hover){
+    #s2 .why-wrap:hover .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
+  }
+  #s2 .why-wrap.open .why-card,#s2 .why-wrap:focus-within .why-card{opacity:1;transform:translateY(0);pointer-events:auto}
+
+  /* ===== S3 ===== */
+  #s3 .grid{display:grid;gap:var(--gap)}
+  @media (min-width:480px){ #s3 .grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  #s3 .card-btn{position:relative;display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow);text-align:left;cursor:pointer;transition:box-shadow .12s ease,border-color .12s ease;min-height:220px}
+  #s3 .card-btn:hover{border-color:#f0abfc;box-shadow:0 14px 30px rgba(0,0,0,.08)}
+  #s3 .icon{width:20px;height:20px;border-radius:999px;background:radial-gradient(circle at 30% 30%,#f0abfc,#d946ef);opacity:.95;margin-top:2px;flex:0 0 20px}
+  #s3 .title{font-weight:900;font-size:18px;line-height:1.25}
+  #s3 .desc{color:var(--muted);font-size:15px;line-height:1.5;margin-top:4px}
+  #s3 .badge-new{position:absolute;top:12px;right:12px;font-size:12px;font-weight:800;border:1px solid var(--border);background:var(--chip);color:var(--brand);border-radius:999px;padding:3px 8px}
+  #s3 .preview-anchor{position:relative}
+  #s3 .preview-link{font-weight:900;text-decoration:underline;color:var(--brand)}
+  #s3 .preview-pop{position:absolute;left:0;top:100%;margin-top:10px;width:min(360px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.12);padding:14px;z-index:5;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .14s ease,transform .14s ease}
+  #s3 .preview-pop.show{opacity:1;transform:translateY(0);pointer-events:auto}
+  #s3 .mini-epk{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#faf5ff}
+  #s3 .mini-epk header{height:100px;background:linear-gradient(135deg,#f5d0fe,#e9d5ff)}
+  #s3 .grid>:nth-child(5){grid-column:1/-1;max-width:min(560px,100%);justify-self:center}
+
+  /* ===== S4 ===== */
+  #s4 .phase{position:relative;display:grid;grid-template-columns:130px 1fr;gap:16px;padding-left:18px;margin-top:16px}
+  #s4 .phase::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+  #s4 .label{position:relative;padding-left:12px;font-weight:900;color:#4b5563}
+  #s4 .label::before{content:"";position:absolute;left:-13px;top:.6em;width:10px;height:10px;border-radius:999px;background:var(--brand)}
+  #s4 .items{display:grid;gap:12px}
+  #s4 .item{border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow);padding:12px}
+  #s4 .item .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  #s4 .badge{font-size:13px;padding:5px 10px;border:1px solid var(--border);background:var(--chip);border-radius:999px;font-weight:900;color:var(--brand)}
+  #s4 .details{position:relative;display:inline-block}
+  #s4 .details .btn{background:transparent;color:var(--brand);border-color:transparent;padding:0}
+  #s4 .card{position:absolute;top:calc(100% + 10px);left:0;width:min(520px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease;z-index:5}
+  @media (hover:hover){
+    #s4 .details:hover .card{opacity:1;transform:translateY(0);pointer-events:auto}
+  }
+  #s4 .details.open .card,#s4 .details:focus-within .card{opacity:1;transform:translateY(0);pointer-events:auto}
+
+  /* ===== S5 ===== */
+  #s5 .cc-big{display:grid;place-items:center;text-align:center;margin:6px 0 12px}
+  #s5 .cc-label{font-weight:800;color:var(--muted);margin-bottom:6px}
+  #s5 #ccBig{font-weight:1000;font-size:clamp(34px,6.5vw,64px);letter-spacing:.5px}
+  #s5 .tier{display:inline-block;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:#ecfdf5;color:#065f46;font-weight:900;font-size:13px}
+  #s5 .prog{margin:12px 0 16px}
+  #s5 .prog .label{font-size:13px;color:var(--muted);margin-bottom:8px;text-align:center}
+  #s5 .bar{height:12px;background:#faf5ff;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+  #s5 .bar>span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#f0abfc,#d946ef);transition:width .4s ease}
+  #s5 .chip{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:var(--chip);border:1px solid var(--border);color:var(--brand);font-weight:900}
+  #s5 .code-row{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px}
+  #s5 .tiny{font-size:13px;color:var(--muted);margin-top:10px}
+  #s5 .confetti-wrap{position:relative}
+  #s5 canvas.confetti{position:absolute;inset:0;pointer-events:none}
+
+  /* ===== S6 ===== */
+  #s6 .grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+  @media (max-width:720px){ #s6 .grid{grid-template-columns:1fr} }
+  #s6 .plan{border:2px solid var(--border);border-radius:18px;padding:18px;background:#fff;box-shadow:var(--shadow)}
+  #s6 .plan.best{border-color:#f0abfc;box-shadow:0 12px 34px rgba(217,70,239,.12)}
+  #s6 .strike{text-decoration:line-through;color:var(--muted)}
+  #s6 .price{font-weight:900;font-size:clamp(26px,3.8vw,34px)}
+  #s6 .per{color:var(--muted);font-weight:700;margin-left:8px}
+  #s6 .fine{font-size:13px;color:var(--muted);margin-top:10px}
+  #s6 .feat{margin:12px 0 0;padding-left:0;list-style:none}
+  #s6 .feat li{position:relative;padding-left:18px;margin:8px 0}
+  #s6 .feat li::before{content:"";position:absolute;left:0;top:.65em;width:9px;height:9px;border-radius:999px;background:var(--brand)}
+  #s6 .why{position:relative;margin-bottom:10px}
+  #s6 .why .why-btn{background:transparent;border:0;color:var(--brand);font-weight:900;cursor:pointer;padding:0}
+  #s6 .why .pop{position:absolute;right:0;top:calc(100% + 8px);width:min(460px,92vw);background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,.18);padding:12px;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:5}
+  @media (hover:hover){
+    #s6 .why:hover .pop{opacity:1;transform:translateY(0);pointer-events:auto}
+  }
+  #s6 .why.open .pop,#s6 .why:focus-within .pop{opacity:1;transform:translateY(0);pointer-events:auto}
+
+  /* ---------- Recovery modal (no-session phone lookup) ---------- */
+  .recover-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none}
+  .recover-modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+  .recover-box{width:min(520px,96vw);background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+  .recover-box header,.recover-box footer{padding:14px 16px}
+  .recover-box header{background:#f3f4f6;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;font-weight:800}
+  .recover-box main{padding:14px 16px;display:grid;gap:12px}
+  .recover-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;align-items:center}
+  .recover-row select,.recover-row input{padding:12px 12px;border:1px solid #e5e7eb;border-radius:10px;font:inherit}
+  .recover-err{display:none;margin-top:4px;padding:10px;border:1px solid #fecaca;border-radius:10px;background:#fef2f2;color:#7f1d1d;font-size:14px}
+  .recover-actions{display:flex;gap:10px;justify-content:flex-end}
+  .recover-btn{background:#0b1220;border:1px solid #0b1220;color:#fff;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:800}
+  .recover-btn.secondary{background:#fff;color:#0b1220;border-color:#e5e7eb}
+  .recover-x{background:transparent;border:0;font-size:20px;cursor:pointer}
+  .recover-show{display:flex !important}
+  @media (max-width:700px){ .recover-row{grid-template-columns:1fr} }
+
+  /* ---------- Mobile: make everything larger without viewport meta ---------- */
+  @media (max-width:980px){
+    html,body{font-size:20px;line-height:1.75}
+    :root{ --mx:clamp(18px,6vw,32px); --pad:clamp(24px,6vw,36px); --stepsH:56px; --sticky:72px }
+    .steps a{--sz:36px;font-size:16px}
+    .btn{font-size:18px;padding:14px 20px;border-radius:16px}
+    h1{font-size:clamp(28px,7vw,40px)}
+    h2{font-size:clamp(22px,5.5vw,28px)}
+    #s1 .mini-epk header{height:120px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    #s5 .bar>span{transition:none}
+  }
+</style>
 </head>
 <body>
 
   <!-- Top brand bar -->
-  <div class="topbar">
+  <div class="topbar" role="navigation" aria-label="Main">
     <div class="topbar-inner">
       <a class="brand" href="https://dreamstage.tech" target="_blank" rel="noopener">
-        <img src="./logo.png" alt="Dream Stage logo" onerror="this.onerror=null;this.src='/images/dreamstage-logo.png'">
+        <img src="./logo.png" alt="Dream Stage">
         <span>Dream Stage</span>
       </a>
     </div>
   </div>
 
-  <div class="wrap">
-    <div class="card">
-
-      <!-- Progress -->
-      <div class="progress">
-        <div class="label" id="stepLabel">Step 1 of 10</div>
-        <div class="progressbar"><span id="progressBar"></span></div>
-      </div>
-
-      <!-- Alerts -->
-      <div id="alert" class="panel err" style="display:none;"></div>
-      <div id="ok" class="panel ok" style="display:none;"></div>
-
-      <!-- ========== STEP 1: (Merged) Mission + Commitment ========== -->
-      <section id="step1" class="step">
-        <h1>Join the Dream Stage movement</h1>
-        <p class="muted">
-          Welcome to Dream Stage – a space where your creative dreams are not just supported, they’re celebrated.
-          Join a community that champions happiness, growth, and learning for every creator.
-        </p>
-
-        <div class="commit-block" style="margin-top:10px">
-          <input id="commitChk" type="checkbox" />
-          <label for="commitChk">
-            <strong>By joining Dream Stage, I commit to a journey of happiness, growth, and learning.</strong>
-            <br/>
-            <span class="muted">My support helps build a space that nurtures creators everywhere.</span>
-          </label>
-        </div>
-
-        <div class="actions">
-          <button class="btn link" data-skip type="button">Skip to payment</button>
-          <div class="right">
-            <button class="btn outline" data-prev type="button" disabled>Previous</button>
-            <button class="btn" id="step1Next" data-next type="button" disabled>Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 2: Immediate Offerings ========== -->
-      <section id="step2" class="step hidden">
-        <h1>What you get today</h1>
-        <ul class="clean">
-          <li>You own your data (secure, never sold to third parties).</li>
-          <li>No ads, a clean, distraction-free space.</li>
-          <li>Fully customizable, shareable Artist EPK/Profile.</li>
-          <li>Early community access (Creator Code benefits).</li>
-          <li>Be part of the world’s largest artist collective (early member advantage).</li>
-        </ul>
-
-        <div class="actions">
-          <button class="btn link" data-skip type="button">Skip to payment</button>
-          <div class="right">
-            <button class="btn outline" data-prev type="button">Previous</button>
-            <button class="btn" data-next type="button">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 3: Future Offerings ========== -->
-      <section id="step3" class="step hidden">
-        <h1>A path to a better future</h1>
-        <ul class="clean">
-          <li>Right work and right people, when you want them.</li>
-          <li>Your EPK/Profile readable by anyone, anywhere.</li>
-          <li>Your physical encrypted key for seamless identity.</li>
-          <li>Instant, on-time blockchain payments.</li>
-          <li>Explore, learn, discover, earn through, and teach art forms.</li>
-        </ul>
-
-        <div class="actions">
-          <button class="btn link" data-skip type="button">Skip to payment</button>
-          <div class="right">
-            <button class="btn outline" data-prev type="button">Previous</button>
-            <button class="btn" data-next type="button">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 4: Freebie — Familia/Collective ========== -->
-      <section id="step4" class="step hidden">
-        <h1>Welcome to the Dream Stage familia</h1>
-        <p>Your Creator’s Code represents your commitment to happiness and growth on your creative journey.</p>
-        <p class="muted">By joining, you’re part of a movement where creativity and collaboration thrive.</p>
-
-        <div class="actions">
-          <button class="btn link" data-skip type="button">Skip to payment</button>
-          <div class="right">
-            <button class="btn outline" data-prev type="button">Previous</button>
-            <button class="btn" data-next type="button">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 5: Anchoring Bigger Price / Early Discount ========== -->
-      <section id="step5" class="step hidden">
-        <h1>Early commitment benefits</h1>
-        <p id="earlyDiscountLine" class="muted">
-          If your Creator Code is under 100, you’ll receive an exclusive discount on the yearly subscription for the next 2 years.
-        </p>
-
-        <div class="actions">
-          <button class="btn link" data-skip type="button">Skip to payment</button>
-          <div class="right">
-            <button class="btn outline" data-prev type="button">Previous</button>
-            <button class="btn" data-next type="button">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 6: Final Confirmation (checkbox) ========== -->
-      <section id="step6" class="step hidden">
-        <h1>Final confirmation</h1>
-        <div class="commit-block" style="margin-top:10px">
-          <input id="finalCtaChk" type="checkbox" />
-          <label for="finalCtaChk">
-            <strong>I confirm my subscription and I’m ready to begin as a Dream Stage creator.</strong>
-          </label>
-        </div>
-
-        <div class="actions">
-          <button class="btn link" data-skip type="button">Skip to payment</button>
-          <div class="right">
-            <button class="btn outline" data-prev type="button">Previous</button>
-            <button class="btn" id="step6Next" data-next type="button" disabled>Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 7: Payment ========== -->
-      <section id="step7" class="step hidden">
-        <h1>Activate your membership</h1>
-        <p class="muted">Confirm your details and complete the payment to unlock 1 year of access.</p>
-
-        <div class="panel">
-          <div class="row">
-            <label for="name">Name</label>
-            <input id="name" type="text" placeholder="Your name" />
-          </div>
-          <div class="row" style="margin-top:6px;">
-            <label for="country">Country</label>
-            <select id="country"></select>
-          </div>
-          <div class="row" style="margin-top:6px;">
-            <label for="phone">Phone</label>
-            <div>
-              <input id="phone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210"/>
-              <div id="hint" class="hint">Enter your number, we’ll look up your account automatically.</div>
-            </div>
-          </div>
-
-          <div id="priceBox" class="price" style="display:none;">
-            <span class="cut">₹199</span>
-            <span class="amt deal" id="amt">—</span>
-            <span class="muted">(based on your community join rank)</span>
-          </div>
-
-          <div id="rankMsg" class="hint" style="display:none;"></div>
-
-          <div class="actions">
-            <div></div>
-            <div class="right">
-              <button class="btn outline" data-prev type="button">Previous</button>
-              <button class="btn" id="payBtn" type="button" disabled>Pay & Activate</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 8: Referral Program ========== -->
-      <section id="step8" class="step hidden">
-        <h1>Welcome to the familia, invite others</h1>
-        <p id="inviteLine">As a thank you for your early commitment, you can invite a few creators into this movement.</p>
-        <p class="muted"><em>“Choose carefully, invite those who are true to the movement.”</em></p>
-
-        <div class="actions">
-          <button class="btn outline" id="sendInvitesBtn" type="button">Send my invites</button>
-          <div class="right">
-            <button class="btn outline" data-prev type="button">Previous</button>
-            <button class="btn" data-next type="button">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 9: Gift Sent (Referral Info) ========== -->
-      <section id="step9" class="step hidden">
-        <h1>Invites sent</h1>
-        <p>Your referral info has been sent via SMS and Email along with your personal referral code.</p>
-        <p class="muted">You’re now entrusted with inviting the next creators to join our community.</p>
-
-        <div class="actions">
-          <button class="btn outline" data-prev type="button">Previous</button>
-          <div class="right">
-            <button class="btn" data-next type="button">Next</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== STEP 10: Emotional Recall + CTA ========== -->
-      <section id="step10" class="step hidden">
-        <h1>Let’s build the future together</h1>
-        <p>
-          Congratulations once again! By joining Dream Stage, you’ve committed to a journey of happiness, growth, and learning.
-          Now, start building your EPK, showcase your work, and connect with creators.
-        </p>
-
-        <div class="actions">
-          <a class="btn success" href="https://app.dreamstage.tech" target="_blank" rel="noopener">Start building my EPK now</a>
-          <div class="right">
-            <button class="btn outline" data-prev type="button">Previous</button>
-            <button class="btn secondary" type="button" onclick="window.open('https://instagram.com','_blank')">Follow on Instagram</button>
-          </div>
-        </div>
-      </section>
-
+  <!-- Numbered section progress (1–6) -->
+  <nav class="steps" aria-label="Journey progress">
+    <div class="steps-inner" id="stepNav">
+      <a href="#s1" data-step="1">1</a> -
+      <a href="#s2" data-step="2">2</a> -
+      <a href="#s3" data-step="3">3</a> -
+      <a href="#s4" data-step="4">4</a> -
+      <a href="#s5" data-step="5">5</a> -
+      <a href="#s6" data-step="6">6</a>
     </div>
+  </nav>
+
+  <!-- FULL-PAGE STACK -->
+  <div class="fullpage">
+
+    <!-- ===== S1 ===== -->
+    <section id="s1" class="step">
+      <div class="fp-stage">
+        <div class="section">
+          <div class="row two">
+            <div>
+              <h1>A Home For Creative Humans</h1>
+              <p class="muted">
+                Welcome to Dream Stage– a space where your creative dreams are not just supported, they’re celebrated.
+                Artists are the heartbeat of society. You’re joining a movement to transform the creative economy.
+                Whether you're a musician, painter, dancer, or visionary, your growth, happiness, and learning take
+                center stage here.
+              </p>
+
+              <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px">
+                <a class="btn" href="#s2">Begin</a>
+                <span class="why-wrap">
+                  <button class="btn outline" id="why1" type="button" aria-expanded="false" aria-controls="whyCard1">Why Dream Stage?</button>
+                  <!-- Only these three points inside -->
+                  <div class="why-card" id="whyCard1" role="tooltip">
+                    <ul class="fancy" style="margin:0">
+                      <li>Artist-first</li>
+                      <li>Right gigs, less hustle</li>
+                      <li>Secure payments</li>
+                    </ul>
+                  </div>
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <div class="video-shell">
+                <video class="video" autoplay muted loop playsinline preload="metadata"
+                  controlslist="nodownload noplaybackrate nofullscreen"
+                  poster="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' width='1280' height='800'><rect width='100%' height='100%' fill='%23faf5ff'/><circle cx='640' cy='400' r='220' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='180' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='140' fill='none' stroke='%23f5d0fe' stroke-width='2'/></svg>">
+                  <source src="/media/ambient/dreamstage-ambient.mp4" type="video/mp4"/>
+                  <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4"/>
+                </video>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S2 ===== -->
+    <section id="s2" class="step">
+      <div class="fp-stage">
+        <div class="section">
+          <h1>Creator-first culture pledge</h1>
+          <p class="sub">A tiny commitment to align on growth and community vibes.</p>
+
+          <div class="pledge" id="pledgeRow" role="button" tabindex="0" aria-controls="pledgeChk">
+            <input id="pledgeChk" type="checkbox" aria-describedby="pledgeState">
+            <label for="pledgeChk" style="font-weight:800;cursor:pointer">I commit to a journey of happiness, growth, and learning with Dream Stage.</label>
+            <span id="pledgeState" class="pill">Pending</span>
+          </div>
+
+          <div style="display:flex;gap:14px;margin-top:16px;align-items:center;flex-wrap:wrap">
+            <a class="btn ghost" id="pledgeNext" aria-disabled="true" href="#s3">Continue</a>
+
+            <span class="why-wrap">
+              <button class="btn outline" id="why2" type="button" aria-expanded="false" aria-controls="whyCard2">Why this?</button>
+              <div class="why-card" id="whyCard2" role="tooltip" aria-label="Why this pledge matters">
+                <ul class="fancy" style="margin-top:0">
+                  <li>Commit to happiness, growth, and learning</li>
+                  <li>Be supported, challenged, and celebrated</li>
+                  <li>Turn creative dreams into steady progress</li>
+                  <li>Your pledge powers a creator-first space for continuous learning</li>
+                </ul>
+              </div>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S3 ===== -->
+    <section id="s3" class="step">
+      <div class="fp-stage">
+        <div class="section">
+          <h1>Dream Stage Starter Pack</h1>
+          <p class="sub">Join the movement today and unlock a world of exclusive benefits, starting immediately!</p>
+
+          <div class="grid" id="s3grid">
+            <button class="card-btn" type="button" aria-labelledby="t-own" aria-describedby="d-own">
+              <span class="icon" aria-hidden="true"></span>
+              <div class="title" id="t-own">Own Your Data</div>
+              <div class="desc" id="d-own">Secure, no sharing to third parties. You stay in control.</div>
+              <span aria-hidden="true"></span>
+            </button>
+
+            <button class="card-btn" type="button" aria-labelledby="t-ads" aria-describedby="d-ads">
+              <span class="icon" aria-hidden="true"></span>
+              <div class="title" id="t-ads">No Ads</div>
+              <div class="desc" id="d-ads">Enjoy a clean, distraction-free experience.</div>
+              <span aria-hidden="true"></span>
+            </button>
+
+            <div class="card-btn preview-anchor" role="group" aria-labelledby="t-epk" aria-describedby="d-epk">
+              <span class="icon" aria-hidden="true"></span>
+              <div class="title" id="t-epk">Customizable EPK/Profiles</div>
+              <div class="desc" id="d-epk">
+                Build your online artist presence and reach the world.
+                <a href="#" class="preview-link" id="epkLink" aria-controls="epkPop" aria-expanded="false">Preview →</a>
+              </div>
+              <span class="badge-new">New</span>
+
+              <div id="epkPop" class="preview-pop" role="dialog" aria-label="EPK Preview">
+                <div style="font-weight:900;margin-bottom:10px">EPK Preview</div>
+                <div class="mini-epk" aria-hidden="false">
+                  <header></header>
+                  <div style="padding:12px">
+                    <div style="font-weight:900">Artist Name</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+                      <span class="pill" style="border-color:#e5e7eb;color:#374151;background:#fff">#electronic</span>
+                      <span class="pill" style="border-color:#e5e7eb;color:#374151;background:#fff">#dj</span>
+                      <span class="pill" style="border-color:#e5e7eb;color:#374151;background:#fff">#live</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;padding:10px 12px">
+                    <button class="btn" type="button">Share</button>
+                  </div>
+                </div>
+                <div class="desc" style="margin-top:10px">Mini mock of your profile with cover, name, tags, and a share button.</div>
+              </div>
+            </div>
+
+            <button class="card-btn" type="button" aria-labelledby="t-code" aria-describedby="d-code">
+              <span class="icon" aria-hidden="true"></span>
+              <div class="title" id="t-code">Creator Code Access</div>
+              <div class="desc" id="d-code">The sooner you join, the better it is for you.</div>
+              <span aria-hidden="true"></span>
+            </button>
+
+            <button class="card-btn" type="button" aria-labelledby="t-global" aria-describedby="d-global">
+              <span class="icon" aria-hidden="true"></span>
+              <div class="title" id="t-global">Global Collective</div>
+              <div class="desc" id="d-global">A revolution is happening—be one of its earliest members.</div>
+              <span aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S4 ===== -->
+    <section id="s4" class="step">
+      <div class="fp-stage">
+        <div class="section">
+          <h1>A path to a better future</h1>
+          <p class="sub">Three phases: <strong>Near</strong> • <strong>Mid</strong> • <strong>Vision</strong></p>
+
+          <div class="phase">
+            <div class="label">Near</div>
+            <div class="items">
+              <div class="item">
+                <div class="top"><div style="font-weight:900">Language-agnostic EPK/Profile</div><span class="badge">In progress</span></div>
+                <p class="muted" style="margin:8px 0">Your profile is accessible worldwide without language barriers.</p>
+                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Localization and machine-assisted readability for global reach.</div></div>
+              </div>
+
+              <div class="item">
+                <div class="top"><div style="font-weight:900">Right work finds you when you want it</div><span class="badge">In progress</span></div>
+                <p class="muted" style="margin:8px 0">Matching engine surfaces gigs when you are ready.</p>
+                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Preference-aware matching and availability windows.</div></div>
+              </div>
+
+              <div class="item">
+                <div class="top"><div style="font-weight:900">Right people find you when you want them</div><span class="badge">In progress</span></div>
+                <p class="muted" style="margin:8px 0">Connect with collaborators, mentors, and crews on your terms.</p>
+                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Signals for trust, availability, and fit.</div></div>
+              </div>
+
+              <div class="item">
+                <div class="top"><div style="font-weight:900">Frictionless payments</div><span class="badge">Planned</span></div>
+                <p class="muted" style="margin:8px 0">Smooth, instant, on-time payouts with modern rails.</p>
+                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Escrow, auto-invoice, and settlement status visibility.</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="phase">
+            <div class="label">Mid</div>
+            <div class="items">
+              <div class="item">
+                <div class="top"><div style="font-weight:900">Encrypted Physical Key</div><span class="badge">Planned</span></div>
+                <p class="muted" style="margin:8px 0">Your portable, secure identity to smooth experiences everywhere.</p>
+                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">
+                    <ul class="fancy" style="margin:8px 0">
+                      <li><strong>What it means:</strong> portable, encrypted identity for artists</li>
+                      <li><strong>Why it matters:</strong> faster verification, fewer forms everywhere</li>
+                      <li><strong>How it rolls out:</strong> opt-in pilots → feedback → wider release</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="phase">
+            <div class="label">Vision</div>
+            <div class="items">
+              <div class="item">
+                <div class="top"><div style="font-weight:900">Explore • Learn • Recognize • Earn • Teach</div><span class="badge">Vision</span></div>
+                <p class="muted" style="margin:8px 0">Unified hub for growth across artforms.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S5 ===== -->
+    <section id="s5" class="step">
+      <div class="fp-stage">
+        <div class="section">
+          <h1>Claim your Creator Code — your early access key</h1>
+          <p class="sub">Your rank determines perks and price. Earlier = better.</p>
+
+          <!-- Big centered code -->
+          <div class="cc-big">
+            <div class="cc-label">Your Creator Code</div>
+            <div id="ccBig">#0000</div>
+            <div id="ccTier" class="tier" style="display:none;margin-top:8px"></div>
+          </div>
+
+          <!-- Percentile -->
+          <div class="prog">
+            <div class="label">Earlier than <span id="ccPct">—</span>% of creators so far</div>
+            <div class="bar"><span id="ccBar"></span></div>
+          </div>
+
+          <!-- Actions -->
+          <div class="code-row">
+            <button id="copyCode" class="btn outline" type="button">Copy Code</button>
+            <button id="shareCode" class="btn" type="button">Share</button>
+          </div>
+
+          <div class="confetti-wrap">
+            <canvas id="confetti" class="confetti" width="10" height="10" aria-hidden="true"></canvas>
+          </div>
+
+          <p class="tiny">Note: percentile shown assumes a 10,000-member cohort for early access calculations.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== S6 ===== -->
+    <section id="s6" class="step">
+      <div class="fp-stage">
+        <div class="section">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <h1>Choose your plan — early commitment rewards you</h1>
+            <span class="pill">Dynamic pricing from your Creator Code</span>
+          </div>
+          <p class="sub">Yearly price updates from your rank: ≤100 → ₹49 • 101–500 → ₹100 • 501+ → ₹199.</p>
+
+          <div class="grid">
+            <div class="plan" aria-label="Monthly">
+              <h2 style="margin:0 0 8px">Monthly</h2>
+              <div class="fine">Anchor → ₹<span class="strike">16.58</span> /mo</div>
+              <div class="price">₹16.58 <span class="per">/month</span></div>
+              <ul class="feat">
+                <li>All core Dream Stage features</li>
+                <li>Community access</li>
+                <li>Cancel anytime</li>
+              </ul>
+              <div class="fine">100% secure • No-questions-asked refund</div>
+            </div>
+
+            <div class="plan best" aria-label="Yearly (dynamic)">
+              <div class="why">
+                <button class="why-btn" id="whyD" type="button" aria-expanded="false">Why dynamic?</button>
+                <div class="pop" role="tooltip">We reward early believers. Your rank (Creator Code) decides your yearly price.</div>
+              </div>
+
+              <h2 style="margin:0 0 8px">Yearly</h2>
+              <div class="fine">Actual price → ₹<span class="strike">199</span> /yr</div>
+              <div class="price">₹<span id="yearlyAmt">—</span> <span class="per">/year</span></div>
+              <div class="fine" id="yearlyNote">Calculated from your rank.</div>
+
+              <ul class="feat">
+                <li>Everything in Monthly</li>
+                <li>Early access & preferred treatment</li>
+                <li>Founders perks based on rank</li>
+              </ul>
+
+              <div class="fine">100% secure • No-questions-asked refund</div>
+              <div style="margin-top:12px"><a class="btn" href="#s5">Choose Yearly</a></div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-top:14px;color:var(--muted);font-size:13px">
+            <span>Accepted: UPI • Cards • NetBanking | PCI-DSS secure</span>
+            <span style="margin-left:auto">🔒 Secure checkout</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <!-- Payment Confirmation Modal (edit + summary) -->
-  <div id="confirmBackdrop" class="backdrop"></div>
-  <div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-    <div class="box">
+  <!-- Recover session by phone -->
+  <div id="recoverBackdrop" class="recover-backdrop"></div>
+  <div id="recoverModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="recoverTitle">
+    <div class="recover-box">
       <header>
-        <div id="confirmTitle">Confirm your details</div>
-        <button class="x" id="closeModal" aria-label="Close">✕</button>
+        <div id="recoverTitle">Find your Creator Code</div>
       </header>
       <main>
-        <div id="modalAlert" class="panel err hidden"></div>
-
-        <!-- Summary view -->
-        <div id="summaryView">
-          <div class="kv"><div class="k">Name</div><div id="confName">—</div></div>
-          <div class="kv"><div class="k">Phone</div><div id="confPhone">—</div></div>
-          <div class="kv"><div class="k">Amount</div><div><span id="confAmount" class="pill">₹—</span></div></div>
+        <div class="recover-row">
+          <label for="recoverCountry">Country</label>
+          <select id="recoverCountry"></select>
         </div>
-
-        <!-- Edit view -->
-        <div id="editView" class="hidden">
-          <div class="row">
-            <label for="editName">Name</label>
-            <input id="editName" type="text" placeholder="Your name"/>
-          </div>
-          <div class="row">
-            <label for="editCountry">Country</label>
-            <select id="editCountry"></select>
-          </div>
-          <div class="row">
-            <label for="editPhone">Phone</label>
-            <input id="editPhone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210"/>
-          </div>
+        <div class="recover-row">
+          <label for="recoverPhone">Phone number</label>
+          <input id="recoverPhone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210">
         </div>
+        <div id="recoverErr" class="recover-err"></div>
       </main>
-      <footer>
-        <button class="btn secondary" id="editToggle">Edit</button>
-        <button class="btn hidden" id="saveEdit">Save changes</button>
-        <button class="btn ghost hidden" id="cancelEdit">Cancel</button>
-        <button class="btn" id="confirmPay">Confirm & Pay</button>
+      <footer class="recover-actions">
+        <button class="recover-btn secondary" id="recoverCancel" type="button">Cancel</button>
+        <button class="recover-btn" id="recoverSubmit" type="button">Find my account</button>
       </footer>
     </div>
   </div>
 
-  <script>
-    (function(){
-      /* ---------- Helpers ---------- */
-      const $ = id => document.getElementById(id);
-      const qs = sel => document.querySelector(sel);
-      const qsa = sel => Array.from(document.querySelectorAll(sel));
-
-      /* ---------- Shared UI ---------- */
-      const alertBox = $('alert'), okBox = $('ok');
-      function showErr(msg){ alertBox.textContent = msg; alertBox.style.display='block'; okBox.style.display='none'; }
-      function showOk(msg){ okBox.textContent = msg; okBox.style.display='block'; alertBox.style.display='none'; }
-      function hideNotes(){ alertBox.style.display='none'; okBox.style.display='none'; }
-
-      /* ---------- Progress / Steps ---------- */
-      const TOTAL_STEPS = 10;
-      let currentStep = 1;
-      const stepLabel = $('stepLabel');
-      const progressBar = $('progressBar');
-
-      function showStep(n){
-        currentStep = Math.max(1, Math.min(TOTAL_STEPS, n));
-        qsa('.step').forEach((s, i)=> s.classList.toggle('hidden', (i+1)!==currentStep));
-        const pct = Math.round((currentStep-1)/(TOTAL_STEPS-1)*100);
-        stepLabel.textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
-        progressBar.style.width = pct + '%';
-        // Toggle skip visibility (only before payment)
-        qsa('[data-skip]').forEach(b => b.classList.toggle('hidden', currentStep>=7));
-        // Prev button disabled on first
-        qsa('[data-prev]').forEach(b => b.disabled = (currentStep===1));
+<script>
+/* ---------- Top progress (1–6) highlight on scroll ---------- */
+(function(){
+  const nav = document.getElementById('stepNav');
+  const links = Array.from(nav.querySelectorAll('a'));
+  const map = {s1:1,s2:2,s3:3,s4:4,s5:5,s6:6};
+  function setActive(step){ links.forEach(a => a.classList.toggle('active', Number(a.dataset.step)===step)); }
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const step = map[e.target.id]||1;
+        setActive(step);
       }
+    });
+  }, { root:null, rootMargin:"-30% 0px -40% 0px", threshold:0.01 });
+  Object.keys(map).forEach(id=>{ const el=document.getElementById(id); if(el) obs.observe(el); });
+  links.forEach(a=>a.addEventListener('click', ()=>setActive(Number(a.dataset.step))));
+})();
 
-      // Nav buttons
-      qsa('[data-next]').forEach(btn => btn.addEventListener('click', () => {
-        // Prevent moving past step 7 without payment
-        if (currentStep === 7) return;
-        showStep(currentStep + 1);
-      }));
-      qsa('[data-prev]').forEach(btn => btn.addEventListener('click', () => showStep(currentStep - 1)));
-      qsa('[data-skip]').forEach(btn => btn.addEventListener('click', () => showStep(7))); // jump to payment
+/* ---------- S1 “Why Dream Stage?” pop (hover + tap for mobile) ---------- */
+(function(){
+  var btn = document.getElementById('why1'); if(!btn) return;
+  var wrap = btn.parentElement;
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    var open = !wrap.classList.contains('open');
+    wrap.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', function(e){
+    if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  }, { passive:true });
+})();
 
-      /* ---------- Session & local state ---------- */
-      const STATE_KEY='QF_STATE', SESSION_KEY='QF_SESSION_ID';
-      const readState = () => { try{ return JSON.parse(localStorage.getItem(STATE_KEY)||'{}'); }catch{return {}} };
-      const writeState = (p) => { const s=readState(); Object.assign(s,p||{}); localStorage.setItem(STATE_KEY, JSON.stringify(s)); };
-      function ensureSessionId(){
-        let sid = localStorage.getItem(SESSION_KEY);
-        if (!sid) { sid = 'ds_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem(SESSION_KEY, sid); }
-        return sid;
-      }
+/* ---------- S2 pledge: gate “Continue” ---------- */
+(function(){
+  var row  = document.getElementById('pledgeRow');
+  var chk  = document.getElementById('pledgeChk');
+  var pill = document.getElementById('pledgeState');
+  var next = document.getElementById('pledgeNext');
+
+  function update(){
+    var on = !!chk.checked;
+    pill.textContent = on ? "You're in ✓" : "Pending";
+    pill.classList.toggle('ok', on);
+    next.setAttribute('aria-disabled', String(!on));
+    next.classList.toggle('ghost', !on);
+  }
+  row.addEventListener('click', function(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='LABEL') return;
+    chk.checked = !chk.checked; update();
+  });
+  row.addEventListener('keydown', function(e){
+    if(e.key==='Enter'||e.key===' '){ e.preventDefault(); chk.checked=!chk.checked; update(); }
+  });
+  chk.addEventListener('change', update);
+  update();
+
+  (function(){
+    var btn = document.getElementById('why2'); if(!btn) return;
+    var wrap = btn.parentElement;
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      var open = !wrap.classList.contains('open');
+      wrap.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', function(e){
+      if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+    }, { passive:true });
+  })();
+})();
+
+/* ---------- S3 EPK preview ---------- */
+(function(){
+  var link = document.getElementById('epkLink');
+  var pop  = document.getElementById('epkPop');
+  if(!link||!pop) return;
+  function close(){ pop.classList.remove('show'); link.setAttribute('aria-expanded','false'); }
+  link.addEventListener('click', function(e){
+    e.preventDefault();
+    var open = !pop.classList.contains('show');
+    if(open){
+      pop.classList.add('show'); link.setAttribute('aria-expanded','true');
+      var rect = pop.getBoundingClientRect();
+      if(rect.right > innerWidth - 12){ pop.style.left='auto'; pop.style.right='0'; }
+    } else close();
+  });
+  document.addEventListener('click', function(e){ if(!pop.contains(e.target) && e.target!==link) close(); }, { passive:true });
+  addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
+})();
+
+/* ---------- S4 details toggles ---------- */
+(function(){
+  document.querySelectorAll('#s4 .details .btn').forEach(function(btn){
+    var wrap = btn.parentElement;
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      var open = !wrap.classList.contains('open');
+      document.querySelectorAll('#s4 .details.open').forEach(function(w){ if(w!==wrap) w.classList.remove('open'); });
+      wrap.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  });
+  document.addEventListener('click', function(e){
+    var opened = document.querySelector('#s4 .details.open');
+    if(opened && !opened.contains(e.target)) opened.classList.remove('open');
+  }, { passive:true });
+})();
+
+/* ---------- S5 Creator Code + Recovery (backend-compatible) ---------- */
+(function(){
+  const TOTAL_USERS = 10000;
+  const ccBig = document.getElementById('ccBig');
+  const tier  = document.getElementById('ccTier');
+  const pctEl = document.getElementById('ccPct');
+  const bar   = document.getElementById('ccBar');
+  const canvas= document.getElementById('confetti');
+  const ctx   = canvas.getContext('2d');
+  const yearlyAmt = document.getElementById('yearlyAmt');
+  const yearlyNote= document.getElementById('yearlyNote');
+
+  /* canvas helpers */
+  function resizeCanvas(){
+    const box = canvas.parentElement.getBoundingClientRect();
+    canvas.width = Math.max(1, Math.floor(box.width));
+    canvas.height = Math.max(1, Math.floor(box.height));
+  }
+  resizeCanvas(); addEventListener('resize', resizeCanvas, {passive:true});
+
+  function fireConfetti(ms=1000, count=160){
+    const parts = Array.from({length:count}).map(()=>({
+      x: Math.random()*canvas.width, y: -10 - Math.random()*40,
+      w: 7, h: 7, vx: -1 + Math.random()*2, vy: 1 + Math.random()*2, a: Math.random()*Math.PI*2
+    }));
+    const colors = ['#d946ef','#f0abfc','#c026d3','#a21caf']; const t0 = performance.now();
+    (function frame(t){
+      const d = t - t0; ctx.clearRect(0,0,canvas.width,canvas.height);
+      parts.forEach((p,i)=>{ p.x+=p.vx; p.y+=p.vy+1.35; p.a+=0.12;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a);
+        ctx.fillStyle = colors[i%colors.length]; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+      });
+      if(d<ms) requestAnimationFrame(frame);
+    })(t0);
+  }
+
+  /* UI helpers */
+  function pad(rank){ return '#'+String(Math.max(0,Math.floor(rank||0))).padStart(4,'0'); }
+  function setTier(rank){
+    if(rank && rank<=100){ tier.textContent='Founding Member'; tier.style.display='inline-block'; }
+    else tier.style.display='none';
+  }
+  function setPercentile(rank){
+    let pct = 0;
+    if(typeof rank==='number' && rank>0){ pct = Math.max(0, Math.min(1, (TOTAL_USERS - rank) / TOTAL_USERS)); }
+    pctEl.textContent = Math.round(pct*100);
+    bar.style.width = (pct*100)+'%';
+  }
+  // Pricing (match backend /pay/order logic: <=50 => 49, else 99)
+  function setYearly(rank){
+    if (!yearlyAmt) return;
+    const price = (rank>0 && rank<=50) ? 49 : 99;
+    yearlyAmt.textContent = String(price);
+    if (yearlyNote) yearlyNote.textContent = (price===49) ? 'Top 50 special pricing.' : 'Early supporter price.';
+  }
+
+  /* session helpers */
+  function q(k){ return new URLSearchParams(location.search).get(k) || ''; }
+  const SESSION_KEY = 'QF_SESSION_ID';
+  function ensureSessionId(){
+    let sid = q('sessionId') ||
+              localStorage.getItem('sessionId') ||
+              localStorage.getItem('SESSION_ID') ||
+              localStorage.getItem('MM_SESSION_ID') ||
+              localStorage.getItem(SESSION_KEY);
+    if(!sid){ sid = 'ds_' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+    localStorage.setItem(SESSION_KEY, sid);
+    return sid;
+  }
+
+  async function fetchRankFromSession(){
+    const sessionId = ensureSessionId();
+    const r = await fetch('/api/player/session', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ sessionId })
+    }).catch(()=>null);
+
+    let rank = 0, playerId = '';
+    if(r && r.ok){
+      const j = await r.json();
+      rank = Number(j.joinOrder||0);
+      playerId = j.playerId || '';
+    }
+    if((!rank || rank<=0) && playerId){
+      try{
+        const r2 = await fetch(`/api/community/me/${playerId}`);
+        if(r2.ok){ const j2 = await r2.json(); rank = Number(j2.joinOrder||0); }
+      }catch{}
+    }
+    return rank;
+  }
+
+  /* Recovery modal controls */
+  const rBackdrop = document.getElementById('recoverBackdrop');
+  const rModal    = document.getElementById('recoverModal');
+  const rClose    = document.getElementById('recoverClose');
+  const rCancel   = document.getElementById('recoverCancel');
+  const rSubmit   = document.getElementById('recoverSubmit');
+  const rCountry  = document.getElementById('recoverCountry');
+  const rPhone    = document.getElementById('recoverPhone');
+  const rErr      = document.getElementById('recoverErr');
+
+  const COUNTRY_CODES = [
+    { code:'IN', dial:'91',  name:'India (+91)',                pattern:/^[6-9]\d{9}$/ },
+    { code:'US', dial:'1',   name:'United States (+1)',         pattern:/^\d{10}$/ },
+    { code:'GB', dial:'44',  name:'United Kingdom (+44)',       pattern:/^\d{10}$/ },
+    { code:'AE', dial:'971', name:'United Arab Emirates (+971)',pattern:/^\d{7,9}$/ },
+    { code:'SG', dial:'65',  name:'Singapore (+65)',            pattern:/^\d{8}$/ },
+    { code:'AU', dial:'61',  name:'Australia (+61)',            pattern:/^\d{9}$/ }
+  ];
+  function fillCountrySelect(sel){
+    sel.innerHTML = '';
+    COUNTRY_CODES.forEach(c=>{ const o=document.createElement('option'); o.value=c.dial; o.textContent=c.name; sel.appendChild(o); });
+    sel.value='91';
+  }
+  fillCountrySelect(rCountry);
+
+  function digits(s){ return String(s||'').replace(/\D+/g,''); }
+  function toE164(dial, national){
+    const cc=digits(dial), nn=digits(national); const total=cc+nn;
+    if (total.length<5 || total.length>15) return null; return '+'+total;
+  }
+  function validNational(dial, national){
+    const c=COUNTRY_CODES.find(x=>x.dial===String(dial)); if (!c||!c.pattern) return digits(national).length>=6;
+    return c.pattern.test(digits(national));
+  }
+
+  function openRecover(){ rBackdrop.classList.add('recover-show'); rModal.classList.add('recover-show'); rErr.style.display='none'; rErr.textContent=''; }
+  function closeRecover(){ rBackdrop.classList.remove('recover-show'); rModal.classList.remove('recover-show'); }
+
+  rClose.addEventListener('click', closeRecover);
+  rCancel.addEventListener('click', closeRecover);
+  rBackdrop.addEventListener('click', (e)=>{ if(e.target===rBackdrop) closeRecover(); });
+
+  async function tryRecover(){
+    rErr.style.display='none'; rErr.textContent='';
+    const dial = rCountry.value; const national = rPhone.value.trim();
+    if(!validNational(dial, national)){
+      rErr.textContent='That number looks invalid for the selected country.'; rErr.style.display='block'; return;
+    }
+    const e164 = toE164(dial, national);
+    try{
+      const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
+      if(!res.ok){ rErr.textContent='We couldn’t find an account with that number.'; rErr.style.display='block'; return; }
+      const p = await res.json();
+
+      // Cache recovered info for subsequent loads (v1 behavior)
+      localStorage.setItem('RECOVERED_PLAYER_ID', p._id);
+      localStorage.setItem('RECOVERED_PHONE', p.phone?.number || e164);
+      localStorage.setItem('CREATOR_CODE', String(p.joinOrder || 0));
+
+      // Try to bind this session to the same phone (may 409 if phone already belongs to another doc; that's OK)
       const sessionId = ensureSessionId();
-
-      // State we track locally (for UI only)
-      const appState = {
-        paid: false,
-        invitesSent: false,
-        invitesAllowance: 0,
-        earlyDiscountPct: 0
-      };
-
-      /* ---------- Backend patch queue ---------- */
-      let patchTimer=null, pendingPatch={};
-      function queuePatch(delta){
-        Object.assign(pendingPatch, delta||{});
-        clearTimeout(patchTimer);
-        patchTimer = setTimeout(async ()=>{
-          const payload = { ...pendingPatch };
-          pendingPatch = {};
-          try{
-            await fetch(`/api/player/${encodeURIComponent(sessionId)}`, {
-              method:'PATCH', headers:{'Content-Type':'application/json'},
-              body: JSON.stringify(payload)
-            });
-          }catch(e){}
-        }, 300);
-      }
-
-      /* ---------- Countries ---------- */
-      const COUNTRY_CODES = [
-        { code:'IN', dial:'91', name:'India (+91)', pattern:/^[6-9]\d{9}$/ },
-        { code:'US', dial:'1',  name:'United States (+1)', pattern:/^\d{10}$/ },
-        { code:'GB', dial:'44', name:'United Kingdom (+44)', pattern:/^\d{10}$/ },
-        { code:'AE', dial:'971',name:'United Arab Emirates (+971)', pattern:/^\d{7,9}$/ },
-        { code:'SG', dial:'65', name:'Singapore (+65)', pattern:/^\d{8}$/ },
-        { code:'AU', dial:'61', name:'Australia (+61)', pattern:/^\d{9}$/ }
-      ];
-      function fillCountrySelect(sel){
-        sel.innerHTML = '';
-        COUNTRY_CODES.forEach(c=>{ const o=document.createElement('option'); o.value=c.dial; o.textContent=c.name; sel.appendChild(o); });
-      }
-      const countrySel = $('country');
-      fillCountrySelect(countrySel); countrySel.value='91';
-
-      const normDigits = s => String(s||'').replace(/\D+/g,'');
-      function toE164(dial, national){
-        const cc=normDigits(dial), nn=normDigits(national);
-        const total=cc+nn; if (total.length<5 || total.length>15) return null;
-        return '+'+total;
-      }
-      function validateNational(dial, national){
-        const c=COUNTRY_CODES.find(x=>x.dial===String(dial));
-        if (!c || !c.pattern) return normDigits(national).length>=6;
-        return c.pattern.test(normDigits(national));
-      }
-      function splitE164(phone){
-        if (!phone) return null;
-        let raw = String(phone).trim();
-        if (raw.startsWith('00')) raw = '+' + raw.slice(2);
-        raw = raw.replace(/[^\d+]/g, '');
-        const m = raw.match(/^\+?(\d{1,3})(\d{5,})$/);
-        if (!m) return null;
-        const cc = m[1], rest = m[2];
-        const sorted = [...COUNTRY_CODES].sort((a,b)=>b.dial.length-a.dial.length);
-        const match = sorted.find(c => (cc+rest).startsWith(c.dial));
-        if (match){
-          const national = (cc+rest).slice(match.dial.length);
-          return { dial: match.dial, national };
-        }
-        return { dial: cc, national: rest };
-      }
-
-      /* ---------- Price / rank helpers ---------- */
-      const amtEl=$('amt'), priceBox=$('priceBox'), rankMsg=$('rankMsg');
-      function showPriceFromJoinOrder(joinOrder){
-        const isTop50 = (typeof joinOrder==='number' && joinOrder<=50);
-        const rupees = isTop50 ? 49 : 99;
-        amtEl.textContent = `₹${rupees}`;
-        amtEl.classList.remove('green','red');
-        amtEl.classList.add(isTop50 ? 'green' : 'red');
-        priceBox.style.display='flex';
-        if (isTop50) rankMsg.textContent = 'Congrats! You’re among the first 50. Special launch price unlocked.';
-        else rankMsg.textContent = 'Early supporter price applied.';
-        rankMsg.style.display = 'block';
-      }
-      function calcEarlyDiscountPct(joinOrder){
-        if (typeof joinOrder==='number' && joinOrder>0 && joinOrder<100) {
-          return Math.max(10, 100 - joinOrder); // e.g., rank 12 => 88%
-        }
-        return 0;
-      }
-      function invitesForRank(joinOrder){
-        if (joinOrder && joinOrder<=50) return 5;
-        if (joinOrder && joinOrder<100) return 3;
-        return 1;
-      }
-
-      /* ---------- Step 1: Commitment ---------- */
-      const commitChk = $('commitChk');
-      const step1Next = $('step1Next');
-      function updateStep1() {
-        step1Next.disabled = !commitChk.checked;
-      }
-      commitChk.addEventListener('change', ()=>{
-        const agreed = !!commitChk.checked;
-        writeState({ committed: agreed });
-        updateStep1();
-        queuePatch({ consent: agreed, commitmentAgreed: agreed });
-      });
-
-      /* ---------- Step 5: Early discount text ---------- */
-      const earlyDiscountLine = $('earlyDiscountLine');
-
-      /* ---------- Step 6: Final confirmation ---------- */
-      const finalCtaChk = $('finalCtaChk');
-      const step6Next = $('step6Next');
-      function updateStep6(){
-        step6Next.disabled = !finalCtaChk.checked;
-      }
-      finalCtaChk.addEventListener('change', ()=>{
-        const checked = !!finalCtaChk.checked;
-        writeState({ confirmed: checked });
-        updateStep6();
-        queuePatch({ subscriptionConfirmed: checked });
-      });
-
-      /* ---------- Step 7: Payment fields & lookup ---------- */
-      const nameEl=$('name'), phoneEl=$('phone'), hint=$('hint'), payBtn=$('payBtn');
-
-      // Persist name/phone
-      nameEl.addEventListener('input', ()=>{
-        const val = nameEl.value.trim();
-        writeState({ name: val });
-        queuePatch({ name: val });
-      });
-
-      phoneEl.addEventListener('input', ()=>{
-        const dial = countrySel.value;
-        const national = phoneEl.value.trim();
-        const e164 = toE164(dial, national);
-        if (e164) { writeState({ phone: e164 }); queuePatch({ phone: e164 }); }
-        debouncedLookup();
-      });
-      countrySel.addEventListener('change', ()=>{
-        const dial = countrySel.value;
-        const national = phoneEl.value.trim();
-        const e164 = toE164(dial, national);
-        if (e164) { writeState({ phone: e164 }); queuePatch({ phone: e164 }); }
-        debouncedLookup();
-      });
-      phoneEl.addEventListener('blur', maybeLookupNow);
-      phoneEl.addEventListener('paste', () => setTimeout(debouncedLookup, 0));
-
-      let lastQueried = ''; let foundPlayer=null;
-      async function lookupByPhone(e164){
-        if (!e164 || e164 === lastQueried) return;
-        lastQueried = e164;
-        payBtn.disabled = true;
-        foundPlayer = null;
-        priceBox.style.display = 'none';
-        rankMsg.style.display = 'none';
-        hideNotes();
-        hint.textContent = 'Looking up your account…';
-
-        try{
-          const r = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
-          if (!r.ok){ showErr('This is an invite only platform. This number was not invited.'); return; }
-          const p = await r.json();
-          foundPlayer = p;
-
-          if (!nameEl.value.trim() && p.name){ nameEl.value = p.name; }
-          showOk(`Hi ${nameEl.value || p.name || 'there'}! We found your account.`);
-          showPriceFromJoinOrder(p.joinOrder);
-          payBtn.disabled = false;
-
-          writeState({ name: nameEl.value || p.name || '', phone: p.phone?.number || e164 });
-          hint.textContent = 'Your Dream Stage account will be activated on this number.';
-
-          // Early discount + invites preview (for earlier steps)
-          appState.earlyDiscountPct = calcEarlyDiscountPct(p.joinOrder);
-          appState.invitesAllowance = invitesForRank(p.joinOrder);
-          if (appState.earlyDiscountPct>0) {
-            earlyDiscountLine.textContent = `Since your Creator Code is under 100, you get ${appState.earlyDiscountPct}% off on the yearly subscription for the next 2 years.`;
+      try{
+        await fetch(`/api/player/${encodeURIComponent(sessionId)}`, {
+          method:'PATCH', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ phone: p.phone?.number || e164 })
+        }).then(async r=>{
+          if(!r.ok){
+            const j = await r.json().catch(()=>({}));
+            if (j && j.error === 'PHONE_EXISTS') {
+              // ignore: number is already linked to a verified account (expected in recovery)
+              return;
+            }
           }
-          $('inviteLine').textContent = `As a thank you for your early commitment, you can invite ${appState.invitesAllowance} creator${appState.invitesAllowance>1?'s':''} into this movement.`;
+        });
+      }catch{}
 
-          // Patch name/phone for consistency
-          queuePatch({ name: nameEl.value || p.name || '' });
-          queuePatch({ phone: p.phone?.number || e164 });
-        }catch{
-          showErr('Something went wrong while finding your account.');
-        }
-      }
-      function maybeLookupNow(){
-        const national = phoneEl.value.trim();
-        const dial = countrySel.value;
-        if (!validateNational(dial, national)){
-          payBtn.disabled = true;
-          foundPlayer = null;
-          priceBox.style.display = 'none';
-          rankMsg.style.display = 'none';
-          hint.textContent = national.length
-            ? 'Number format looks invalid for the selected country.'
-            : 'Enter your number, we’ll look up your account automatically.';
-          return;
-        }
-        const e164 = toE164(dial, national);
-        if (e164) lookupByPhone(e164);
-      }
-      let lookupTimer=null;
-      function debouncedLookup(){ clearTimeout(lookupTimer); lookupTimer=setTimeout(maybeLookupNow, 350); }
+      // Update UI
+      applyRank(p.joinOrder||0, true);
+      closeRecover();
+    }catch{
+      rErr.textContent='Something went wrong. Please try again.'; rErr.style.display='block';
+    }
+  }
+  rSubmit.addEventListener('click', tryRecover);
+  rPhone.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryRecover(); });
 
-      /* ---------- Payment modal wiring ---------- */
-      const backdrop = $('confirmBackdrop');
-      const modal = $('confirmModal');
-      const summaryView = $('summaryView');
-      const editView = $('editView');
-      const editToggleBtn = $('editToggle');
-      const saveEditBtn = $('saveEdit');
-      const cancelEditBtn = $('cancelEdit');
-      const confirmPayBtn = $('confirmPay');
-      const closeModalBtn = $('closeModal');
-      const confName = $('confName');
-      const confPhone = $('confPhone');
-      const confAmount = $('confAmount');
-      const modalAlert = $('modalAlert');
-      const editName = $('editName');
-      const editCountry = $('editCountry');
-      const editPhone = $('editPhone');
+  function applyRank(rank, confetti=false){
+    ccBig.textContent = pad(rank||0);
+    setTier(rank||0); setPercentile(rank||0); setYearly(rank||0);
+    if(confetti && rank>0 && !sessionStorage.getItem('CONFETTI_ONCE')){
+      sessionStorage.setItem('CONFETTI_ONCE','1'); fireConfetti();
+    }
+  }
 
-      function fillCountrySelect(sel){
-        sel.innerHTML = '';
-        COUNTRY_CODES.forEach(c=>{ const o=document.createElement('option'); o.value=c.dial; o.textContent=c.name; sel.appendChild(o); });
-      }
+  async function init(){
+    // Optional override via URL
+    const pid = q('playerId') || q('id');
+    let rank = 0;
 
-      function openModal(){
-        if (!foundPlayer){ showErr('Please enter a valid number so we can find your account first.'); return; }
-        modalAlert.classList.add('hidden');
-        summaryView.classList.remove('hidden');
-        editView.classList.add('hidden');
-        editToggleBtn.classList.remove('hidden');
-        saveEditBtn.classList.add('hidden');
-        cancelEditBtn.classList.add('hidden');
+    if (pid){
+      try{ const r = await fetch(`/api/community/me/${pid}`); if(r.ok){ const j = await r.json(); rank = Number(j.joinOrder||0); } }catch{}
+    }
+    if(!(rank>0)){
+      rank = await fetchRankFromSession().catch(()=>0);
+    }
+    if(!(rank>0)){
+      const cached = Number(localStorage.getItem('CREATOR_CODE')||0);
+      if (cached>0) rank = cached;
+    } else {
+      localStorage.setItem('CREATOR_CODE', String(rank));
+    }
 
-        // Fill summary
-        const displayName = nameEl.value.trim() || (foundPlayer?.name) || '—';
-        confName.textContent = displayName;
-        const e164 = toE164(countrySel.value, phoneEl.value.trim()) || (foundPlayer?.phone?.number) || '—';
-        confPhone.textContent = e164;
-        const rupees = (foundPlayer && typeof foundPlayer.joinOrder==='number' && foundPlayer.joinOrder<=50) ? 49 : 99;
-        confAmount.textContent = `₹${rupees}`;
+    applyRank(rank||0, false);
 
-        // Prep edit form
-        editName.value = displayName;
-        fillCountrySelect(editCountry);
-        const parts = splitE164(e164);
-        if (parts){ editCountry.value = parts.dial; editPhone.value = parts.national; } else { editCountry.value='91'; editPhone.value=''; }
+    // If we still don't have a rank, show recovery modal
+    if(!(rank>0)){
+      openRecover();
+    }
+  }
+  init();
 
-        backdrop.classList.add('show');
-        modal.classList.add('show');
-      }
-      function closeModal(){ backdrop.classList.remove('show'); modal.classList.remove('show'); }
-      closeModalBtn.addEventListener('click', closeModal);
-      backdrop.addEventListener('click', closeModal);
+  // Copy & Share
+  document.getElementById('copyCode').addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText(ccBig.textContent.trim()); }catch{}
+  });
+  document.getElementById('shareCode').addEventListener('click', async ()=>{
+    const text = `My Dream Stage Creator Code is ${ccBig.textContent.trim()}. Join me as an early creator.`;
+    try{
+      if(navigator.share){ await navigator.share({ title:'Dream Stage', text, url: location.origin }); }
+      else { await navigator.clipboard.writeText(text + ' ' + location.origin); }
+    }catch{}
+  });
+})();
 
-      // Edit inside modal
-      editToggleBtn.addEventListener('click', () => {
-        summaryView.classList.add('hidden');
-        editView.classList.remove('hidden');
-        editToggleBtn.classList.add('hidden');
-        saveEditBtn.classList.remove('hidden');
-        cancelEditBtn.classList.remove('hidden');
-        editName.focus();
-      });
-      cancelEditBtn.addEventListener('click', () => {
-        modalAlert.classList.add('hidden');
-        summaryView.classList.remove('hidden');
-        editView.classList.add('hidden');
-        editToggleBtn.classList.remove('hidden');
-        saveEditBtn.classList.add('hidden');
-        cancelEditBtn.classList.add('hidden');
-      });
-
-      saveEditBtn.addEventListener('click', async () => {
-        modalAlert.classList.add('hidden');
-        const newName = editName.value.trim();
-        const national = editPhone.value.trim();
-        const dial = editCountry.value;
-        if (!validateNational(dial, national)){
-          modalAlert.textContent = 'Please enter a valid phone number for the selected country.';
-          modalAlert.classList.remove('hidden');
-          return;
-        }
-        const e164 = toE164(dial, national);
-        try{
-          const r = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
-          if (!r.ok){ modalAlert.textContent='This number is not on the invite list.'; modalAlert.classList.remove('hidden'); return; }
-          const p = await r.json();
-          foundPlayer = p;
-
-          // Update main form
-          nameEl.value = newName || p.name || '';
-          countrySel.value = dial;
-          phoneEl.value = national;
-          writeState({ name: nameEl.value, phone: e164 });
-          queuePatch({ name: nameEl.value });
-          queuePatch({ phone: e164 });
-
-          // Update summary & price
-          confName.textContent = nameEl.value || p.name || '—';
-          confPhone.textContent = e164;
-          const rupees = (p.joinOrder<=50) ? 49 : 99;
-          confAmount.textContent = `₹${rupees}`;
-          showPriceFromJoinOrder(p.joinOrder);
-          payBtn.disabled = false;
-
-          // Back to summary
-          summaryView.classList.remove('hidden');
-          editView.classList.add('hidden');
-          editToggleBtn.classList.remove('hidden');
-          saveEditBtn.classList.add('hidden');
-          cancelEditBtn.classList.add('hidden');
-        }catch{
-          modalAlert.textContent='Something went wrong while validating the new number.';
-          modalAlert.classList.remove('hidden');
-        }
-      });
-
-      // Open modal from Step 7 Pay button
-      $('payBtn').addEventListener('click', openModal);
-
-      // Confirm & Pay
-      confirmPayBtn.addEventListener('click', async () => {
-        if (!foundPlayer){ modalAlert.textContent='We could not find your account. Please edit and try again.'; modalAlert.classList.remove('hidden'); return; }
-        try{
-          const res = await fetch('/api/pay/order', {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ phone: foundPlayer.phone.number })
-          });
-          if (!res.ok){
-            const j = await res.json().catch(()=>({}));
-            modalAlert.textContent = j.error || 'Could not create order. Please try again.';
-            modalAlert.classList.remove('hidden');
-            return;
-          }
-          const order = await res.json();
-
-          const options = {
-            key: order.keyId,
-            amount: order.amount,
-            currency: order.currency,
-            name: "Dream Stage",
-            description: "1-year membership",
-            order_id: order.orderId,
-            prefill: {
-              name: nameEl.value || order.name || "Dream Stage Member",
-              contact: foundPlayer.phone.number || order.contact || ''
-            },
-            theme: { color: "#0b1220" },
-            handler: async function (resp) {
-              try{
-                const v = await fetch('/api/pay/verify', {
-                  method:'POST', headers:{'Content-Type':'application/json'},
-                  body: JSON.stringify({
-                    phone: foundPlayer.phone.number,
-                    razorpay_payment_id: resp.razorpay_payment_id,
-                    razorpay_order_id: resp.razorpay_order_id,
-                    razorpay_signature: resp.razorpay_signature
-                  })
-                });
-                if (!v.ok){
-                  const j = await v.json().catch(()=>({}));
-                  showErr(j.error || 'Payment verification failed. If amount was deducted, contact support.');
-                  closeModal(); return;
-                }
-                showOk('Payment successful! Your 1-year subscription is active.');
-                closeModal();
-
-                // Mark paid and continue to post-activation steps
-                appState.paid = true;
-                writeState({ paid: true });
-                showStep(8);
-              }catch{
-                showErr('Could not verify payment. Please contact support.');
-                closeModal();
-              }
-            },
-            modal: { ondismiss: function(){ showErr('Payment cancelled.'); closeModal(); } }
-          };
-          // Close summary and open Razorpay widget
-          closeModal();
-          new Razorpay(options).open();
-        }catch{
-          modalAlert.textContent='Could not start payment. Please try again.';
-          modalAlert.classList.remove('hidden');
-        }
-      });
-
-      /* ---------- Step 8: Referral program ---------- */
-      const sendInvitesBtn = $('sendInvitesBtn');
-      sendInvitesBtn.addEventListener('click', ()=>{
-        appState.invitesSent = true;
-        writeState({ invitesSent: true });
-        showOk('Your referral invitations have been sent!');
-      });
-
-      /* ---------- Init ---------- */
-      (async function init(){
-        // Ensure session doc exists (compat)
-        await fetch('/api/player/session', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ sessionId })
-        }).catch(()=>{});
-
-        // Prefill from local state
-        const s = readState();
-        if (s.name) $('name').value = s.name;
-        const ph = s?.phone || s?.phone?.number || '';
-        const parts = splitE164(ph);
-        if (parts){ countrySel.value = parts.dial; $('phone').value = parts.national; }
-
-        // Restore checkboxes
-        if (s.committed){ commitChk.checked = true; }
-        if (s.confirmed){ finalCtaChk.checked = true; }
-        updateStep1();
-        updateStep6();
-
-        // If we already have a valid phone, lookup immediately
-        if (parts){ lookupByPhone('+'+parts.dial+parts.national); }
-
-        // Start on step 1 (or continue to post-activation if already paid)
-        if (s.paid){ showStep(8); } else { showStep(1); }
-      })();
-    })();
-  </script>
+/* ---------- S6 tooltip ---------- */
+(function(){
+  var w = document.getElementById('whyD')?.parentElement; if(!w) return;
+  var b = document.getElementById('whyD');
+  b.addEventListener('click', function(e){ e.preventDefault(); w.classList.toggle('open'); b.setAttribute('aria-expanded', String(w.classList.contains('open'))); });
+  document.addEventListener('click', function(e){ if(!w.contains(e.target)){ w.classList.remove('open'); b.setAttribute('aria-expanded','false'); } }, { passive:true });
+})();
+</script>
 </body>
 </html>

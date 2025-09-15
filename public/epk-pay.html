@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="stylesheet" href="./css/epk-pay.css">
+<link rel="shortcut icon" href="./images/logo.png" type="image/x-icon">
 </head>
 <body>
 
@@ -80,7 +81,6 @@
         </div>
       </div>
     </section>
-
     <!-- ===== S2 ===== -->
     <section id="s2" class="step">
       <div class="fp-stage">
@@ -392,27 +392,60 @@
   </div>
 
   <!-- Edit Details Modal -->
-  <div id="editBackdrop" class="recover-backdrop"></div>
-  <div id="editModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <!-- Edit Details Modal -->
+<div id="editBackdrop" class="recover-backdrop"></div>
+<div id="editModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <div class="recover-box">
+    <header>
+      <div id="editTitle">Edit your details</div>
+      <button class="recover-x" id="editClose" aria-label="Close">✕</button>
+    </header>
+    <main>
+      <div class="recover-row">
+        <label for="editName">Name</label>
+        <input id="editName" type="text" placeholder="Your name">
+      </div>
+
+      <!-- NEW: Country select -->
+      <div class="recover-row">
+        <label for="editCountry">Country</label>
+        <select id="editCountry"></select>
+      </div>
+
+      <!-- NEW: Mobile number (national) -->
+      <div class="recover-row">
+        <label for="editPhone">Mobile number</label>
+        <input id="editPhone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210">
+      </div>
+
+      <div id="editErr" class="recover-err"></div>
+    </main>
+    <footer class="recover-actions">
+      <button class="recover-btn secondary" id="editCancel" type="button">Cancel</button>
+      <button class="recover-btn" id="editSave" type="button">Save</button>
+    </footer>
+  </div>
+</div>
+
+
+  <!-- Invite Gate (overlay) -->
+  <div id="gateBackdrop" class="recover-backdrop"></div>
+  <div id="gateModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
     <div class="recover-box">
       <header>
-        <div id="editTitle">Edit your details</div>
-        <button class="recover-x" id="editClose" aria-label="Close">✕</button>
+        <div id="gateTitle">Enter Invite Code</div>
+        <button class="recover-x" id="gateClose" aria-label="Close">✕</button>
       </header>
       <main>
         <div class="recover-row">
-          <label for="editName">Name</label>
-          <input id="editName" type="text" placeholder="Your name">
+          <label for="gateCode">Invite Code</label>
+          <input id="gateCode" type="text" inputmode="text" maxlength="4" placeholder="e.g., A1B2" style="text-transform:uppercase">
         </div>
-        <div class="recover-row">
-          <label for="editPhone">Phone number</label>
-          <input id="editPhone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210">
-        </div>
-        <div id="editErr" class="recover-err"></div>
+        <div id="gateErr" class="recover-err"></div>
       </main>
       <footer class="recover-actions">
-        <button class="recover-btn secondary" id="editCancel" type="button">Cancel</button>
-        <button class="recover-btn" id="editSave" type="button">Save</button>
+        <button class="recover-btn secondary" id="gateCancel" type="button">Cancel</button>
+        <button class="recover-btn" id="gateSubmit" type="button">Verify</button>
       </footer>
     </div>
   </div>

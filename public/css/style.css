@@ -111,7 +111,7 @@
 /* NEW: Onboard-me-directly button (center bottom of start screen) */
 .onboard-btn{
   position: absolute;
-  bottom: 70px;
+  bottom: 25px;
   left: 62%;
   transform: translateX(-50%);
   width: 280px;
@@ -254,7 +254,7 @@
 
 .start-btn {
   position: absolute;
-  bottom: 70px;
+  bottom: 25px;
   left: 38%;
   transform: translateX(-50%);
   width: 280px;

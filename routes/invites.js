@@ -1,28 +1,49 @@
-// backend/routes/invites.js
 'use strict';
 
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 
-const Invite = require('../models/InviteCode');   // code, used, claimedBy, claimedAt
-const Player = require('../models/Player');   // optional: to attach invite to player
+const Invite = require('../models/InviteCode');
+const Player = require('../models/Player');
 
-/**
- * Normalize an invite code to avoid common look-alikes.
- * If you NEVER intend to generate letter 'O', we can safely map O->0 here.
- */
+// Normalize: map O -> 0 to avoid look-alikes (only if you never generate 'O')
 function normalizeCode(raw) {
-  const up = String(raw || '').trim().toUpperCase();
-  // If your generator never uses 'O', prefer mapping O -> 0:
-  return up.replace(/O/g, '0');
-  // If you DO use both O and 0 in different codes, instead try a small variant set.
-  // See commented code in the query below for that approach.
+  return String(raw || '').trim().toUpperCase().replace(/O/g, '0');
 }
 
 /**
- * POST /api/invite/claim   (also mounted at /api/invites/claim)
+ * POST /api/invites/check
+ * Body: { code: string }
+ * Returns:
+ *  200 { ok: true }                 -> exists & unused
+ *  409 { ok: false, error:'INVITE_USED' }
+ *  404 { ok: false, error:'INVITE_NOT_FOUND' }
+ */
+async function checkHandler(req, res) {
+  try {
+    const { code } = req.body || {};
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ ok: false, error: 'INVALID_CODE' });
+    }
+    const norm = normalizeCode(code);
+
+    const invite = await Invite.findOne({ code: norm }).lean().exec();
+    if (!invite) return res.status(404).json({ ok: false, error: 'INVITE_NOT_FOUND' });
+    if (invite.used) return res.status(409).json({ ok: false, error: 'INVITE_USED' });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Invite check error:', err);
+    return res.status(500).json({ ok: false, error: 'SERVER_ERROR' });
+  }
+}
+
+/**
+ * POST /api/invites/claim?dryRun=1
  * Body: { code: string, playerId?: string }
+ * - dryRun: if true, DO NOT consume; just validate like /check but returns { ok:true, dryRun:true }
+ * - otherwise atomically marks the code used and optionally attaches claimedBy.
  */
 async function claimHandler(req, res) {
   try {
@@ -30,45 +51,48 @@ async function claimHandler(req, res) {
     if (!code || typeof code !== 'string') {
       return res.status(400).json({ ok: false, error: 'INVALID_CODE' });
     }
-
     const norm = normalizeCode(code);
 
-    // If you need to support both 'O' and '0' because you used both historically,
-    // use the variant search below instead of the single normalized lookup:
-    // const variants = new Set([norm, norm.replace(/0/g,'O')]);
-    // let invite = await Invite.findOne({ code: { $in: Array.from(variants) }, used: false }).exec();
+    const dryRun =
+      req.query.dryRun === '1' ||
+      req.query.dryRun === 'true' ||
+      req.body?.dryRun === true;
 
-    // Single normalized lookup (preferred if you never generate 'O'):
-    let invite = await Invite.findOne({ code: norm, used: false }).exec();
-
-    if (!invite) {
-      // If the code exists but is already used, tell the client distinctly (optional)
-      const existed = await Invite.findOne({ code: norm }).lean().exec();
-      if (existed && existed.used) {
-        return res.status(409).json({ ok: false, error: 'INVITE_USED' });
-      }
-      return res.status(404).json({ ok: false, error: 'INVITE_NOT_FOUND' });
+    // For dry-run, just validate existence & unused (no mutation)
+    if (dryRun) {
+      const invite = await Invite.findOne({ code: norm }).lean().exec();
+      if (!invite) return res.status(404).json({ ok: false, error: 'INVITE_NOT_FOUND' });
+      if (invite.used) return res.status(409).json({ ok: false, error: 'INVITE_USED' });
+      return res.json({ ok: true, dryRun: true });
     }
 
-    // Optionally validate playerId format before saving it
+    // Resolve claimedBy if playerId is valid
     let claimedBy = null;
     if (playerId && mongoose.Types.ObjectId.isValid(playerId)) {
       const p = await Player.findById(playerId).select('_id').lean().exec();
       if (p) claimedBy = p._id;
     }
 
-    // Atomically mark used
-    invite.used = true;
-    invite.claimedBy = claimedBy;
-    invite.claimedAt = new Date();
-    await invite.save();
+    // Atomically consume only if still unused
+    const updated = await Invite.findOneAndUpdate(
+      { code: norm, used: false },
+      { $set: { used: true, claimedBy, claimedAt: new Date() } },
+      { new: true }
+    ).exec();
 
-    // Optional: mark on the player/Journey doc immediately (frontend also patches it later)
+    if (!updated) {
+      // Determine why it failed (used vs not found)
+      const existed = await Invite.findOne({ code: norm }).lean().exec();
+      if (!existed) return res.status(404).json({ ok: false, error: 'INVITE_NOT_FOUND' });
+      return res.status(409).json({ ok: false, error: 'INVITE_USED' });
+    }
+
+    // Optional: mark journey flag
     if (claimedBy) {
       try {
         await Player.updateOne(
           { _id: claimedBy },
-          { $set: { 'steps.inviteVerified': true } }  // adjust path to your schema
+          { $set: { 'steps.inviteVerified': true } }
         ).exec();
       } catch {}
     }
@@ -80,9 +104,10 @@ async function claimHandler(req, res) {
   }
 }
 
-// Wire routes
-router.post('/claim', claimHandler);
-// Optional alternate path (verify)
+// Routes
+router.post('/check',  checkHandler);
+router.post('/claim',  claimHandler);
+// Optional alias some clients might call:
 router.post('/verify', claimHandler);
 
-module.exports = { router, claimHandler };
+module.exports = { router, checkHandler, claimHandler };

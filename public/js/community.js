@@ -206,34 +206,30 @@
     codeInp.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitCode(); });
   }
 
-  /** Non-destructive server check. Returns true if code exists & unused. */
-  async function checkInviteCode(code) {
-    // Preferred: /api/invites/check  (non-destructive)
-    try {
-      const r = await fetch('/api/invites/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
-      });
-      if (r.ok) {
-        const j = await r.json().catch(() => ({}));
-        return !!j.ok;
-      }
-      // Fallback: allow dry-run on /claim if server only has that
-      if (r.status === 404) {
-        const r2 = await fetch('/api/invites/claim?dryRun=1', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code })
-        });
-        if (r2.ok) {
-          const j2 = await r2.json().catch(() => ({}));
-          return !!j2.ok;
-        }
-      }
-    } catch {}
-    return false;
-  }
+
+ /** Non-destructive server check. Returns true if code exists & unused. */
+async function checkInviteCode(code) {
+  const payload = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) };
+
+  // Preferred: explicit /check
+  try {
+    const r = await fetch('/api/invites/check', payload);
+    if (r.ok) return true;             // 200 -> valid & unused
+    if (r.status === 409) return false; // used
+    if (r.status !== 404) return false; // any other error -> treat as invalid
+  } catch {}
+
+  // Fallback: legacy servers that only have /claim, use dryRun=1 (must return {ok:true, dryRun:true})
+  try {
+    const r2 = await fetch('/api/invites/claim?dryRun=1', payload);
+    if (!r2.ok) return false;
+    const j2 = await r2.json().catch(() => ({}));
+    return !!j2.ok && !!j2.dryRun;
+  } catch {}
+
+  return false;
+}
+
 
   /* ---------------- Role-based routing (with invite gate for artists) ---------------- */
   async function resolveRoleAndRoute(joinOrder) {

@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"/>
-<title>Dream Stage | Early Access</title>
-<meta name="color-scheme" content="light">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<link rel="stylesheet" href="./css/epk-pay.css">
-<link rel="shortcut icon" href="./images/logo.png" type="image/x-icon">
+  <meta charset="utf-8" />
+  <title>Dream Stage | Early Access</title>
+  <meta name="color-scheme" content="light">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="stylesheet" href="./css/epk-pay.css">
+  <link rel="shortcut icon" href="./images/logo.png" type="image/x-icon">
 </head>
+
 <body>
 
   <!-- Top brand bar -->
@@ -44,18 +46,29 @@
         <div class="section">
           <div class="row two">
             <div>
+              <div class="video-shell">
+                <video class="video" autoplay muted loop playsinline preload="metadata"
+                  controlslist="nodownload noplaybackrate nofullscreen"
+                  poster="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' width='1280' height='800'><rect width='100%' height='100%' fill='%23faf5ff'/><circle cx='640' cy='400' r='220' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='180' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='140' fill='none' stroke='%23f5d0fe' stroke-width='2'/></svg>">
+                  <source src="/media/ambient/dreamstage-ambient.mp4" type="video/mp4" />
+                  <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+                    type="video/mp4" />
+                </video>
+              </div>
+            </div>
+            <div class="text-section">
               <h2>A Home For Creative Humans</h2>
               <p class="muted">
-                Welcome to Dream Stage– a space where your creative dreams are not just supported-they’re celebrated.
+                Welcome to Dream Stage, a space where your creative dreams are not just supported-they’re celebrated.
                 Here, we believe that artists are the heartbeat of society, and you’re about to join a movement that
-               will transform the creative economy. Whether you're a musician, painter, dancer, or visionary, Dream
+                will transform the creative economy. Whether you're a musician, painter, dancer, or visionary, Dream
                 Stage is the place where your growth, happiness, and learning will take center stage.
               </p>
-
               <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px">
                 <a class="btn" href="#s2">Begin</a>
                 <span class="why-wrap">
-                  <button class="btn outline" id="why1" type="button" aria-expanded="false" aria-controls="whyCard1">Why Dream Stage?</button>
+                  <button class="btn outline" id="why1" type="button" aria-expanded="false" aria-controls="whyCard1">Why
+                    Dream Stage?</button>
                   <div class="why-card" id="whyCard1" role="dialog" aria-modal="false">
                     <ul class="fancy" style="margin:0">
                       <li>Artist-first</li>
@@ -66,17 +79,6 @@
                 </span>
               </div>
             </div>
-
-            <div>
-              <div class="video-shell">
-                <video class="video" autoplay muted loop playsinline preload="metadata"
-                  controlslist="nodownload noplaybackrate nofullscreen"
-                  poster="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' width='1280' height='800'><rect width='100%' height='100%' fill='%23faf5ff'/><circle cx='640' cy='400' r='220' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='180' fill='none' stroke='%23f5d0fe' stroke-width='2'/><circle cx='640' cy='400' r='140' fill='none' stroke='%23f5d0fe' stroke-width='2'/></svg>">
-                  <source src="/media/ambient/dreamstage-ambient.mp4" type="video/mp4"/>
-                  <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4"/>
-                </video>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -85,19 +87,21 @@
     <section id="s2" class="step">
       <div class="fp-stage">
         <div class="section">
-          <h1>Creator-first culture pledge</h1>
+          <h1>Creator First Culture Pledge</h1>
           <p class="sub">A tiny pledge to align on growth & culture</p>
 
           <div class="pledge" id="pledgeRow" role="button" tabindex="0" aria-controls="pledgeChk">
             <input id="pledgeChk" type="checkbox" aria-describedby="pledgeState">
-            <label for="pledgeChk" style="font-weight:400;cursor:pointer">I agree to commit to my journey of happiness, growth, and learning with Dream Stage.</label>
+            <label for="pledgeChk" style="font-weight:400;cursor:pointer">I agree to commit to my journey of happiness,
+              growth, and learning with Dream Stage.</label>
           </div>
 
           <div style="display:flex;gap:14px;margin-top:16px;align-items:center;flex-wrap:wrap">
             <a class="btn ghost" id="pledgeNext" aria-disabled="true" href="#s3">Continue</a>
 
             <span class="why-wrap">
-              <button class="btn outline" id="why2" type="button" aria-expanded="false" aria-controls="whyCard2">Why this?</button>
+              <button class="btn outline" id="why2" type="button" aria-expanded="false" aria-controls="whyCard2">Why
+                this?</button>
               <div class="why-card" id="whyCard2" role="dialog" aria-label="Why this pledge matters">
                 <ul class="fancy" style="margin-top:0">
                   <li>Commit to happiness, growth, and learning </li>
@@ -137,7 +141,8 @@
               <div class="title" id="t-epk">Customizable EPK/Profiles</div>
               <div class="desc" id="d-epk">
                 Build your online artist presence and reach the world.
-                <a href="https://app.dreamstage.tech/epks/" class="preview-link" id="epkLink" aria-controls="epkPop" aria-expanded="false">Preview →</a>
+                <a href="https://app.dreamstage.tech/epk/34f59a42/the-monsoon-drifters" class="preview-link" id="epkLink" aria-controls="epkPop"
+                  aria-expanded="false">Preview →</a>
               </div>
             </div>
 
@@ -150,7 +155,8 @@
             <button class="card-btn" type="button" aria-labelledby="t-global" aria-describedby="d-global">
               <span class="icon" aria-hidden="true"></span>
               <div class="title" id="t-global">Global Collective</div>
-              <div class="desc" id="d-global">A revolution is happening, and you can be one of its earliest members.</div>
+              <div class="desc" id="d-global">A revolution is happening, and you can be one of its earliest members.
+              </div>
             </button>
           </div>
         </div>
@@ -161,30 +167,57 @@
     <section id="s4" class="step">
       <div class="fp-stage">
         <div class="section">
-          <h1>A path to a better future</h1>
+          <h1>A Path To a Better Future</h1>
           <p class="sub">Three phases: <strong>Near</strong> • <strong>Mid</strong> • <strong>Vision</strong></p>
 
           <div class="phase">
             <div class="label">Near</div>
             <div class="items">
               <div class="item">
-                <div class="top"><div style="font-weight:900">Language-agnostic EPK/Profile</div><span class="badge">In progress</span></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Your profile is accessible worldwide without language barriers.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Language-agnostic EPK/Profile</div><span class="badge">In progress</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Your profile is accessible worldwide without language barriers.</div>
+                </div>
               </div>
 
               <div class="item">
-                <div class="top"><div style="font-weight:900">Right work finds you when you want them</div><span class="badge">In progress</span></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Matching engine surfaces gigs when you want them.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Right work finds you when you want them</div><span class="badge">In
+                    progress</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Matching engine surfaces gigs when you want them.</div>
+                </div>
               </div>
 
               <div class="item">
-                <div class="top"><div style="font-weight:900">Right people will come to you when you want them</div><span class="badge">In progress</span></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Connect with collaborators, mentors, and crews on Dream Stage when you are ready.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Right people will come to you when you want them</div><span
+                    class="badge">In progress</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Connect with collaborators, mentors, and crews on Dream Stage when
+                    you are ready.</div>
+                </div>
               </div>
 
               <div class="item">
-                <div class="top"><div style="font-weight:900">Frictionless payments</div></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button><div class="card" role="tooltip">Smooth, instant, on-time payouts with blockchain rails.</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Frictionless payments</div><span class="badge">In progress</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
+                  <div class="card" role="tooltip">Smooth, instant, on-time payouts with blockchain rails.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -193,8 +226,12 @@
             <div class="label">Mid</div>
             <div class="items">
               <div class="item">
-                <div class="top"><div style="font-weight:900">Encrypted Physical Key</div><span class="badge">Planned</span></div>
-                <div class="details"><button class="btn" style="background:transparent;color:var(--brand);border:0;padding:0" type="button" aria-expanded="false">Details</button>
+                <div class="top">
+                  <div style="font-weight:900">Encrypted Physical Key</div><span class="badge">Planned</span>
+                </div>
+                <div class="details"><button class="btn"
+                    style="background:transparent;color:var(--brand);border:0;padding:0" type="button"
+                    aria-expanded="false">Details</button>
                   <div class="card" role="tooltip">
                     <ul class="fancy" style="margin:8px 0">
                       <li>Your portable, secure identity to smooth experiences everywhere </li>
@@ -211,7 +248,9 @@
             <div class="label">Vision</div>
             <div class="items">
               <div class="item">
-                <div class="top"><div style="font-weight:900">Explore • Learn • Recognize • Earn • Teach</div></div>
+                <div class="top">
+                  <div style="font-weight:900">Explore • Learn • Recognize • Earn • Teach</div>
+                </div>
                 <p class="muted" style="margin:8px 0">Unified hub for growth across artforms.</p>
               </div>
             </div>
@@ -224,24 +263,14 @@
     <section id="s5" class="step">
       <div class="fp-stage">
         <div class="section">
-          <h1>Claim your Creator Code - Your Gateway to Dream Stage.</h1>
-          <p class="sub">Early creators receive immediate rewards, preferred treatment, and early access, while later joiners may have to wait for some benefits to arrive. </p>
-
-          <div class="cc-big">
-            <div class="cc-label">Your Creator Code</div>
-            <div id="ccBig">#0000</div>
-            <div id="ccTier" class="tier" style="display:none;margin-top:8px"></div>
-          </div>
-
-          <div class="prog">
-            <div class="label">Earlier than <span id="ccPct">—</span>% of creators so far</div>
-            <div class="bar"><span id="ccBar"></span></div>
-          </div>
-
+          <h1>Claim your Creator Code Now! Your Gateway to Dream Stage. </h1>
+          <p class="sub">Early creators receive immediate rewards, preferred treatment, and early access, while later
+            joiners may have to wait for some benefits to arrive. </p>
           <!-- Perks -->
           <div style="margin-top:12px">
             <span class="perks-wrap">
-              <button class="btn outline" id="perksBtn" type="button" aria-expanded="false" aria-controls="perksCard">Perks:</button>
+              <button class="btn outline" id="perksBtn" type="button" aria-expanded="false"
+                aria-controls="perksCard">Perks?</button>
               <div class="perks-card" id="perksCard" role="dialog" aria-modal="false">
                 <ul class="fancy" style="margin-top:0">
                   <li>Early access to new features and pilots</li>
@@ -256,12 +285,29 @@
               </div>
             </span>
           </div>
+          <div class="cc-big">
+            <div class="cc-label">Your Creator Code</div>
+            <div id="ccBig">#0000</div>
+            <div id="ccTier" class="tier" style="display:none;margin-top:8px"></div>
+          </div>
+
+          <div class="prog">
+            <div class="label">Earlier than <span id="ccPct">—</span>% of creators so far</div>
+            <div class="bar"><span id="ccBar"></span></div>
+          </div>
+
+
 
           <div class="confetti-wrap" style="margin-top:10px">
             <canvas id="confetti" class="confetti" width="10" height="10" aria-hidden="true"></canvas>
           </div>
 
           <p class="tiny"></p>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-top:14px;color:var(--muted);font-size:14px">
+            <span>Note: Creator Code increases priority and visibility, while final access also considers relevance,
+              readiness, and fairness. </span>
+          </div>
         </div>
       </div>
     </section>
@@ -270,15 +316,16 @@
     <section id="s6" class="step">
       <div class="fp-stage">
         <div class="section">
-          <h1>Founders Discount For Early Codes.</h1>
-          <p class="sub">Get 75% off the yearly plan for the next 2 years for joining early with a creator code under 100.</p>
+          <h1>Founders Discount for Early Codes.</h1>
+          <p class="sub">Get 75% off the yearly plan for the next 2 years for joining early with a creator code under
+            100.</p>
 
           <div class="grid">
             <!-- Left card -->
             <div class="plan" aria-label="Actual Price">
               <h2 style="margin:0 0 8px">Actual Price</h2>
-              <div class="price">₹199 <span class="per"> / Year</span></div>
-              <div class="fine"><b>Just ₹6.58 / month.</b></div>
+              <div class="price" style="text-decoration: line-through; ">₹199/Year</div>
+              <div class="fine"><b>Just ₹16.58/month.</b></div>
               <ul class="feat">
                 <li>All Core Features</li>
                 <li>Community Access</li>
@@ -290,15 +337,16 @@
             <!-- Right card -->
             <div class="plan best" aria-label="Price You Get it for">
               <h2 style="margin:0 0 8px">Price You Get it for</h2>
-              <div class="price">₹<span id="dealYear">49</span><span class="per">/ Year</span></div>
-              <div class="fine"><b>Just ₹<span id="dealMonthly">4.08</span> / month.</b></div>
+              <div class="price">₹<span id="dealYear">49</span>/Year</div>
+              <div class="fine"><b>Just ₹<span id="dealMonthly">4.08</span>/month.</b></div>
               <ul class="feat">
-                <li>All core features.</li>
+                <li>All Core Features.</li>
                 <li>Community Access</li>
                 <li>Cancel Anytime</li>
               </ul>
               <div class="fine">100% Secure – No question asked Refund</div>
-              <div style="margin-top:12px"><button class="btn" id="goConfirm" aria-disabled="true" type="button">Confirm & Pay</button></div>
+              <div style="margin-top:12px"><button class="btn" id="goConfirm" aria-disabled="true"
+                  type="button">Continue</button></div>
             </div>
           </div>
 
@@ -313,31 +361,32 @@
     <section id="s7" class="step">
       <div class="fp-stage">
         <div class="section">
-          <h1>Make It Official- Join Dream Stage</h1>
-          <p class="sub">You're just one step away from officially becoming a part of Dream Stage. Confirm your details and continue your creative journey.</p>
+          <h1>Make It Official! Join Dream Stage Now! </h1>
+          <p class="sub">You're just one step away from officially becoming a part of Dream Stage. Confirm your details
+            and continue your creative journey.</p>
 
           <div class="confirm-grid">
             <!-- Your Plan -->
             <div class="confirm-card">
 
-              
-                <div class="confirm-row">
-                  <h2 style="margin:0">Your Details</h2>
-                  <button class="btn outline" id="editDetailsBtn" type="button">Edit</button>
-                </div>
-                <div style="margin-top:10px">
-                  <div><strong>Name:</strong> <span id="detName">—</span></div>
-                  <div><strong>Phone number :</strong> <span id="detPhone">—</span></div>
-                  <div><strong>Country:</strong> India</div>
-                </div>
-              
+
+              <div class="confirm-row">
+                <h2 style="margin:0">Your Details</h2>
+                <button class="btn outline" id="editDetailsBtn" type="button">Edit</button>
+              </div>
+              <div style="margin-top:10px">
+                <div><strong>Name:</strong> <span id="detName">—</span></div>
+                <div><strong>Phone number :</strong> <span id="detPhone">—</span></div>
+                <div><strong>Country:</strong> India</div>
+              </div>
 
 
-              
+
+
             </div>
 
             <!-- Your Details -->
-            
+
 
             <!-- Policies -->
             <div class="confirm-card">
@@ -349,13 +398,15 @@
               <div style="margin-top:12px">
                 <label style="display:flex;gap:10px;align-items:center;cursor:pointer;">
                   <input id="confirmSub" type="checkbox" style="margin-top:6px">
-                  <span>I Confirm my subscription and take the first step towards a brighter future as a Dream Stage Creator.</span>
+                  <span>I Confirm my subscription and take the first step towards a brighter future as a Dream Stage
+                    Creator.</span>
                 </label>
               </div>
               <div style="margin-top:12px">
-                <button class="btn" id="payBtn" type="button" aria-disabled="true">Pay</button>
+                <button class="btn" id="payBtn" type="button" aria-disabled="true">Confirm and Pay</button>
               </div>
-              <div id="payMsg" class="muted" style="margin-top:10px">Your payment is 100% secure, and you’re covered by our no-questions-asked refund policy if you ever choose to cancel.</div>
+              <div id="payMsg" class="muted" style="margin-top:10px">Your payment is 100% secure, and you’re covered by
+                our no-questions-asked refund policy if you ever choose to cancel.</div>
             </div>
           </div>
 
@@ -393,39 +444,39 @@
 
   <!-- Edit Details Modal -->
   <!-- Edit Details Modal -->
-<div id="editBackdrop" class="recover-backdrop"></div>
-<div id="editModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
-  <div class="recover-box">
-    <header>
-      <div id="editTitle">Edit your details</div>
-      <button class="recover-x" id="editClose" aria-label="Close">✕</button>
-    </header>
-    <main>
-      <div class="recover-row">
-        <label for="editName">Name</label>
-        <input id="editName" type="text" placeholder="Your name">
-      </div>
+  <div id="editBackdrop" class="recover-backdrop"></div>
+  <div id="editModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="recover-box">
+      <header>
+        <div id="editTitle">Edit your details</div>
+        <button class="recover-x" id="editClose" aria-label="Close">✕</button>
+      </header>
+      <main>
+        <div class="recover-row">
+          <label for="editName">Name</label>
+          <input id="editName" type="text" placeholder="Your name">
+        </div>
 
-      <!-- NEW: Country select -->
-      <div class="recover-row">
-        <label for="editCountry">Country</label>
-        <select id="editCountry"></select>
-      </div>
+        <!-- NEW: Country select -->
+        <div class="recover-row">
+          <label for="editCountry">Country</label>
+          <select id="editCountry"></select>
+        </div>
 
-      <!-- NEW: Mobile number (national) -->
-      <div class="recover-row">
-        <label for="editPhone">Mobile number</label>
-        <input id="editPhone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210">
-      </div>
+        <!-- NEW: Mobile number (national) -->
+        <div class="recover-row">
+          <label for="editPhone">Mobile number</label>
+          <input id="editPhone" type="tel" inputmode="tel" placeholder="e.g., 98765 43210">
+        </div>
 
-      <div id="editErr" class="recover-err"></div>
-    </main>
-    <footer class="recover-actions">
-      <button class="recover-btn secondary" id="editCancel" type="button">Cancel</button>
-      <button class="recover-btn" id="editSave" type="button">Save</button>
-    </footer>
+        <div id="editErr" class="recover-err"></div>
+      </main>
+      <footer class="recover-actions">
+        <button class="recover-btn secondary" id="editCancel" type="button">Cancel</button>
+        <button class="recover-btn" id="editSave" type="button">Save</button>
+      </footer>
+    </div>
   </div>
-</div>
 
 
   <!-- Invite Gate (overlay) -->
@@ -439,7 +490,8 @@
       <main>
         <div class="recover-row">
           <label for="gateCode">Invite Code</label>
-          <input id="gateCode" type="text" inputmode="text" maxlength="4" placeholder="e.g., A1B2" style="text-transform:uppercase">
+          <input id="gateCode" type="text" inputmode="text" maxlength="4" placeholder="e.g., A1B2"
+            style="text-transform:uppercase">
         </div>
         <div id="gateErr" class="recover-err"></div>
       </main>
@@ -450,7 +502,124 @@
     </div>
   </div>
 
+  <!-- Payment Popup — Pro UI (updated) -->
+  <div id="payBackdrop" class="recover-backdrop"></div>
+  <div id="payModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+    <div class="recover-box pay-modal pro">
+      <header class="pay-pro-header">
+        <div>
+          <div id="payTitle" class="h1">Processing your payment…</div>
+          <div class="sub">Don’t close this window. UPI / NetBanking may take 30–60s. We’ll update automatically.</div>
+
+          <!-- Single plan chip -->
+          <div id="payPlan" class="plan-chip" style="display:none; font-size: large;" aria-live="polite">
+            <span class="lbl">Plan:</span>
+            <span class="amt" id="payPlanAmt">₹— / year</span>
+          </div>
+        </div>
+        <button class="recover-x" id="payClose" aria-label="Close">✕</button>
+      </header>
+
+
+      <main class="pay-pro-main">
+        <!-- Status lanes (only one is visible at a time) -->
+        <div class="lanes" id="payLanes">
+          <div id="laneProcessing" class="lane active processing" aria-current="step">
+            <div class="title"><strong>Status:</strong> Ready </div>
+            <!-- <div class="desc">Awaiting bank confirmation…</div> -->
+          </div>
+
+          <div id="laneSuccess" class="lane success" aria-current="false">
+            <div class="title"><strong>Status:</strong> Success</div>
+            <div class="desc">Redirecting to your receipt…</div>
+          </div>
+
+          <div id="laneFailed" class="lane failed" aria-current="false">
+            <div class="title"><strong>Status:</strong> Failed</div>
+            <div class="desc">Please retry or contact support for help.</div>
+          </div>
+        </div>
+
+        <!-- Stay-warning -->
+        <div class="pay-warning pro" id="payStay">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2 1 21h22L12 2zm0 5 7 12H5l7-12zm-1 4v4h2v-4h-2zm0 6v2h2v-2h-2z" />
+          </svg>
+          <div>Please stay on this page until the payment is completed. Do not close or refresh.</div>
+        </div>
+
+        <!-- Any API/verify error -->
+        <div id="payErr" class="recover-err" style="display:none"></div>
+
+        <!-- Receipt (shown only on success) -->
+        <section id="receiptCard" class="receipt" style="display:none" aria-live="polite">
+          <header>
+            <div class="title">Payment confirmed — here’s your receipt</div>
+            <button class="recover-btn accent" id="payContinue" type="button">Continue</button>
+          </header>
+
+          <div class="grid">
+            <div class="cell">
+              <div class="k">Invoice #</div>
+              <div class="v" id="invInvoice">—</div>
+            </div>
+            <div class="cell">
+              <div class="k">Amount</div>
+              <div class="v" id="invAmount">—</div>
+            </div>
+            <div class="cell">
+              <div class="k">Order ID</div>
+              <div class="v" id="invOrder">—</div>
+            </div>
+            <div class="cell">
+              <div class="k">Plan</div>
+              <div class="v" id="invPlan">Yearly</div>
+            </div>
+            <div class="cell">
+              <div class="k">TXN ID</div>
+              <div class="v" id="invPayment">—</div>
+            </div>
+            <div class="cell">
+              <div class="k">Date</div>
+              <div class="v" id="invDate">—</div>
+            </div>
+            <div class="cell">
+              <div class="k">Creator Code</div>
+              <div class="v code" id="invCode">—</div>
+            </div>
+          </div>
+
+          <div class="receipt-actions">
+            <a class="recover-btn" id="payInvoice" href="invoice.html" target="_blank" rel="noopener">Download Invoice
+              (PDF)</a>
+            <button class="recover-btn secondary" id="payEmail" type="button">Email Receipt</button>
+            <button class="recover-btn secondary" id="payWhatsApp" type="button">WhatsApp Receipt</button>
+          </div>
+
+          <div class="footnote">Invoices are also available in your Billing history.</div>
+        </section>
+      </main>
+
+      <footer class="helpbar">
+        <div class="left">
+          <span>Need help? Chat or email <a href="mailto:support@dreamstage.tech">support@dreamstage.tech</a>.</span>
+          <span id="retryHint" class="muted" style="display:none">Retry will appear here if payment fails.</span>
+        </div>
+        <div class="right">
+          <button class="recover-btn accent" id="payStart" type="button">Pay securely</button>
+          <button class="recover-btn secondary" id="payRetry" type="button" style="display:none">Retry</button>
+          <span class="tiny muted">Status: <span id="payStatus">Ready</span></span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+
+
+
+
   <script src="./js/epk-pay.js"></script>
-    
+
 </body>
+
 </html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Dream Stage — Invoice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root{ --ink:#111; --muted:#555; --accent:#6b21a8;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;color:var(--ink);margin:24px;}
+    .wrap{max-width:780px;margin:0 auto;border:1px solid #ddd;border-radius:12px;padding:24px}
+    h1{margin:0 0 14px}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+    .brand img{width:32px;height:32px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .box{border:1px solid #eee;border-radius:10px;padding:12px}
+    .muted{color:var(--muted)}
+    .total{font-size:20px;font-weight:800}
+    .code{font:900 28px/1 monospace;color:var(--accent)}
+    .bar{display:flex;gap:8px;margin-top:16px}
+    @media print { .no-print{ display:none !important } body { margin:0 } .wrap{border:none} }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="root" hidden>
+    <div class="brand"><img src="./images/logo.png" alt=""><strong>Dream Stage</strong></div>
+    <h1>Invoice</h1>
+    <p class="muted" id="invDate">—</p>
+
+    <div class="grid" style="margin-top:10px">
+      <div class="box">
+        <div><strong>Billed To</strong></div>
+        <div id="invName">—</div>
+        <div id="invPhone" class="muted">—</div>
+      </div>
+      <div class="box">
+        <div><strong>Order</strong></div>
+        <div>Order ID: <span id="iOrder">—</span></div>
+        <div>Payment ID: <span id="iPayment">—</span></div>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top:12px">
+      <div class="total">Total: <span id="iAmount">—</span></div>
+      <div>Currency: <span id="iCurrency">—</span></div>
+      <div style="margin-top:10px">Creator Code: <span class="code" id="iCode">#0000</span></div>
+    </div>
+
+    <div class="bar no-print">
+      <button onclick="window.print()">Download as PDF</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      try{
+        const raw = sessionStorage.getItem('INVOICE_DATA');
+        const j = raw ? JSON.parse(raw) : null;
+        if(!j) return;
+
+        const fmtAmt = (amt, cur) => {
+          if(cur === 'INR' || cur === '₹') return '₹' + (Number(amt)/100).toFixed(2);
+          return (Number(amt)/100).toFixed(2) + ' ' + (cur||'');
+        };
+
+        document.getElementById('invDate').textContent = new Date(j.ts||Date.now()).toLocaleString();
+        document.getElementById('invName').textContent = j.name || 'Dream Stage Member';
+        document.getElementById('invPhone').textContent = j.phone || '';
+        document.getElementById('iOrder').textContent = j.orderId || '—';
+        document.getElementById('iPayment').textContent = j.paymentId || '—';
+        document.getElementById('iAmount').textContent = fmtAmt(j.amount, j.currency);
+        document.getElementById('iCurrency').textContent = j.currency || '';
+        document.getElementById('iCode').textContent = j.creatorCode ? ('#'+String(j.creatorCode).padStart(4,'0')) : '#0000';
+
+        document.getElementById('root').hidden = false;
+      }catch(e){}
+    })();
+  </script>
+</body>
+</html>

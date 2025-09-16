@@ -1,28 +1,43 @@
-// models/PaymentOrder.js
+'use strict';
+
 const mongoose = require('mongoose');
 
-const PaymentOrderSchema = new mongoose.Schema({
-  playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player', required: true, index: true },
-  phone: { type: String, required: true },
+const PaymentOrderSchema = new mongoose.Schema(
+  {
+    // Razorpay IDs
+    orderId:   { type: String, required: true, unique: true, index: true },
+    paymentId: { type: String, index: true },
+    signature: { type: String },
 
-  rzp: {
-    orderId: { type: String, required: true, unique: true, index: true },
-    paymentId: { type: String, default: '' },
-    signature: { type: String, default: '' }
+    // Lifecycle
+    status: {
+      type: String,
+      enum: ['created', 'paid', 'failed', 'refunded'],
+      default: 'created',
+      index: true
+    },
+
+    // Money (paise)
+    amount:   { type: Number, required: true },
+    currency: { type: String, default: 'INR' },
+
+    // Who
+    phone:    { type: String, index: true },
+    playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player', index: true },
+
+    // Optional extra
+    rpOrder:       { type: mongoose.Schema.Types.Mixed },  // raw RZP order payload (audit/debug)
+    meta:          { type: mongoose.Schema.Types.Mixed },  // any app-side notes
+    verifiedAt:    { type: Date },
+    failureReason: { type: String }
   },
+  {
+    timestamps: true,     // adds createdAt, updatedAt
+    minimize: false
+  }
+);
 
-  amount: { type: Number, required: true },           // paise
-  currency: { type: String, default: 'INR' },
-  status: { type: String, enum: ['created','paid','failed','expired'], default: 'created', index: true },
-
-  // reserved creator number for fair pricing & assignment
-  reservedCodeNumber: { type: Number, required: true, index: true },
-
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-  expiresAt: { type: Date, default: () => new Date(Date.now() + 60 * 60 * 1000) } // 60 min hold
-});
-
-PaymentOrderSchema.pre('save', function(next){ this.updatedAt = new Date(); next(); });
+// Useful listing index
+PaymentOrderSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('PaymentOrder', PaymentOrderSchema);

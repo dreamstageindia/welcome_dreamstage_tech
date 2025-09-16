@@ -1,5 +1,3 @@
-// public/js/QuestionFlow.js
-
 var QuestionFlow = (function () {
   var instance;
 
@@ -24,14 +22,11 @@ var QuestionFlow = (function () {
     }
     function sizeForMobile(el) {
       if (!el || !el.style) return;
-      // 17px avoids iOS Safari auto-zoom while remaining compact
       el.style.fontSize = '17px';
-      // give controls a bit more hit area so users don’t double-tap
       if (!/input|textarea|select/i.test(el.tagName)) return;
       el.style.lineHeight = '1.35';
     }
     function ensureViewportAndStyles() {
-      // Correct the viewport to a mobile-friendly value
       var meta = document.querySelector('meta[name="viewport"]');
       var desired = 'width=device-width, initial-scale=1, viewport-fit=cover';
       if (!meta) {
@@ -42,7 +37,6 @@ var QuestionFlow = (function () {
       if (meta.getAttribute('content') !== desired) {
         meta.setAttribute('content', desired);
       }
-      // Inject CSS to lock text-size-adjust and enforce minimum control sizes
       var already = document.getElementById('qf-mobile-zoom-guard');
       if (!already) {
         var st = document.createElement('style');
@@ -97,7 +91,6 @@ var QuestionFlow = (function () {
       return new Promise(function(resolve, reject){
         var sid = getSessionId();
         if (sid) {
-          // Refresh/ensure session & hydrate playerId
           fetch(apiBase + '/api/player/session', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -132,7 +125,6 @@ var QuestionFlow = (function () {
       });
     }
 
-    // Generic player PATCH (compat). DO NOT use this for consent or phone.
     function savePatch(patch) {
       return ensureSession().then(function(sid) {
         return fetch(apiBase + '/api/player/' + encodeURIComponent(sid), {
@@ -146,11 +138,9 @@ var QuestionFlow = (function () {
       });
     }
 
-    // Dedicated consent patch (avoids cast errors by using journey API)
     function saveConsent(agree) {
       var pid = getPlayerId();
       if (!pid) {
-        // if we somehow do not have playerId yet, ensure session -> fetch doc -> try again
         return ensureSession().then(fetchServerDoc).then(function(doc){
           if (doc && doc._id) setPlayerId(doc._id);
           var pid2 = getPlayerId();
@@ -177,7 +167,6 @@ var QuestionFlow = (function () {
           body: JSON.stringify({ sessionId: sid, phone: e164 })
         }).then(async function(res){
           if (!res.ok) {
-            // translate duplicate phone into a friendly error
             if (res.status === 409) {
               let j = {};
               try { j = await res.json(); } catch(e){}
@@ -212,8 +201,6 @@ var QuestionFlow = (function () {
           .then(function(r){ if (!r.ok) throw new Error('journey get failed'); return r.json(); });
       }
       if (pid) return getById(pid);
-
-      // hydrate playerId via /api/player/session then journey
       return ensureSession().then(function(){
         var pid2 = getPlayerId();
         if (!pid2) throw new Error('no playerId after session');
@@ -221,24 +208,18 @@ var QuestionFlow = (function () {
       });
     }
 
-    // Merge server "truth" into our local UI state so we can resume precisely
     function mergeServerIntoLocal(doc) {
       if (!doc || typeof doc !== 'object') return;
-
       var s = readState();
-
       if (doc.name && !s.name) s.name = doc.name;
       if (doc.role && !s.role) s.role = doc.role;
-
-      // map progress flags from server steps -> local boolean gates
       var steps = doc.steps || {};
       if (steps.name) s.nameDone = true;
       if (steps.role) s.roleDone = true;
       if (steps.postLevel2Q) s.q3Done = true;
-      if (steps.location) s.q4Done = true; // artist path match
+      if (steps.location) s.q4Done = true;
       if (steps.phoneVerified) s.phoneVerified = true;
       if (doc.phone && doc.phone.verified) s.phoneVerified = true;
-
       writeState(s);
     }
 
@@ -258,16 +239,13 @@ var QuestionFlow = (function () {
     function createOverlay() {
       overlay = document.createElement('div');
       overlay.className = 'qf-overlay hidden';
-
       box = document.createElement('div');
       box.className = 'qf-box';
-
       closeBtn = document.createElement('button');
       closeBtn.className = 'qf-close';
       closeBtn.textContent = '×';
       closeBtn.disabled = true;
       sizeForMobile(closeBtn);
-
       logoEl = document.createElement('img');
       logoEl.alt = 'Dream Stage';
       logoEl.src = 'images/logo.png';
@@ -275,28 +253,22 @@ var QuestionFlow = (function () {
       logoEl.style.height = 'auto';
       logoEl.style.margin = '6px auto 6px';
       logoEl.style.display = 'none';
-
       titleEl = document.createElement('div');
       titleEl.className = 'qf-title';
       sizeForMobile(titleEl);
-
       typeEl = document.createElement('div');
       typeEl.className = 'qf-type';
       sizeForMobile(typeEl);
-
       bodyEl = document.createElement('div');
       bodyEl.className = 'qf-body';
-
       actionsEl = document.createElement('div');
       actionsEl.className = 'qf-actions';
-
       box.appendChild(closeBtn);
       box.appendChild(logoEl);
       box.appendChild(titleEl);
       box.appendChild(typeEl);
       box.appendChild(bodyEl);
       box.appendChild(actionsEl);
-
       overlay.appendChild(box);
       document.body.appendChild(overlay);
     }
@@ -330,9 +302,7 @@ var QuestionFlow = (function () {
       return b;
     }
 
-    // -------------- Artist type suggestion helper --------------
     function suggestArtForm(name, description) {
-      // Fire-and-forget; do not block flow if API is missing
       var payload = {
         name: String(name || '').trim(),
         description: String(description || '').trim(),
@@ -348,7 +318,6 @@ var QuestionFlow = (function () {
       }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
     }
 
-    // -------------- Question primitives --------------
     function askText(title, question, placeholder, buttonLabel) {
       clearBody();
       titleEl.textContent = title;
@@ -356,16 +325,13 @@ var QuestionFlow = (function () {
       label.className = 'qf-label';
       label.textContent = question;
       sizeForMobile(label);
-
       inputEl = document.createElement('input');
       inputEl.type = 'text';
       inputEl.className = 'qf-input';
       inputEl.placeholder = placeholder || '';
       sizeForMobile(inputEl);
-
       bodyEl.appendChild(label);
       bodyEl.appendChild(inputEl);
-
       var resolveWait;
       var next = makeBtn(buttonLabel || 'Next', function(){
         var val = (inputEl.value || '').trim();
@@ -373,7 +339,6 @@ var QuestionFlow = (function () {
         resolveWait(val);
       });
       actionsEl.appendChild(next);
-
       inputEl.focus();
       return new Promise(function(resolve){ resolveWait = resolve; });
     }
@@ -381,11 +346,15 @@ var QuestionFlow = (function () {
     function askOptions(title, question, options, buttonLabel) {
       clearBody();
       titleEl.textContent = title;
-      typeLine(question, typeEl, 12);
+      typeEl.textContent = ''; // Ensure typeEl is cleared
+      var isTyping = false; // Guard to prevent multiple typeLine calls
+      if (question && !isTyping) {
+        isTyping = true;
+        typeLine(question, typeEl, 12).finally(function(){ isTyping = false; });
+      }
 
       var grid = document.createElement('div');
       grid.className = 'qf-options';
-
       var selected = null;
 
       options.forEach(function(opt){
@@ -420,75 +389,60 @@ var QuestionFlow = (function () {
     function askAutosuggest(title, question, placeholder) {
       clearBody();
       titleEl.textContent = title;
-
       var label = document.createElement('label');
       label.className = 'qf-label';
       label.textContent = question;
       sizeForMobile(label);
-
       inputEl = document.createElement('input');
       inputEl.type = 'text';
       inputEl.className = 'qf-input';
       inputEl.placeholder = placeholder || 'Type your art form...';
       sizeForMobile(inputEl);
-
       suggestBox = document.createElement('div');
       suggestBox.className = 'qf-suggest qf-hide';
-
-      // "Can't find?" CTA
       var newCta = document.createElement('button');
       newCta.type = 'button';
       newCta.className = 'qf-link qf-new-art-cta';
       newCta.style.marginTop = '8px';
       newCta.textContent = "";
       sizeForMobile(newCta);
-
-      // Inline new-art form (hidden by default)
       var newForm = document.createElement('div');
       newForm.className = 'qf-new-art-form qf-hide';
       newForm.style.marginTop = '8px';
-
       var newName = document.createElement('input');
       newName.type = 'text';
       newName.className = 'qf-input';
       newName.placeholder = 'New art form name';
       sizeForMobile(newName);
-
       var newDesc = document.createElement('textarea');
       newDesc.className = 'qf-input';
       newDesc.placeholder = 'Short description (optional)';
       newDesc.rows = 2;
       newDesc.style.resize = 'vertical';
       sizeForMobile(newDesc);
-
       var newActions = document.createElement('div');
       newActions.style.display = 'flex';
       newActions.style.gap = '8px';
       newActions.style.marginTop = '6px';
-
       var addBtn = document.createElement('button');
       addBtn.type = 'button';
       addBtn.className = 'qf-btn';
       addBtn.textContent = 'Add';
       sizeForMobile(addBtn);
-
       var cancelBtn = document.createElement('button');
       cancelBtn.type = 'button';
       cancelBtn.className = 'qf-btn qf-btn-secondary';
       cancelBtn.textContent = 'Cancel';
       sizeForMobile(cancelBtn);
-
       newActions.appendChild(addBtn);
       newActions.appendChild(cancelBtn);
       newForm.appendChild(newName);
       newForm.appendChild(newDesc);
       newForm.appendChild(newActions);
-
       bodyEl.appendChild(label);
       bodyEl.appendChild(inputEl);
       bodyEl.appendChild(suggestBox);
       bodyEl.appendChild(newForm);
-
       var entries = [];
 
       function findMatch(name) {
@@ -504,31 +458,26 @@ var QuestionFlow = (function () {
       function renderSuggest(list, queryStr) {
         suggestBox.innerHTML = '';
         var q = String(queryStr || '').trim();
-        // If there are no matches but user has typed something, show a "Use "q"" row
-        if (!list.length && q) {
-          suggestBox.classList.remove('qf-hide');
+        if (q && !list.some(item => String(item.name || '').trim().toLowerCase() === q.toLowerCase())) {
           var useRow = document.createElement('div');
           useRow.className = 'qf-s-item qf-s-use';
           var nUse = document.createElement('div');
           nUse.className = 'qf-s-name';
-          nUse.textContent = 'Use "' + q + '"';
+          nUse.textContent = 'Use: ' + q;
           sizeForMobile(useRow);
           sizeForMobile(nUse);
           useRow.appendChild(nUse);
           useRow.onclick = function(){
             inputEl.value = q;
-            suggestBox.classList.add('qf-hide');
+            suggestBox.className = 'qf-suggest qf-hide';
           };
           suggestBox.appendChild(useRow);
+        }
+        if (!list.length && !q) {
+          suggestBox.className = 'qf-suggest qf-hide';
           return;
         }
-
-        if (!list.length) {
-          suggestBox.classList.add('qf-hide');
-          return;
-        }
-
-        suggestBox.classList.remove('qf-hide');
+        suggestBox.className = 'qf-suggest';
         list.slice(0, 12).forEach(function(item){
           var row = document.createElement('div');
           row.className = 'qf-s-item';
@@ -544,7 +493,7 @@ var QuestionFlow = (function () {
           row.appendChild(n); row.appendChild(d);
           row.onclick = function(){
             inputEl.value = item.name;
-            suggestBox.classList.add('qf-hide');
+            suggestBox.className = 'qf-suggest qf-hide';
           };
           suggestBox.appendChild(row);
         });
@@ -565,7 +514,6 @@ var QuestionFlow = (function () {
         renderSuggest(list, inputEl.value);
       });
 
-      // Toggle new-art form
       newCta.onclick = function() {
         var hidden = newForm.classList.contains('qf-hide');
         if (hidden) {
@@ -590,10 +538,9 @@ var QuestionFlow = (function () {
         }
         addBtn.disabled = true;
         suggestArtForm(name, desc).then(function(){
-          // Update local list so it shows up in suggestions immediately
           entries.unshift({ name: name, description: desc });
           inputEl.value = name;
-          renderSuggest([], name); // hide dropdown since we just selected it
+          renderSuggest([], name);
           newForm.classList.add('qf-hide');
         }).finally(function(){
           addBtn.disabled = false;
@@ -604,7 +551,6 @@ var QuestionFlow = (function () {
       var next = makeBtn('Continue', function(){
         var val = (inputEl.value || '').trim();
         if (!val) { inputEl.focus(); return; }
-        // If the entered value is not in the known list, opportunistically suggest it to backend
         if (!findMatch(val)) {
           suggestArtForm(val, '');
         }
@@ -621,41 +567,32 @@ var QuestionFlow = (function () {
       titleEl.textContent = title;
       typeEl.textContent = '';
       var done = false;
-
       typeLine(message, typeEl, 10).then(function(){ done = true; });
-
       var resolveWait;
       var next = makeBtn(buttonLabel || 'Continue', function(){
         if (!done) return;
         resolveWait(true);
       });
       actionsEl.appendChild(next);
-
       return new Promise(function(resolve){ resolveWait = resolve; });
     }
 
     function askConsent() {
       clearBody();
       titleEl.textContent = 'Consent';
-
       var msg = document.createElement('div');
       msg.className = 'qf-type';
       msg.innerHTML = `<span>By using Dream Stage, you agree to our <a class="qf-link" href="https://dreamstage.tech/terms-and-community-guidelines" target="_blank" rel="noopener">Terms & Community Guidelines</a>
               and <a class="qf-link" href="https://dreamstage.tech/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
-
             </span>`;
       sizeForMobile(msg);
       bodyEl.appendChild(msg);
-
       var resolveWait;
       var yes = makeBtn('Yes, I Agree', function(){ resolveWait(true); });
-      
       actionsEl.appendChild(yes);
-
       return new Promise(function(resolve){ resolveWait = resolve; });
     }
 
-    // -------------- Phone with country selector (E.164) --------------
     var COUNTRY_CODES = [
       { code: 'IN', dial: '91',  name: 'India (+91)' },
       { code: 'US', dial: '1',   name: 'United States (+1)' },
@@ -673,24 +610,21 @@ var QuestionFlow = (function () {
       var cc = normalizeDigits(dial);
       var nn = normalizeDigits(national);
       var total = (cc + nn);
-      if (total.length < 5 || total.length > 15) return null; // coarse E.164 guard
+      if (total.length < 5 || total.length > 15) return null;
       return '+' + total;
     }
 
     function askPhoneNumberThenOtp() {
       clearBody();
       titleEl.textContent = 'Verify your phone';
-
       var lab1 = document.createElement('label');
       lab1.className = 'qf-label';
       lab1.textContent = '';
       sizeForMobile(lab1);
-
       var lab2 = document.createElement('label');
       lab2.className = 'qf-label';
       lab2.textContent = 'Phone number';
       sizeForMobile(lab2);
-
       var cc = document.createElement('select');
       cc.className = 'qf-input';
       COUNTRY_CODES.forEach(function(c){
@@ -701,20 +635,16 @@ var QuestionFlow = (function () {
       });
       cc.value = '91';
       sizeForMobile(cc);
-
       var phoneInput = document.createElement('input');
       phoneInput.type = 'tel';
       phoneInput.className = 'qf-input';
       phoneInput.placeholder = 'e.g., 98765 43210';
       sizeForMobile(phoneInput);
-
       bodyEl.appendChild(lab1);
       bodyEl.appendChild(lab2);
       bodyEl.appendChild(cc);
       bodyEl.appendChild(phoneInput);
-
       var resolveWait;
-
       var send = makeBtn('Send OTP', function(){
         var e164 = toE164(cc.value, phoneInput.value);
         if (!e164) {
@@ -724,34 +654,27 @@ var QuestionFlow = (function () {
         }
         send.disabled = true;
         sendOtp(e164).then(function(r){
-          
           writeState({ phone: e164 });
-
-          // Next: OTP entry
           clearBody();
           titleEl.textContent = 'Enter OTP';
           var p = document.createElement('div');
           p.className = 'qf-label';
           p.textContent = 'We sent an OTP to ' + e164;
           sizeForMobile(p);
-
           var code = document.createElement('input');
           code.type = 'text';
           code.className = 'qf-input';
           code.placeholder = '6-digit code';
           sizeForMobile(code);
-
           if (!devOtpHint) {
             devOtpHint = document.createElement('div');
             devOtpHint.className = 'qf-dev-otp';
           }
           devOtpHint.textContent = 'Dev OTP: ' + (r.devOtp || 'sent');
           sizeForMobile(devOtpHint);
-
           bodyEl.appendChild(p);
           bodyEl.appendChild(code);
           bodyEl.appendChild(devOtpHint);
-
           actionsEl.innerHTML = '';
           var verify = makeBtn('Verify', function(){
             var c = (code.value || '').trim();
@@ -759,9 +682,6 @@ var QuestionFlow = (function () {
             verify.disabled = true;
             verifyOtp(c).then(function(resp){
               writeState({ phoneVerified: true });
-              // No need to save player patch here; server already set steps.phoneVerified
-
-              // redirect to community with rank if available
               var rank = (resp && typeof resp.joinOrder === 'number') ? resp.joinOrder : null;
               var qs = rank ? ('?rank=' + encodeURIComponent(rank)) : '';
               window.location.href = '/community.html' + qs;
@@ -782,18 +702,15 @@ var QuestionFlow = (function () {
           send.disabled = false;
         });
       });
-
       actionsEl.appendChild(send);
-
       return new Promise(function(resolve){ resolveWait = resolve; });
     }
 
-    // -------------- Flow blocks --------------
     function welcomeThenName() {
       open();
       logoEl.style.display = 'block';
       return showMessage(
-        'Welcome',
+        '',
         'Welcome to Dream Stage, where every dream takes center stage and every voice becomes part of the show.'
       ).then(function(){
         logoEl.style.display = 'none';
@@ -808,7 +725,7 @@ var QuestionFlow = (function () {
         return savePatch({ name: name });
       }).then(function(){
         return showMessage(
-          'Welcome to Dream Stage',
+          '',
           '“Welcome to Dream Stage, a place where your name is remembered, not just recorded. You’re not just entering a platform; you’re stepping into a movement.”'
         );
       }).then(close);
@@ -830,7 +747,6 @@ var QuestionFlow = (function () {
         writeState({ role: role, roleDone: true });
         return savePatch({ role: role });
       }).then(function(){
-        // Message 2 (post Q2)
         return showMessage(
           'Every movement needs its people. It takes mass collaboration to organize and uplift this industry, and it starts with knowing who you are.',
           ''
@@ -841,7 +757,6 @@ var QuestionFlow = (function () {
     function q3RoleSpecific() {
       var st = readState();
       open();
-
       if (st.role === 'artist') {
         return askAutosuggest(
           'Let’s get to know your role a little more, What kind of an artist are you',
@@ -849,11 +764,10 @@ var QuestionFlow = (function () {
           'For example DJ/Dancer/Painter/Chef'
         ).then(function(kind){
           writeState({ artistKind: kind, q3Done: true });
-          return savePatch({ artistKind: kind }); // server compat maps to artistType
+          return savePatch({ artistKind: kind });
         }).then(function(){
           return showMessage('Got it!', '“Your art is your voice. Dream Stage helps it reach the world, where talent meets the audience it deserves.”');
         }).then(close);
-
       } else if (st.role === 'helper') {
         return askOptions(
           'How do you help?',
@@ -871,7 +785,6 @@ var QuestionFlow = (function () {
         }).then(function(){
           return showMessage('Thank you!', '“You are the wind beneath the wings of creativity. Dream Stage celebrates your role in turning potential into brilliance.”');
         }).then(close);
-
       } else if (st.role === 'business') {
         return askText(
           'What kind of a business are you or what kind of events do you curate? (e.g., Music festivals, Weekend gigs, Retreats, Brand Activations)',
@@ -880,12 +793,11 @@ var QuestionFlow = (function () {
           'Continue'
         ).then(function(kind){
           writeState({ businessKind: kind, q3Done: true });
-          return savePatch({ businessKind: kind }); // server compat -> managerRoleText
+          return savePatch({ businessKind: kind });
         }).then(function(){
           return showMessage('Nice!', '“You craft moments that become memories. Dream Stage is here to help you make them legendary.”');
         }).then(close);
-
-      } else { // lover
+      } else {
         return askOptions(
           'What kind of artistic experiences do you enjoy the most?',
           '',
@@ -908,7 +820,6 @@ var QuestionFlow = (function () {
     function consentOtpThenFinal() {
       return askConsent().then(function(agree){
         writeState({ consentAgreed: !!agree });
-        // Save via journey route to avoid "Cast to Object" error
         return saveConsent(!!agree);
       }).then(function(){
         return askPhoneNumberThenOtp();
@@ -918,7 +829,6 @@ var QuestionFlow = (function () {
     function q4RoleSpecificThenConsentOtp() {
       var st = readState();
       open();
-
       if (st.role === 'artist') {
         return askText(
           'Where are you currently based?',
@@ -931,7 +841,6 @@ var QuestionFlow = (function () {
         }).then(function(){
           return showMessage('Noted!', 'From the hills to the coast, from big cities to quiet towns- art lives everywhere. Knowing where you create helps us bring the stage closer to you.');
         }).then(consentOtpThenFinal);
-
       } else if (st.role === 'helper') {
         return askOptions(
           'What stage of an artist’s journey do you usually support?',
@@ -949,7 +858,6 @@ var QuestionFlow = (function () {
         }).then(function(){
           return showMessage('Appreciated!', 'At Dream Stage, we believe every supporter behind the scenes is just as vital as the ones on stage. Whether you\'re booking gigs, offering guidance, or amplifying artists through promotion- you\'re helping shape the future of culture with us.');
         }).then(consentOtpThenFinal);
-
       } else if (st.role === 'business') {
         return askOptions(
           'How often do you organize or host gigs/events?',
@@ -967,8 +875,7 @@ var QuestionFlow = (function () {
         }).then(function(){
           return showMessage('Great!', 'Every event you host keeps the creative ecosystem alive. At Dream Stage, we’re building a community where artists and curators collaborate seamlessly- and knowing your pace helps us make that connection stronger.');
         }).then(consentOtpThenFinal);
-
-      } else { // lover
+      } else {
         return askOptions(
           'How often do you attend events?',
           '',
@@ -988,7 +895,6 @@ var QuestionFlow = (function () {
       }
     }
 
-    // -------------- Level-complete role messages --------------
     function level2RoleMessage(role) {
       if (role === 'artist') return 'Your art deserves the spotlight, keep creating!';
       if (role === 'business') return 'You’re curating more than events- you’re curating culture.';
@@ -1003,29 +909,19 @@ var QuestionFlow = (function () {
       return 'Every moment you engage, you make art more meaningful.';
     }
 
-    // -------------- Public controls --------------
-    // Called once on app boot
     this.init = function () {
       if (!overlay) createOverlay();
-
-      // Fix viewport + font sizes to stop iOS auto-zoom
       ensureViewportAndStyles();
-
-      // Hydrate from server, possibly auto-redirect if already verified
       ensureSession()
         .then(fetchServerDoc)
         .then(function(doc){
           if (doc && doc._id) setPlayerId(doc._id);
           mergeServerIntoLocal(doc);
           if (!maybeAutoRedirect(doc)) {
-            // Not verified — idle until user starts game or clicks "Onboard me directly"
           }
         })
         .catch(function(){
-          // If this fails, user can still start flow; session creation will run on next calls
         });
-
-      // Listen for milestone close to continue flow if the generic popup handled it.
       window.addEventListener('milestone:closed', function(ev){
         var detail = ev && ev.detail || {};
         if (detail.level === 2) {
@@ -1035,45 +931,33 @@ var QuestionFlow = (function () {
         if (detail.level === 3) {
           var st3 = readState();
           if (!st3.q4Done || !st3.phoneVerified) {
-            // kick off the rest (Question 4 then consent+otp)
             q4RoleSpecificThenConsentOtp();
           }
         }
       });
     };
 
-    // Existing game hook (kept for backwards compatibility)
     this.ensureName = function () {
       var st = readState();
       if (st.nameDone) return Promise.resolve();
       return welcomeThenName();
     };
 
-    // Existing level hook (kept): show next step after a level finishes
-    // UPDATED: Removed MilestoneScreen calls here to avoid duplicates.
     this.afterLevelComplete = function(level) {
       var st = readState();
       var ms = getMilestone();
-
-      // Level 1 -> Question 2 (role)
       if (level === 1 && !st.roleDone) {
         close();
         return roleQuestion();
       }
-
-      // Level 2 -> let MilestoneScreen (generic) show; then continue when it closes.
       if (level === 2) {
-        // If no milestone is visible at all, proceed immediately.
         if (!(ms && ms.isActive && ms.isActive())) {
           if (!st.q3Done) return q3RoleSpecific();
           close();
           return Promise.resolve();
         }
-        // If visible, do nothing; init() listener will continue on close.
         return Promise.resolve();
       }
-
-      // Level 3 -> same pattern as Level 2
       if (level === 3) {
         if (!(ms && ms.isActive && ms.isActive())) {
           if (!st.q4Done) return q4RoleSpecificThenConsentOtp();
@@ -1086,13 +970,10 @@ var QuestionFlow = (function () {
         }
         return Promise.resolve();
       }
-
-      // Default fallthrough for other levels
       close();
       return Promise.resolve();
     };
 
-    // NEW: Direct onboarding (no gameplay): resume from correct step
     this.startDirectOnboarding = function() {
       ensureSession()
         .then(fetchServerDoc)
@@ -1107,10 +988,8 @@ var QuestionFlow = (function () {
         });
     };
 
-    // Decide next question and run it
     function runOrResume() {
       var st = readState();
-
       if (!st.nameDone) {
         welcomeThenName().then(function(){ runOrResume(); });
         return;
@@ -1127,14 +1006,11 @@ var QuestionFlow = (function () {
         q4RoleSpecificThenConsentOtp().then(function(){ runOrResume(); });
         return;
       }
-      // Past Q4 — ensure consent + phone if not verified yet
       if (!st.phoneVerified) {
         open();
-        consentOtpThenFinal(); // will redirect on success
+        consentOtpThenFinal();
         return;
       }
-
-      // Verified but didn’t auto-redirect (e.g., local-only) — confirm & go
       ensureSession().then(function(){
         var sid = getSessionId();
         fetch('/api/player/session', {

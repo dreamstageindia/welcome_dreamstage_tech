@@ -1,4 +1,4 @@
-/* ---------- public/js/epk-pay.js (creator code based on PAID count, not joinOrder) ---------- */
+/* ---------- public/js/epk-pay.js  (popup pay + invoice + creator code assign; no joinOrder) ---------- */
 (function(){
   const STATE = {
     sessionId: null,
@@ -21,10 +21,42 @@
   const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
 
   function setAttr(el, name, val){ if(el) el.setAttribute(name, val); }
-  function setDisabled(el, on){ if(!el) return; setAttr(el, 'aria-disabled', on ? 'true' : 'false'); }
-  function isDisabled(el){ return !el || el.getAttribute('aria-disabled') === 'true'; }
+  function setDisabled(el, on){ if(!el) return; setAttr(el, 'aria-disabled', on ? 'true' : 'false'); el.disabled = !!on; }
+  function isDisabled(el){ return !el || el.getAttribute('aria-disabled') === 'true' || el.disabled; }
 
-  /* ---------- Bring forward local game/session + pending invite ---------- */
+  /* -------------------- Robust JSON helpers (avoid “Unexpected token <”) -------------------- */
+  async function readJSONorThrow(res) {
+    const urlPath = (() => { try { return new URL(res.url, location.href).pathname; } catch { return res.url || ''; } })();
+    const text = await res.text();
+
+    let data = null;
+    try {
+      data = JSON.parse(text);
+    } catch (_) {
+      if (!res.ok || text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+        const summary = (text || '').replace(/\s+/g,' ').slice(0, 180);
+        throw new Error(`${res.status} ${res.statusText} at ${urlPath} — server did not return JSON. ${summary}`);
+      }
+      throw new Error(`${res.status} ${res.statusText} at ${urlPath} — unexpected non-JSON response.`);
+    }
+
+    if (!res.ok) {
+      const errMsg = data?.error || data?.message || `${res.status} ${res.statusText}`;
+      throw new Error(errMsg);
+    }
+    return data;
+  }
+
+  async function postJSON(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(body || {})
+    });
+    return readJSONorThrow(res);
+  }
+
+  /* ---------- Bring forward local game/session + pending invite (do NOT consume until after payment) ---------- */
   (function hydrateFromLocalStorage(){
     try{
       const raw = localStorage.getItem('QF_STATE');
@@ -176,8 +208,16 @@
   const ccTiny = document.querySelector('#s5 .tiny');
 
   function padCode(n){ return '#'+String(Math.max(0,Math.floor(n||0))).padStart(4,'0'); }
+  function codeToLabel(v){
+    if (v == null) return '';
+    const s = String(v);
+    if (s.startsWith('#')) return s;
+    const n = Number(s);
+    if (Number.isFinite(n)) return '#'+String(n).padStart(4, '0');
+    return s;
+  }
 
-  // NEW: 4-bucket membership titles
+  // Tiers mapping
   function setTierByCode(n){
     let label = '';
     if (n >= 1 && n <= 100) label = 'OG Member';
@@ -212,17 +252,14 @@
     requestAnimationFrame(step);
   }
 
-  // NEW: Top-percent label + 100−X% fill
+  // “Top X%” and 100−X% fill (e.g., rank=7 → top 1%, fill 99%)
   function setScaleNow(predictedRank){
     if (!ccPctLabel) return;
     const rank = Math.max(1, Math.min(predictedRank || 1, TOTAL_USERS));
-    const topPercent = Math.max(1, Math.ceil((rank / TOTAL_USERS) * 100));  // 7/10000 → 1%
-    const fillPct = Math.max(0, 100 - topPercent);                           // bar fill → 99%
-
-    // Replace the label text to “You’re in the top X%”
+    const topPercent = Math.max(1, Math.ceil((rank / TOTAL_USERS) * 100));
+    const fillPct = Math.max(0, 100 - topPercent);
     ccPctLabel.innerHTML = `You're in the top <span id="ccTop">0</span>%`;
     animateCount(byId('ccTop'), topPercent, 700);
-
     ccBar.style.width = fillPct + '%';
   }
 
@@ -235,9 +272,9 @@
     ];
     for (const [url, keys] of candidates){
       try{
-        const r = await fetch(url);
+        const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
         if (!r.ok) continue;
-        const j = await r.json();
+        const j = await readJSONorThrow(r);
         for (const k of keys){
           const n = Number(j?.[k]);
           if (Number.isFinite(n)) return Math.max(0, n);
@@ -247,27 +284,20 @@
     return Number(localStorage.getItem('CREATOR_COUNT_HINT') || 0);
   }
 
-  /* ---------- S5: PREVIEW creator code strictly from PAID count ---------- */
+  // S5 preview strictly from PAID count
   async function initS5PreviewAndCounts(){
-    // change caption: preview, not assigned yet
     const ccLabel = document.querySelector('#s5 .cc-label');
     if (ccLabel) ccLabel.textContent = 'This is what your creator code would look like';
 
     const paidCount = await fetchCreatorPaidCount();
     localStorage.setItem('CREATOR_COUNT_HINT', String(paidCount));
 
-    // predicted code = paidCount + 1
     const predicted = Math.max(1, Math.min(paidCount + 1, TOTAL_USERS));
-
-    // show predicted code & dependent UI
     if (ccBig) ccBig.textContent = padCode(predicted);
     setTierByCode(predicted);
     updateDealPriceByCode(predicted);
-
-    // Top-percent bar
     setScaleNow(predicted);
 
-    // “already joined” ticker remains
     if (ccTiny) {
       ccTiny.innerHTML = `Already <strong><span id="boughtCount">0</span></strong> creators have joined.`;
       animateCount(byId('boughtCount'), paidCount, 900);
@@ -304,11 +334,11 @@
     const sessionId = STATE.sessionId || ensureSessionId();
     try{
       const r = await fetch('/api/player/session', {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
         body: JSON.stringify({ sessionId })
       });
       if (r.ok){
-        const j = await r.json();
+        const j = await readJSONorThrow(r);
         if (j?.playerId) STATE.playerId = j.playerId;
       }
     }catch{}
@@ -317,9 +347,9 @@
   async function loadJourney(){
     if(!STATE.playerId) return;
     try{
-      const r = await fetch(`/api/journey/${STATE.playerId}`);
+      const r = await fetch(`/api/journey/${STATE.playerId}`, { headers: { 'Accept': 'application/json' } });
       if(!r.ok) return;
-      const doc = await r.json();
+      const doc = await readJSONorThrow(r);
       STATE.steps = doc.steps || STATE.steps || {};
       if (doc.name && !STATE.name) STATE.name = doc.name;
       if (doc.phone?.number && !STATE.phone) STATE.phone = doc.phone.number;
@@ -330,6 +360,31 @@
       }
       updateDetailsUI();
     }catch{}
+  }
+
+  /* ---------- Auto-redirect if already paid ---------- */
+  function membershipIsActive(m){
+    if (!m || m.status !== 'active') return false;
+    if (!m.validTill) return true;
+    const vt = new Date(m.validTill);
+    return isFinite(vt.getTime()) ? vt.getTime() > Date.now() : true;
+  }
+
+  async function tryAutoRedirectIfActive(){
+    const phone = STATE.phone;
+    if (!phone) return false;
+    try{
+      const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(phone)}`, { headers: { 'Accept':'application/json' } });
+      if (!res.ok) return false;
+      const p = await readJSONorThrow(res);
+      if (membershipIsActive(p.membership)) {
+        // Optional: store a small flag so other pages know user is active
+        sessionStorage.setItem('MEMBERSHIP_ACTIVE', '1');
+        location.replace('complete.html');
+        return true;
+      }
+    }catch{}
+    return false;
   }
 
   /* ---------- Recovery (find my account by phone) ---------- */
@@ -385,9 +440,9 @@
     }
     const e164 = toE164(dial, national);
     try{
-      const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`);
+      const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(e164)}`, { headers: { 'Accept': 'application/json' } });
       if(!res.ok){ rErr.textContent='We couldn’t find an account with that number.'; rErr.style.display='block'; return; }
-      const p = await res.json();
+      const p = await readJSONorThrow(res);
 
       const playerId = p._id || p.playerId || '';
       if (playerId) {
@@ -398,9 +453,9 @@
 
       if (!p.name && playerId){
         try{
-          const jr = await fetch(`/api/journey/${playerId}`);
+          const jr = await fetch(`/api/journey/${playerId}`, { headers: { 'Accept': 'application/json' } });
           if (jr.ok){
-            const jd = await jr.json();
+            const jd = await readJSONorThrow(jr);
             if (jd?.name) STATE.name = jd.name;
           }
         }catch{}
@@ -425,6 +480,9 @@
 
       updateDetailsUI();
       closeRecover();
+
+      // If recovered user is already paid, jump right away.
+      await tryAutoRedirectIfActive();
       await loadJourney();
     }catch{
       rErr.textContent='Something went wrong. Please try again.'; rErr.style.display='block';
@@ -446,6 +504,10 @@
     ensureSessionId();
     await resolvePlayerFromSession();
     await loadJourney();
+
+    // If we already know the phone (from journey or storage), skip to completion if paid.
+    if (await tryAutoRedirectIfActive()) return;
+
     if (!STATE.playerId || !STATE.phone || !STATE.name) {
       openRecover();
     }
@@ -466,7 +528,7 @@
     });
   })();
 
-  /* ---------- S7: Confirmation, Edit, Payment ---------- */
+  /* ---------- S7: Confirmation, Edit ---------- */
   function syncPayButtonState(){
     const cb = byId('confirmSub');
     const btn = byId('payBtn');
@@ -492,236 +554,418 @@
     });
   })();
 
- /* ---------- Edit Details (now with country select + national number) ---------- */
-(function(){
-  const openBtn  = byId('editDetailsBtn');
-  const backdrop = byId('editBackdrop');
-  const modal    = byId('editModal');
-  const closeBtn = byId('editClose');
-  const cancelBtn= byId('editCancel');
-  const saveBtn  = byId('editSave');
-  const nameInp  = byId('editName');
-  const phoneInp = byId('editPhone');
-  const ccSel    = byId('editCountry');
-  const errBox   = byId('editErr');
+  /* ---------- Edit Details (country select + national number) ---------- */
+  (function(){
+    const openBtn  = byId('editDetailsBtn');
+    const backdrop = byId('editBackdrop');
+    const modal    = byId('editModal');
+    const closeBtn = byId('editClose');
+    const cancelBtn= byId('editCancel');
+    const saveBtn  = byId('editSave');
+    const nameInp  = byId('editName');
+    const phoneInp = byId('editPhone');
+    const ccSel    = byId('editCountry');
+    const errBox   = byId('editErr');
 
-  if(!openBtn) return;
+    if(!openBtn) return;
 
-  // fill country dropdown (same list as recovery)
-  if (ccSel) fillCountrySelect(ccSel);
+    if (ccSel) fillCountrySelect(ccSel);
 
-  // split a +E164 into { cc, nn } best-effort by matching known country codes
-  function splitE164(e164){
-    const d = digits(e164);
-    if (!d) return { cc: (ccSel && ccSel.value) || '91', nn: '' };
-    // longest prefix wins
-    const codes = [...COUNTRY_CODES].sort((a,b)=> b.dial.length - a.dial.length);
-    for (const c of codes){
-      if (d.startsWith(c.dial)) return { cc: c.dial, nn: d.slice(c.dial.length) };
-    }
-    return { cc: (ccSel && ccSel.value) || '91', nn: d };
-  }
-
-  function open(){
-    errBox.style.display='none'; errBox.textContent='';
-    nameInp.value = STATE.name || '';
-
-    // prefill country + national number from stored E164
-    const { cc, nn } = splitE164(STATE.phone || '');
-    if (ccSel) ccSel.value = cc;
-    phoneInp.value = nn;
-
-    backdrop.classList.add('recover-show');
-    modal.classList.add('recover-show');
-    setTimeout(()=> (nameInp.value ? phoneInp.focus() : nameInp.focus()), 0);
-  }
-
-  function close(){
-    backdrop.classList.remove('recover-show');
-    modal.classList.remove('recover-show');
-  }
-
-  async function save(){
-    errBox.style.display='none'; errBox.textContent='';
-
-    const name = (nameInp.value||'').trim();
-    const dial = ccSel ? ccSel.value : '91';
-    const nat  = (phoneInp.value||'').trim();
-
-    if(!name){
-      errBox.textContent='Please enter your name.'; errBox.style.display='block'; return;
-    }
-    if(!validNational(dial, nat)){
-      errBox.textContent='That number looks invalid for the selected country.'; errBox.style.display='block'; return;
-    }
-    if(!STATE.playerId){
-      errBox.textContent='We couldn’t find your session. Please refresh.'; errBox.style.display='block'; return;
+    function splitE164(e164){
+      const d = digits(e164);
+      if (!d) return { cc: (ccSel && ccSel.value) || '91', nn: '' };
+      const codes = [...COUNTRY_CODES].sort((a,b)=> b.dial.length - a.dial.length);
+      for (const c of codes){
+        if (d.startsWith(c.dial)) return { cc: c.dial, nn: d.slice(c.dial.length) };
+      }
+      return { cc: (ccSel && ccSel.value) || '91', nn: d };
     }
 
-    const e164 = toE164(dial, nat);
+    function open(){
+      errBox.style.display='none'; errBox.textContent='';
+      nameInp.value = STATE.name || '';
+      const { cc, nn } = splitE164(STATE.phone || '');
+      if (ccSel) ccSel.value = cc;
+      phoneInp.value = nn;
+      backdrop.classList.add('recover-show');
+      modal.classList.add('recover-show');
+      setTimeout(()=> (nameInp.value ? phoneInp.focus() : nameInp.focus()), 0);
+    }
 
-    setDisabled(saveBtn, true); saveBtn.textContent='Saving...';
-    try{
-      const r = await fetch(`/api/journey/${encodeURIComponent(STATE.playerId)}`, {
-        method:'PATCH',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ name, phoneNumber: e164 })
-      });
-      if(!r.ok){
-        const j = await r.json().catch(()=>({}));
-        if (j && j.error === 'PHONE_EXISTS'){
-          errBox.textContent = 'This phone number is already linked to another account.';
+    function close(){
+      backdrop.classList.remove('recover-show');
+      modal.classList.remove('recover-show');
+    }
+
+    async function save(){
+      errBox.style.display='none'; errBox.textContent='';
+      const name = (nameInp.value||'').trim();
+      const dial = ccSel ? ccSel.value : '91';
+      const nat  = (phoneInp.value||'').trim();
+      if(!name){ errBox.textContent='Please enter your name.'; errBox.style.display='block'; return; }
+      if(!validNational(dial, nat)){ errBox.textContent='That number looks invalid for the selected country.'; errBox.style.display='block'; return; }
+      if(!STATE.playerId){ errBox.textContent='We couldn’t find your session. Please refresh.'; errBox.style.display='block'; return; }
+
+      const e164 = toE164(dial, nat);
+
+      setDisabled(saveBtn, true); saveBtn.textContent='Saving...';
+      try{
+        const r = await fetch(`/api/journey/${encodeURIComponent(STATE.playerId)}`, {
+          method:'PATCH',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name, phoneNumber: e164 })
+        });
+        if(!r.ok){
+          const j = await r.json().catch(()=>({}));
+          if (j && j.error === 'PHONE_EXISTS'){
+            errBox.textContent = 'This phone number is already linked to another account.';
+            errBox.style.display='block';
+            return;
+          }
+          errBox.textContent = 'Could not save right now. Try again.';
           errBox.style.display='block';
           return;
         }
-        errBox.textContent = 'Could not save right now. Try again.';
-        errBox.style.display='block';
-        return;
+        STATE.name = name;
+        STATE.phone = e164;
+        try{
+          const gs = JSON.parse(localStorage.getItem('QF_STATE') || '{}');
+          gs.name = STATE.name; gs.phoneE164 = STATE.phone;
+          localStorage.setItem('QF_STATE', JSON.stringify(gs));
+        }catch{}
+        if(typeof STATE._updateDetailsUI === 'function') STATE._updateDetailsUI();
+
+        // If user edited to a paid account, auto-skip payment
+        await tryAutoRedirectIfActive();
+
+        close();
+      }catch{
+        errBox.textContent='Something went wrong. Please try again.'; errBox.style.display='block';
+      }finally{
+        setDisabled(saveBtn, false); saveBtn.textContent='Save';
+      }
+    }
+
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', (e)=>{ if(e.target===backdrop) close(); });
+    saveBtn.addEventListener('click', save);
+    phoneInp.addEventListener('keydown', (e)=>{ if(e.key==='Enter') save(); });
+  })();
+
+/* ---------- Payment popup + invoice + creator code assignment (UPDATED) ---------- */
+(function () {
+  const payBtn      = byId('payBtn');
+  const msg         = byId('payMsg');
+  const payBackdrop = byId('payBackdrop');
+  const payModal    = byId('payModal');
+  const payClose    = byId('payClose');
+
+  const payStart    = byId('payStart');
+  const payRetry    = byId('payRetry');
+  const payInvoice  = byId('payInvoice');
+  const payContinue = byId('payContinue');
+
+  const payStatus   = byId('payStatus');
+  const payErr      = byId('payErr');
+  const stayWarn    = byId('payStay');
+
+  // lanes (only one visible)
+  const laneProcessing = byId('laneProcessing');
+  const laneSuccess    = byId('laneSuccess');
+  const laneFailed     = byId('laneFailed');
+
+  // plan chip (header) — ensure there is only ONE in DOM
+  const payPlan     = byId('payPlan');
+  const payPlanName = byId('payPlanName');
+  const payPlanAmt  = byId('payPlanAmt');
+
+  // receipt fields
+  const receiptCard = byId('receiptCard');
+  const invAmount   = byId('invAmount');
+  const invOrder    = byId('invOrder');
+  const invPayment  = byId('invPayment');
+  const invCode     = byId('invCode');
+  const invPlan     = byId('invPlan');
+  const invInvoice  = byId('invInvoice');
+  const invDate     = byId('invDate');
+
+  // local helpers (avoid scope surprises)
+  const digits = (s) => String(s || '').replace(/\D+/g, '');
+  const encodePhone = (p) => { try { return btoa(digits(p)); } catch { return digits(p); } };
+
+  function codeToLabel(val) {
+    if (val == null) return '';
+    const s = String(val).replace(/^#/, '');
+    const n = Number(s);
+    if (Number.isFinite(n) && n > 0) return '#' + String(n).padStart(4, '0');
+    return String(val).startsWith('#') ? String(val) : '#' + String(val);
+  }
+
+  function setStatus(text) { if (payStatus) payStatus.textContent = text; }
+
+  function setLane(state) {
+    [laneProcessing, laneSuccess, laneFailed].forEach(el => el && el.classList.remove('active'));
+    if (state === 'processing') laneProcessing?.classList.add('active');
+    if (state === 'success')    laneSuccess?.classList.add('active');
+    if (state === 'failed')     laneFailed?.classList.add('active');
+  }
+
+  // Read plan shown in Section 6 (authoritative for the chip)
+  function getS6PlanFromDOM() {
+    const yEl = document.getElementById('dealYear');
+    const mEl = document.getElementById('dealMonthly');
+    const yearVal = Number(String(yEl?.textContent || '').replace(/[^\d]/g, ''));
+    const monthlyVal = Number(String(mEl?.textContent || '').replace(/[^\d.]/g, ''));
+    if (Number.isFinite(yearVal) && yearVal > 0) {
+      const name = yearVal < 199 ? 'Yearly — Early Access' : 'Yearly';
+      const monthly = Number.isFinite(monthlyVal) ? monthlyVal : +(yearVal / 12).toFixed(2);
+      return { year: yearVal, monthly, name };
+    }
+    return null;
+  }
+
+  // Show plan chip immediately from S6 (and later we can refine with server currency if needed)
+  function showPlanChipInitial() {
+    if (!payPlan) return;
+    const s6 = getS6PlanFromDOM();
+    const rupees = Number.isFinite(s6?.year) ? s6.year : (STATE._currentPrice || 199);
+    const planName = s6?.name || (rupees < 199 ? 'Yearly — Early Access' : 'Yearly');
+
+    if (payPlanName) payPlanName.textContent = planName;
+    if (payPlanAmt)  payPlanAmt.textContent  = '₹' + rupees + ' / year';
+
+    payPlan.style.display = 'inline-flex';
+  }
+
+  // Optionally refine amount/currency from server order (keeps S6 name)
+  function refinePlanChipWithOrder(order) {
+    if (!payPlan) return;
+    const currency = order?.currency || 'INR';
+    const rupeesFromOrder = Number.isFinite(order?.amount) ? Math.round(order.amount / 100) : NaN;
+
+    if (Number.isFinite(rupeesFromOrder)) {
+      const label = (currency === 'INR' ? '₹' : (currency + ' ')) + rupeesFromOrder + ' / year';
+      if (payPlanAmt) payPlanAmt.textContent = label;
+    }
+    payPlan.style.display = 'inline-flex';
+  }
+
+  async function tryAutoRedirectIfActive() {
+    try {
+      if (!STATE.phone) return false;
+      const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(STATE.phone)}`, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) return false;
+      const j = await res.json();
+      if (j?.membership?.status === 'active') {
+        if (j._id) { STATE.playerId = j._id; localStorage.setItem('QF_PLAYER_ID', j._id); }
+        const k = encodePhone(STATE.phone);
+        location.href = `complete.html?k=${encodeURIComponent(k)}`;
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  if (!payBtn) return;
+
+  function openPopup() {
+    if (!payModal || !payBackdrop) { doPayLegacy(); return; }
+    // reset UI
+    setLane('processing'); setStatus('Ready');
+    if (payErr) { payErr.style.display = 'none'; payErr.textContent = ''; }
+    if (receiptCard) receiptCard.style.display = 'none';
+    if (payInvoice)  payInvoice.style.display  = 'none';
+    if (payContinue) payContinue.style.display = 'none';
+    if (payRetry)    payRetry.style.display    = 'none';
+    if (payStart)  { payStart.style.display    = 'inline-block'; }
+    if (stayWarn)    stayWarn.style.display    = 'flex';
+
+    // show the plan from section 6 right away
+    if (payPlan) payPlan.style.display = 'none';
+    showPlanChipInitial();
+
+    payBackdrop.classList.add('recover-show');
+    payModal.classList.add('recover-show');
+  }
+
+  function closePopup() {
+    if (!payModal || !payBackdrop) return;
+    payBackdrop.classList.remove('recover-show');
+    payModal.classList.remove('recover-show');
+  }
+  payClose?.addEventListener('click', closePopup);
+  payBackdrop?.addEventListener('click', (e) => { if (e.target === payBackdrop) closePopup(); });
+
+  // Open modal
+  payBtn.addEventListener('click', async () => {
+    if (payBtn.getAttribute('aria-disabled') === 'true') return;
+    if (!STATE.phone) {
+      if (msg) msg.textContent = 'Please add your phone number under "Your Details" before paying.';
+      payBtn.classList.add('shake'); setTimeout(() => payBtn.classList.remove('shake'), 400);
+      return;
+    }
+    if (await tryAutoRedirectIfActive()) return;
+    openPopup();
+  });
+
+  async function createOrder() {
+    return postJSON('/api/pay/order', { phone: STATE.phone });
+  }
+
+  function openCheckout(order) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        key: order.keyId,
+        amount: String(order.amount),
+        currency: order.currency,
+        name: 'Dream Stage',
+        description: 'Membership',
+        order_id: order.orderId,
+        prefill: {
+          name: STATE.name || order.name || 'Dream Stage Member',
+          contact: order.contact || digits(STATE.phone)
+        },
+        theme: { color: '#d946ef' },
+        modal: { ondismiss: () => reject(new Error('Payment window closed')) },
+        handler: (resp) => resolve(resp)
+      };
+      const rz = new Razorpay(options);
+      rz.on('payment.failed', (resp) => reject(new Error(resp?.error?.description || 'Payment failed')));
+      rz.open();
+    });
+  }
+
+  async function verifyPayment(payload) {
+    return postJSON('/api/pay/verify', {
+      phone: STATE.phone,
+      razorpay_payment_id: payload.razorpay_payment_id,
+      razorpay_order_id: payload.razorpay_order_id,
+      razorpay_signature: payload.razorpay_signature
+    });
+  }
+
+  async function assignCreatorCode() {
+    if (!STATE.playerId) throw new Error('Missing player');
+    return postJSON(`/api/players/${encodeURIComponent(STATE.playerId)}/assign-creator-code`, {});
+  }
+
+  async function claimInviteAfterPayment() {
+    if (!STATE.inviteCode || STATE.inviteClaimed) return true;
+    try {
+      const j = await postJSON('/api/invites/claim', { code: STATE.inviteCode, playerId: STATE.playerId });
+      if (j?.ok) { STATE.inviteClaimed = true; localStorage.setItem('INVITE_CLAIMED', '1'); return true; }
+    } catch {}
+    return false;
+  }
+
+  async function runPayment() {
+    if (payStart) payStart.style.display = 'none';
+    if (payErr) { payErr.style.display = 'none'; payErr.textContent = ''; }
+    setLane('processing'); setStatus('Creating order…'); if (stayWarn) stayWarn.style.display = 'flex';
+
+    try {
+      // create order & (optionally) refine chip currency/amount
+      const order = await createOrder();
+      refinePlanChipWithOrder(order);
+
+      setStatus('Awaiting payment…');
+      const resp = await openCheckout(order);
+
+      setStatus('Verifying payment…');
+      const v = await verifyPayment(resp);
+
+      setStatus('Assigning your creator code…');
+      let a = null; try { a = await assignCreatorCode(); } catch {}
+
+      if (STATE.inviteCode && !STATE.inviteClaimed) {
+        setStatus('Finalizing your invite…');
+        await claimInviteAfterPayment();
       }
 
-      // mirror to state + local
-      STATE.name = name;
-      STATE.phone = e164;
-      try{
-        const gs = JSON.parse(localStorage.getItem('QF_STATE') || '{}');
-        gs.name = STATE.name; gs.phoneE164 = STATE.phone;
-        localStorage.setItem('QF_STATE', JSON.stringify(gs));
-      }catch{}
+      // Fill receipt
+      const amount    = v.amount ?? order.amount;
+      const currency  = v.currency ?? order.currency ?? 'INR';
+      const orderId   = order.orderId;
+      const paymentId = resp.razorpay_payment_id;
 
-      if(typeof STATE._updateDetailsUI === 'function') STATE._updateDetailsUI();
-      close();
-    }catch{
-      errBox.textContent='Something went wrong. Please try again.'; errBox.style.display='block';
-    }finally{
-      setDisabled(saveBtn, false); saveBtn.textContent='Save';
+      const serverCode = v.creatorCode || v.creatorCodeNumber || (a && (a.creatorCode || a.creatorCodeNumber));
+      const labelCode  = codeToLabel(serverCode);
+
+      if (invAmount)  invAmount.textContent  = (currency === 'INR' ? '₹' : currency + ' ') + (Number(amount) / 100).toFixed(2);
+      if (invOrder)   invOrder.textContent   = orderId || '—';
+      if (invPayment) invPayment.textContent = paymentId || '—';
+      if (invCode)    invCode.textContent    = labelCode || '—';
+      if (invPlan)    invPlan.textContent    = (payPlanName?.textContent || 'Yearly');
+      if (invInvoice) invInvoice.textContent = `DS-${new Date().getFullYear()}-${(orderId || '').slice(-6).toUpperCase() || 'XXXXXX'}`;
+      if (invDate)    invDate.textContent    = new Date().toLocaleString();
+
+      // store for invoice.html
+      try {
+        sessionStorage.setItem('INVOICE_DATA', JSON.stringify({
+          name: STATE.name,
+          phone: STATE.phone,
+          amount, currency, orderId, paymentId,
+          creatorCode: labelCode,
+          plan: invPlan ? invPlan.textContent : 'Yearly',
+          ts: Date.now()
+        }));
+      } catch {}
+
+      setLane('success');
+      if (receiptCard) receiptCard.style.display = 'block';
+      if (payInvoice)  payInvoice.style.display  = 'inline-block';
+      if (payContinue) payContinue.style.display = 'inline-block';
+      setStatus('Payment successful ✓');
+      if (stayWarn) stayWarn.style.display = 'none';
+      if (msg) msg.textContent = 'Payment successful!';
+    } catch (err) {
+      setLane('failed');
+      setStatus('Payment failed');
+      if (payErr) {
+        payErr.textContent = String(err?.message || 'Something went wrong.');
+        payErr.style.display = 'block';
+      }
+      if (stayWarn) stayWarn.style.display = 'none';
+      if (payRetry) { payRetry.style.display = 'inline-block'; }
+      if (msg) msg.textContent = `Payment failed: ${err?.message || 'Something went wrong.'} You can retry.`;
     }
   }
 
-  openBtn.addEventListener('click', open);
-  closeBtn.addEventListener('click', close);
-  cancelBtn.addEventListener('click', close);
-  backdrop.addEventListener('click', (e)=>{ if(e.target===backdrop) close(); });
-  saveBtn.addEventListener('click', save);
-  phoneInp.addEventListener('keydown', (e)=>{ if(e.key==='Enter') save(); });
+  payStart?.addEventListener('click', runPayment);
+  payRetry?.addEventListener('click', runPayment);
+
+  payContinue?.addEventListener('click', () => {
+    const k = encodePhone(STATE.phone);
+    location.href = `complete.html?k=${encodeURIComponent(k)}`;
+  });
+
+  /* ------- Legacy fallback (rare) ------- */
+  async function doPayLegacy() {
+    if (payBtn.getAttribute('aria-disabled') === 'true') return;
+    if (!STATE.phone) { if (msg) msg.textContent = 'Please add your phone number…'; return; }
+    if (await tryAutoRedirectIfActive()) return;
+
+    payBtn.textContent = 'Processing…';
+    try {
+      const order = await postJSON('/api/pay/order', { phone: STATE.phone });
+      const resp  = await openCheckout(order);
+      await verifyPayment(resp);
+      try { await assignCreatorCode(); } catch {}
+      if (STATE.inviteCode && !STATE.inviteClaimed) await claimInviteAfterPayment();
+      const k = encodePhone(STATE.phone);
+      await new Promise(r => setTimeout(r, 250));
+      location.href = `congrats.html?k=${encodeURIComponent(k)}`;
+    } catch (err) {
+      if (msg) msg.textContent = `Payment failed: ${err?.message || 'Something went wrong.'} You can retry.`;
+      payBtn.textContent = 'Retry Payment';
+    }
+  }
 })();
 
 
-  (function(){
-    const payBtn = byId('payBtn');
-    const msg    = byId('payMsg');
-    if(!payBtn) return;
-
-    async function createOrder(){
-      const r = await fetch('/api/pay/order', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ phone: STATE.phone })
-      });
-      if(!r.ok){
-        const j = await r.json().catch(()=>({}));
-        throw new Error(j && j.error ? j.error : 'Failed to create order');
-      }
-      return await r.json();
-    }
-
-    function openCheckout(order){
-      return new Promise((resolve,reject)=>{
-        const options = {
-          key: order.keyId,
-          amount: String(order.amount),
-          currency: order.currency,
-          name: 'Dream Stage',
-          description: 'Membership',
-          order_id: order.orderId,
-          prefill: {
-            name: STATE.name || order.name || 'Dream Stage Member',
-            contact: order.contact || digits(STATE.phone)
-          },
-          theme: { color: '#d946ef' },
-          modal: { ondismiss: function(){ reject(new Error('Payment window closed')); } },
-          handler: function (resp) { resolve(resp); }
-        };
-        const rz = new Razorpay(options);
-        rz.on('payment.failed', function(resp){
-          reject(new Error(resp?.error?.description || 'Payment failed'));
-        });
-        rz.open();
-      });
-    }
-
-    async function verifyPayment(payload){
-      const r = await fetch('/api/pay/verify', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          phone: STATE.phone,
-          razorpay_payment_id: payload.razorpay_payment_id,
-          razorpay_order_id: payload.razorpay_order_id,
-          razorpay_signature: payload.razorpay_signature
-        })
-      });
-      if(!r.ok){
-        const j = await r.json().catch(()=>({}));
-        throw new Error(j && j.error ? j.error : 'Verification failed');
-      }
-      return await r.json();
-    }
-
-    async function claimInviteAfterPayment(){
-      if (!STATE.inviteCode || STATE.inviteClaimed) return true;
-      try{
-        const r = await fetch('/api/invites/claim', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ code: STATE.inviteCode, playerId: STATE.playerId })
-        });
-        if (!r.ok) return false;
-        const j = await r.json().catch(()=>({}));
-        if (j && j.ok) {
-          STATE.inviteClaimed = true;
-          localStorage.setItem('INVITE_CLAIMED','1');
-          return true;
-        }
-      }catch{}
-      return false;
-    }
-
-    async function doPay(){
-      if(isDisabled(payBtn)) return;
-
-      if(!STATE.phone){
-        msg.textContent = 'Please add your phone number under "Your Details" before paying.';
-        payBtn.classList.add('shake'); setTimeout(()=>payBtn.classList.remove('shake'), 400);
-        return;
-      }
-
-      setDisabled(payBtn, true);
-      const original = payBtn.textContent;
-      payBtn.textContent = 'Processing...';
-      msg.textContent = 'Opening secure checkout…';
-
-      try{
-        const order = await createOrder();
-        const resp  = await openCheckout(order);
-        msg.textContent = 'Verifying payment…';
-        await verifyPayment(resp);
-
-        if (STATE.inviteCode && !STATE.inviteClaimed) {
-          msg.textContent = 'Finalizing your invite…';
-          await claimInviteAfterPayment();
-        }
-
-        const k = encodePhone(STATE.phone);
-        await sleep(250);
-        location.href = `congrats.html?k=${encodeURIComponent(k)}`;
-      }catch(err){
-        msg.textContent = `Payment failed: ${err?.message || 'Something went wrong.'} You can retry.`;
-        payBtn.textContent = 'Retry Payment';
-        setDisabled(payBtn, false);
-      }
-    }
-
-    payBtn.addEventListener('click', doPay);
-  })();
-
+  
   /* ---------- Perks pop ---------- */
   (function () {
     var btn = byId('perksBtn'); if (!btn) return;

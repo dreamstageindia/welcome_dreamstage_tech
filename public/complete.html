@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Dream Stage | Spin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="./css/epk-pay.css">
+<style>
+  .spin-wrap{display:grid;place-items:center;padding:24px}
+  .wheel{width:min(520px,92vw);height:min(520px,92vw)}
+  .spin-btn{margin-top:14px}
+  .codes{margin-top:16px;border:1px solid #eee;border-radius:10px;padding:12px}
+  .muted{color:#666}
+  .code-pill{display:inline-block;border:2px solid #000;border-radius:12px;padding:6px 10px;font-weight:800;margin:4px 6px;font-family:monospace}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="https://dreamstage.tech" target="_blank" rel="noopener">
+        <img src="./logo.png" alt="Dream Stage">
+        <span>Dream Stage</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="spin-wrap">
+    <canvas id="wheel" class="wheel" width="520" height="520" aria-label="Spin Wheel"></canvas>
+    <div class="muted" style="margin-top:6px">One spin only. Good luck!</div>
+    <button class="btn spin-btn" id="spinBtn" type="button">Spin</button>
+
+    <div id="resultBox" class="codes" style="display:none">
+      <div id="resultTitle" style="font-weight:900"></div>
+      <div id="resultMsg" class="muted" style="margin-top:6px"></div>
+      <div id="codesWrap" style="margin-top:10px"></div>
+      <div style="margin-top:12px">
+        <button class="btn" id="continueBtn" type="button">Continue to Dream Stage</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/complete.js"></script>
+</body>
+</html>

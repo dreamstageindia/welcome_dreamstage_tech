@@ -102,11 +102,11 @@
       <img class="logo" src="images/logo.png" alt="Dream Stage" />
       <div class="brand">DREAM STAGE</div>
       <h1>Direct Onboarding</h1>
-      <p class="intro">Skip the game and answer a few quick questions to join the community.</p>
+      <p class="intro">Just answer a few quick questions to become part of the community.</p>
 
       <div id="alert" class="hidden"></div>
 
-      <form id="onboardForm" `novalidate>
+      <form id="onboardForm" novalidate>
         <!-- Basic -->
         <fieldset>
           <legend>About you</legend>
@@ -226,7 +226,6 @@
             <input id="consent" type="checkbox" />
             <span>By using Dream Stage, you agree to our <a class="qf-link" href="https://dreamstage.tech/terms-and-community-guidelines" target="_blank" rel="noopener">Terms & Community Guidelines</a>
               and <a class="qf-link" href="https://dreamstage.tech/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
-
             </span>
           </label>
         </fieldset>
@@ -523,23 +522,31 @@
       // Artist autosuggest
       let artistEntries = [];
       fetch('/data/artist.json').then(r => r.json()).then(d => { artistEntries = Array.isArray(d) ? d : []; }).catch(() => { artistEntries = []; });
-      function renderSuggest(list) {
-        if (!list.length) { artistSuggest.classList.add('hidden'); artistSuggest.innerHTML = ''; return; }
+      function renderSuggest(list, query) {
         artistSuggest.innerHTML = '';
+        if (query && (!list.length || !list.some(item => item.name.toLowerCase() === query.toLowerCase()))) {
+          const customItem = { name: `Use: ${query}`, description: 'Use your custom input' };
+          list = [customItem, ...list];
+        }
+        if (!list.length) { artistSuggest.classList.add('hidden'); return; }
         list.slice(0, 12).forEach(item => {
           const row = document.createElement('div');
           row.className = 's-item';
           row.innerHTML = `<div class="name">${item.name}</div><div class="desc">${item.description || ''}</div>`;
-          row.onclick = function () { artistTypeInput.value = item.name; artistSuggest.classList.add('hidden'); doSave(); };
+          row.onclick = function () { 
+            artistTypeInput.value = item.name.startsWith('Use: ') ? item.name.replace('Use: ', '') : item.name; 
+            artistSuggest.classList.add('hidden'); 
+            doSave(); 
+          };
           artistSuggest.appendChild(row);
         });
         artistSuggest.classList.remove('hidden');
       }
       artistTypeInput.addEventListener('input', function () {
         const q = this.value.toLowerCase().trim();
-        if (!q) { renderSuggest([]); return; }
+        if (!q) { renderSuggest([], ''); return; }
         const out = artistEntries.filter(e => (e.name || '').toLowerCase().includes(q) || (e.description || '').toLowerCase().includes(q));
-        renderSuggest(out);
+        renderSuggest(out, this.value.trim());
       });
       document.addEventListener('click', (e) => { if (!artistSuggest.contains(e.target) && e.target !== artistTypeInput) artistSuggest.classList.add('hidden'); });
 
@@ -553,7 +560,8 @@
         if (role) patch.role = role;
 
         if (role === 'artist') {
-          if (artistTypeInput.value.trim()) patch.artistType = { name: artistTypeInput.value.trim(), description: '' };
+          const artistTypeValue = artistTypeInput.value.trim();
+          if (artistTypeValue) patch.artistType = { name: artistTypeValue, description: '' };
           if (locationInput.value.trim()) patch.location = locationInput.value.trim();
         } else if (role === 'helper') {
           if (helperCapacity.value) patch.helperCapacity = helperCapacity.value;

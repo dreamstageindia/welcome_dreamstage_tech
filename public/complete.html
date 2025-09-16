@@ -4,41 +4,112 @@
 <meta charset="utf-8"/>
 <title>Dream Stage | Spin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<link rel="stylesheet" href="./css/epk-pay.css">
+<link rel="stylesheet" href="./css/complete.css">
+
+<!-- Minimal essentials so the wheel + modal always look fine even if complete.css is missing -->
 <style>
-  .spin-wrap{display:grid;place-items:center;padding:24px}
-  .wheel{width:min(520px,92vw);height:min(520px,92vw)}
-  .spin-btn{margin-top:14px}
-  .codes{margin-top:16px;border:1px solid #eee;border-radius:10px;padding:12px}
-  .muted{color:#666}
-  .code-pill{display:inline-block;border:2px solid #000;border-radius:12px;padding:6px 10px;font-weight:800;margin:4px 6px;font-family:monospace}
+  body{min-height:100vh;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#fafafa}
+  .topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid #eee}
+  .topbar-inner{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{display:flex;gap:10px;align-items:center;color:#111;text-decoration:none}
+  .brand img{width:40px;height:40px}
+  .btn{border-radius:12px;padding:10px 16px;min-height:40px;font-weight:700;background:#7c3aed;color:#fff;border:0;box-shadow:0 8px 16px rgba(124,58,237,.22);cursor:pointer}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.outline{background:transparent;color:#7c3aed;border:1px solid #c4b5fd;box-shadow:none}
+  .btn.secondary{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff}
+  .btn.copy-btn{background:#111;color:#fff;border:0;min-height:36px}
+
+  .spin-hero{display:grid;place-items:center;padding:24px}
+  .spin-card{width:min(860px,94vw);background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+             border:1px solid rgba(0,0,0,.06);border-radius:18px;box-shadow:0 16px 40px rgba(0,0,0,.08);padding:20px}
+  .spin-head h1{margin:2px 0 6px;font-size:clamp(22px,2.6vw,28px);font-weight:900; }
+  .muted{color:#6b7280}.tiny{font-size:12px}
+  .already{margin-top:10px;font-size:14px;color:#7c3aed;background:#f5f3ff;border:1px solid #ede9fe;padding:8px 10px;border-radius:10px}
+  .wheel-wrap{display:grid;place-items:center;margin-top:8px}
+  .wheel{width:min(520px,84vw);height:min(520px,84vw);display:block}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .18s ease}
+  .modal-backdrop.show{opacity:1;pointer-events:auto}
+  .modal{position:fixed;inset:0;display:grid;place-items:center;padding:18px;pointer-events:none}
+  .modal .modal-card{width:min(560px,92vw);background:#fff;border-radius:16px;border:1px solid #eee;
+                     box-shadow:0 20px 44px rgba(0,0,0,.15);padding:16px 16px 14px;transform:translateY(8px);
+                     opacity:0;transition:transform .18s ease,opacity .18s ease}
+  .modal.show .modal-card{transform:translateY(0);opacity:1;pointer-events:auto}
+  .modal-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .modal-header h2{margin:0;font-weight:900;font-size:clamp(18px,2vw,22px)}
+  .modal-x{background:transparent;border:0;font-size:18px;cursor:pointer}
+  .modal-body{margin-top:6px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
+
+  .code-block{border:1px dashed rgba(124,58,237,.35);background:#faf5ff;border-radius:14px;padding:12px}
+  .code-line{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  .big-code{font-size:clamp(22px,4vw,36px);font-weight:900;letter-spacing:.04em;
+            font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
 </style>
 </head>
 <body>
+  <!-- Topbar -->
   <div class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="https://dreamstage.tech" target="_blank" rel="noopener">
         <img src="./logo.png" alt="Dream Stage">
         <span>Dream Stage</span>
       </a>
-    </div>
-  </div>
-
-  <div class="spin-wrap">
-    <canvas id="wheel" class="wheel" width="520" height="520" aria-label="Spin Wheel"></canvas>
-    <div class="muted" style="margin-top:6px">One spin only. Good luck!</div>
-    <button class="btn spin-btn" id="spinBtn" type="button">Spin</button>
-
-    <div id="resultBox" class="codes" style="display:none">
-      <div id="resultTitle" style="font-weight:900"></div>
-      <div id="resultMsg" class="muted" style="margin-top:6px"></div>
-      <div id="codesWrap" style="margin-top:10px"></div>
-      <div style="margin-top:12px">
-        <button class="btn" id="continueBtn" type="button">Continue to Dream Stage</button>
+      <div class="topbar-actions">
+        <button class="btn outline" id="skipBtn" type="button" title="Skip">Continue To Login</button>
       </div>
     </div>
   </div>
 
+  <!-- Hero card -->
+  <div class="spin-hero">
+    <div class="spin-card">
+      <div class="spin-head">
+        <h1>Lucky Spin</h1>
+        <p class="muted">One spin only. Win invite power for your friends!</p>
+      </div>
+
+      <div class="wheel-wrap">
+        <canvas id="wheel" class="wheel" width="520" height="520" aria-label="Spin Wheel"></canvas>
+      </div>
+
+      <div class="spin-actions">
+        <button class="btn" id="spinBtn" type="button">Spin</button>
+      </div>
+
+      <p class="muted tiny" id="spinHint">Tip: Your prize will pop up right after the wheel stops.</p>
+      <div id="alreadyMsg" class="already" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Prize Modal -->
+  <div id="prizeBackdrop" class="modal-backdrop" aria-hidden="true"></div>
+  <div id="prizeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="prizeTitle" aria-describedby="prizeMsg">
+    <div class="modal-card">
+      <header class="modal-header">
+        <h2 id="prizeTitle">Your Prize</h2>
+        <button class="modal-x" id="prizeClose" aria-label="Close">✕</button>
+      </header>
+
+      <main class="modal-body">
+        <p id="prizeMsg" class="muted" style="margin-top:2px"></p>
+
+        <div id="codeBlock" class="code-block" style="display:none">
+          <div class="code-line">
+            <span id="prizeCode" class="big-code">—</span>
+            <button class="btn copy-btn" id="copyCodeBtn" type="button" aria-label="Copy code">Copy</button>
+          </div>
+          <div class="muted">Referral limit: <strong id="prizeLimit">—</strong></div>
+        </div>
+      </main>
+
+      <footer class="modal-actions">
+        <button class="btn secondary" id="toAppBtn" type="button">Continue to Dream Stage</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Use the correct script file -->
   <script src="./js/complete.js"></script>
 </body>
 </html>

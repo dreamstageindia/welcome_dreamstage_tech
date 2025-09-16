@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dream Stage — Welcome!</title>
-  <!-- <link rel="preload" href="fonts/SuperMario256.ttf" as="font" type="font/ttf" crossorigin> -->
 
   <style>
     :root {
@@ -21,8 +19,7 @@
       --btn-size: clamp(14px, 2.6vw, 18px);
     }
 
-    html,
-    body {
+    html, body {
       height: 100%;
       margin: 0;
       overflow-x: hidden;
@@ -118,7 +115,7 @@
       margin: 12px auto 8px;
       text-align: center;
       max-width: min(96ch, 98%);
-      font-family:"Lexend", sans-serif ;
+      font-family: "Lexend", sans-serif;
       color: #000;
       font-size: var(--sub-size);
       line-height: 1.55;
@@ -127,14 +124,8 @@
       border-radius: 12px;
       padding: clamp(10px, 2.2vw, 16px);
     }
-
-    .long-copy p {
-      margin: 0 0 10px;
-    }
-
-    .long-copy p:last-child {
-      margin-bottom: 0;
-    }
+    .long-copy p { margin: 0 0 10px; }
+    .long-copy p:last-child { margin-bottom: 0; }
 
     .btn {
       display: inline-block;
@@ -152,24 +143,15 @@
       transform: translateY(0);
       transition: transform .08s ease, filter .15s ease;
     }
-
-    .btn:active {
-      transform: translateY(2px);
-    }
-
-    .btn:hover {
-      filter: brightness(1.05);
-    }
+    .btn:active { transform: translateY(2px); }
+    .btn:hover { filter: brightness(1.05); }
 
     @media (max-height: 640px) {
       :root {
         --title-size: clamp(20px, 2.8vw, 30px);
         --rank-size: clamp(26px, 5vw, 52px);
       }
-
-      .card {
-        margin-bottom: clamp(40px, 12vh, 80px);
-      }
+      .card { margin-bottom: clamp(40px, 12vh, 80px); }
     }
 
     .wa-fab {
@@ -193,19 +175,10 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
-
-    .wa-fab:hover {
-      filter: brightness(1.06);
-    }
-
-    .wa-fab:active {
-      transform: translateX(-50%) translateY(2px);
-    }
-
+    .wa-fab:hover { filter: brightness(1.06); }
+    .wa-fab:active { transform: translateX(-50%) translateY(2px); }
     .wa-fab svg {
-      width: 22px;
-      height: 22px;
-      display: block;
+      width: 22px; height: 22px; display: block;
       filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .35));
     }
   </style>
@@ -230,13 +203,17 @@
       <div class="long-copy">
         <p><strong>Congratulations!</strong></p>
         <p>You’ve walked this path with us and officially stepped onto the Dream Stage. We’re delighted to welcome you
-          as our <strong><span id="rank2">[Xth]</span></strong> community member, whether you’re an artist, curator,
-          supporter, business, or art lover, you’re now part of a movement bringing creativity to life. </p>
+          as our <strong><span id="rank2">[Xth]</span></strong> community member—whether you’re an artist, curator,
+          supporter, business, or art lover, you’re now part of a movement bringing creativity to life.</p>
         <p>Dream Stage is an invitation-only community, and soon, members will be able to refer a select few to join.
           Now let’s keep the momentum going! Join us on WhatsApp to connect directly, be the first to explore our
-          features (starting with your very own EPK), and be part of shaping what’s next. </p>
+          features (starting with your very own EPK), and be part of shaping what’s next.</p>
       </div>
 
+      <!-- New: Continue button (shown only for artists via JS) -->
+      <a class="btn" id="continueBtn" style="display:none;">Continue</a>
+
+      <!-- WhatsApp CTA (hidden for artists via JS) -->
       <a class="wa-fab" id="waCta"
         href="https://wa.me/916361679383?text=Hi%20Dream%20Stage!%20I%20just%20joined%20the%20community."
         target="_blank" rel="noopener noreferrer" aria-label="Redirect to WhatsApp">
@@ -248,10 +225,9 @@
         </svg>
         <span>Redirect to WhatsApp</span>
       </a>
-    </div>  
+    </div>
   </div>
 
-  <script src="js/community.js"></script>
+  <script src="js/community.js" defer></script>
 </body>
-
 </html>

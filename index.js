@@ -34,10 +34,15 @@ app.use('/api', apiRouter);
 // Legacy alias (keeps any older frontend that posts to "/claim")
 app.post('/claim', invites.claimHandler);
 
+app.use('/api', require('./routes/spin'));
+
 /* ------------------ SPA FALLBACK ------------------ */
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+
+
 
 /* ------------------ GRACEFUL SHUTDOWN ------------------ */
 process.on('SIGINT', async () => {

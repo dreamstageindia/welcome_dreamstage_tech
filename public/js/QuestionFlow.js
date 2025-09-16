@@ -759,7 +759,7 @@ var QuestionFlow = (function () {
       open();
       if (st.role === 'artist') {
         return askAutosuggest(
-          'Let’s get to know your role a little more, What kind of an artist are you',
+          'Let’s get to know your role a little more, What kind of an artist are you?',
           '',
           'For example DJ/Dancer/Painter/Chef'
         ).then(function(kind){
@@ -770,8 +770,8 @@ var QuestionFlow = (function () {
         }).then(close);
       } else if (st.role === 'helper') {
         return askOptions(
-          'How do you help?',
           'In what capacity do you help artists?',
+          '',
           [
             { label: 'Mentor/Coach', value: 'mentor' },
             { label: 'Artist Crew', value: 'crew' },

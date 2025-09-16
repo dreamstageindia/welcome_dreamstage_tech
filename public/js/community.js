@@ -1,8 +1,9 @@
-
+// public/js/community.js
 (function () {
   const rankEl = document.getElementById('rank');
   const rankInlineEl = document.getElementById('rank2');
   const waAnchor = document.getElementById('waCta');
+  const continueBtn = document.getElementById('continueBtn');
 
   /* ---------- WA button show/hide ---------- */
   function showWhatsAppButton() {
@@ -16,6 +17,7 @@
     waAnchor.setAttribute('aria-hidden', 'true');
   }
   hideWhatsAppButton();
+  if (continueBtn) continueBtn.style.display = 'none';
 
   /* ---------------- Rank helpers ---------------- */
   function ordinal(n) {
@@ -191,10 +193,7 @@
       if (!/^[A-Z0-9]{4}$/.test(raw)) { showError('Please enter a valid 4-character code.'); return; }
       submit.disabled = true; submit.textContent = 'Checking…';
       Promise.resolve(onSubmit(raw))
-        .then(ok => {
-          if (ok) { hide(); }
-          else { showError('This is an invite only platform and you were not invited.'); }
-        })
+        .then(ok => { if (ok) { hide(); } else { showError('This invite code is not valid anymore.'); } })
         .catch(() => showError('Something went wrong. Please try again.'))
         .finally(() => { submit.disabled = false; submit.textContent = 'Continue'; });
     }
@@ -206,90 +205,84 @@
     codeInp.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitCode(); });
   }
 
+  /** Non-destructive server check using multi-use logic. */
+  async function checkInviteCode(code) {
+    try {
+      const r = await fetch('/api/invites/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      return r.ok; // 200 means has remaining uses and active
+    } catch { return false; }
+  }
 
- /** Non-destructive server check. Returns true if code exists & unused. */
-async function checkInviteCode(code) {
-  const payload = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) };
+  /* ---------------- Role-based routing ---------------- */
+  function goToEarlyAccess(rank) {
+    const qs = (typeof rank === 'number') ? ('?rank=' + encodeURIComponent(rank)) : '';
+    window.location.replace('/epk-pay.html' + qs);
+  }
 
-  // Preferred: explicit /check
-  try {
-    const r = await fetch('/api/invites/check', payload);
-    if (r.ok) return true;             // 200 -> valid & unused
-    if (r.status === 409) return false; // used
-    if (r.status !== 404) return false; // any other error -> treat as invalid
-  } catch {}
-
-  // Fallback: legacy servers that only have /claim, use dryRun=1 (must return {ok:true, dryRun:true})
-  try {
-    const r2 = await fetch('/api/invites/claim?dryRun=1', payload);
-    if (!r2.ok) return false;
-    const j2 = await r2.json().catch(() => ({}));
-    return !!j2.ok && !!j2.dryRun;
-  } catch {}
-
-  return false;
-}
-
-
-  /* ---------------- Role-based routing (with invite gate for artists) ---------------- */
   async function resolveRoleAndRoute(joinOrder) {
     let role = null;
     try {
       const sid = localStorage.getItem('QF_SESSION_ID');
-      if (sid) {
-        const r = await fetch('/api/player/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: sid })
-        });
-        if (r.ok) {
-          const j = await r.json();
-          if (j && j.playerId) {
-            const g = await fetch('/api/journey/' + encodeURIComponent(j.playerId));
-            if (g.ok) {
-              const doc = await g.json();
-              if (doc && typeof doc.role === 'string') role = doc.role.toLowerCase();
+      if (!sid) return scheduleWhatsAppAutoOpen();
 
-              if (role === 'artist') {
-                hideWhatsAppButton();
+      const r = await fetch('/api/player/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sid })
+      });
+      if (!r.ok) return scheduleWhatsAppAutoOpen();
 
-                // If we already have a stored (pending) invite code, skip asking again
-                const existing = localStorage.getItem('INVITE_CODE');
-                if (existing && /^[A-Z0-9]{4}$/.test(existing)) {
-                  setTimeout(() => {
-                    const qs = (typeof joinOrder === 'number') ? ('?rank=' + encodeURIComponent(joinOrder)) : '';
-                    window.location.replace('/epk-pay.html' + qs);
-                  }, 200);
-                  return;
-                }
+      const j = await r.json();
+      if (!j?.playerId) return scheduleWhatsAppAutoOpen();
 
-                // Otherwise prompt once; store (but don't consume) on success
-                const codeFromLink = (new URLSearchParams(location.search).get('code') || '').toUpperCase().slice(0,4);
-                showInviteModal({
-                  prefill: codeFromLink,
-                  onSubmit: async (code) => {
-                    const ok = await checkInviteCode(code);
-                    if (ok) {
-                      localStorage.setItem('INVITE_CODE', code);
-                      localStorage.setItem('INVITE_CLAIMED', '0'); // pending
-                      const qs = (typeof joinOrder === 'number') ? ('?rank=' + encodeURIComponent(joinOrder)) : '';
-                      setTimeout(() => window.location.replace('/epk-pay.html' + qs), 200);
-                      return true;
-                    }
-                    return false;
-                  }
-                });
-                return;
-              }
-            }
-            // Non-artist or no role: show WA button + auto-open
-            scheduleWhatsAppAutoOpen();
+      const g = await fetch('/api/journey/' + encodeURIComponent(j.playerId));
+      if (!g.ok) return scheduleWhatsAppAutoOpen();
+
+      const doc = await g.json();
+      role = (doc?.role || '').toLowerCase();
+
+      if (role === 'artist') {
+        hideWhatsAppButton();
+
+        if (!continueBtn) return;
+
+        // If we already have a stored code, let Continue go straight in
+        const storedCode = (localStorage.getItem('INVITE_CODE') || '').toUpperCase();
+        const codeFromLink = (new URLSearchParams(location.search).get('code') || '').toUpperCase().slice(0,4);
+
+        continueBtn.style.display = 'inline-block';
+        continueBtn.onclick = async () => {
+          if (/^[A-Z0-9]{4}$/.test(storedCode)) {
+            goToEarlyAccess(joinOrder);
             return;
           }
-        }
+          showInviteModal({
+            prefill: codeFromLink,
+            onSubmit: async (code) => {
+              const ok = await checkInviteCode(code);
+              if (ok) {
+                localStorage.setItem('INVITE_CODE', code);
+                localStorage.setItem('INVITE_CLAIMED', '0'); // pending
+                goToEarlyAccess(joinOrder);
+                return true;
+              }
+              return false;
+            }
+          });
+        };
+
+        return;
       }
-    } catch {}
-    scheduleWhatsAppAutoOpen();
+
+      // Non-artist
+      scheduleWhatsAppAutoOpen();
+    } catch {
+      scheduleWhatsAppAutoOpen();
+    }
   }
 
   /* ---------------- WhatsApp auto-open (only for non-artists) ---------------- */
@@ -313,4 +306,3 @@ async function checkInviteCode(code) {
     await resolveRoleAndRoute(rank);
   })();
 })();
-

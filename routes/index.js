@@ -22,4 +22,5 @@ const invites = require('./invites');
 router.use('/invite',  invites.router);
 router.use('/invites', invites.router);
 
+
 module.exports = router;

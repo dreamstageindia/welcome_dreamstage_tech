@@ -18,7 +18,7 @@ function requireRzp(res) {
     return false;
   }
   return true;
-}
+} 
 const digits = s => String(s || '').replace(/\D+/g, '');
 const normalizePhone = s => {
   if (!s) return '';

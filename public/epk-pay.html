@@ -506,6 +506,41 @@
     </div>
   </div>
 
+
+<!-- Code Congrats Popup -->
+<div id="codeBackdrop" class="recover-backdrop"></div>
+<div id="codeModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="codeTitle">
+  <div class="recover-box">
+    <header>
+      <div id="codeTitle">Congratulations</div>
+      <button class="recover-x" id="codeClose" aria-label="Close">✕</button>
+    </header>
+
+    <main>
+      <!-- Fixed-height hero so nothing shifts; code sits ON the confetti -->
+      <div class="code-hero">
+        <canvas id="codeConfetti" class="confetti" width="10" height="10" aria-hidden="true"></canvas>
+
+        <!-- Overlay centered on canvas -->
+        <div id="codeOverlay" aria-live="polite">
+          <div class="muted" style="font-size:14px">Your Creator Code</div>
+          <div id="codeValue">#0000</div>
+        </div>
+      </div>
+
+      <div class="code-actions">
+        <button class="recover-btn secondary" id="codeCopy" type="button">Copy</button>
+        <button class="recover-btn secondary" id="codeShare" type="button">Share</button>
+      </div>
+    </main>
+
+    <footer class="recover-actions">
+      <button class="recover-btn accent" id="codeOk" type="button">Continue</button>
+    </footer>
+  </div>
+</div>
+
+
   <!-- Payment Popup — Pro UI (updated) -->
   <div id="payBackdrop" class="recover-backdrop"></div>
   <div id="payModal" class="recover-modal" role="dialog" aria-modal="true" aria-labelledby="payTitle">

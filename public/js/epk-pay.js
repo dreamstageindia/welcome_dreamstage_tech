@@ -35,9 +35,9 @@
     } catch (_) {
       if (!res.ok || text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
         const summary = (text || '').replace(/\s+/g,' ').slice(0, 180);
-        throw new Error(`${res.status} ${res.statusText} at ${urlPath} — server did not return JSON. ${summary}`);
+        throw new Error(`${res.status} ${res.statusText} at ${urlPath} - server did not return JSON. ${summary}`);
       }
-      throw new Error(`${res.status} ${res.statusText} at ${urlPath} — unexpected non-JSON response.`);
+      throw new Error(`${res.status} ${res.statusText} at ${urlPath} - unexpected non-JSON response.`);
     }
 
     if (!res.ok) {
@@ -304,7 +304,6 @@
     }
   }
 
-  // Trigger S5 animations on view
   (function(){
     const el = byId('s5');
     if (!el) return;
@@ -318,7 +317,7 @@
     io.observe(el);
   })();
 
-  /* ---------- Session & Journey helpers (no joinOrder used here) ---------- */
+  /* ---------- Session & Journey helpers ---------- */
   function ensureSessionId(){
     let sid = new URLSearchParams(location.search).get('sessionId') ||
               localStorage.getItem('QF_SESSION_ID') ||
@@ -378,7 +377,6 @@
       if (!res.ok) return false;
       const p = await readJSONorThrow(res);
       if (membershipIsActive(p.membership)) {
-        // Optional: store a small flag so other pages know user is active
         sessionStorage.setItem('MEMBERSHIP_ACTIVE', '1');
         location.replace('complete.html');
         return true;
@@ -387,7 +385,7 @@
     return false;
   }
 
-  /* ---------- Recovery (find my account by phone) ---------- */
+  /* ---------- Recovery ---------- */
   const rBackdrop = byId('recoverBackdrop');
   const rModal    = byId('recoverModal');
   const rClose    = byId('recoverClose');
@@ -676,7 +674,7 @@
   const laneSuccess    = byId('laneSuccess');
   const laneFailed     = byId('laneFailed');
 
-  // plan chip (header) — ensure there is only ONE in DOM
+  // plan chip (header)
   const payPlan     = byId('payPlan');
   const payPlanName = byId('payPlanName');
   const payPlanAmt  = byId('payPlanAmt');
@@ -691,7 +689,7 @@
   const invInvoice  = byId('invInvoice');
   const invDate     = byId('invDate');
 
-  // local helpers (avoid scope surprises)
+  // local helpers
   const digits = (s) => String(s || '').replace(/\D+/g, '');
   const encodePhone = (p) => { try { return btoa(digits(p)); } catch { return digits(p); } };
 
@@ -712,26 +710,25 @@
     if (state === 'failed')     laneFailed?.classList.add('active');
   }
 
-  // Read plan shown in Section 6 (authoritative for the chip)
+  // Read plan shown in Section 6
   function getS6PlanFromDOM() {
     const yEl = document.getElementById('dealYear');
     const mEl = document.getElementById('dealMonthly');
     const yearVal = Number(String(yEl?.textContent || '').replace(/[^\d]/g, ''));
     const monthlyVal = Number(String(mEl?.textContent || '').replace(/[^\d.]/g, ''));
     if (Number.isFinite(yearVal) && yearVal > 0) {
-      const name = yearVal < 199 ? 'Yearly — Early Access' : 'Yearly';
+      const name = yearVal < 199 ? 'Yearly - Early Access' : 'Yearly';
       const monthly = Number.isFinite(monthlyVal) ? monthlyVal : +(yearVal / 12).toFixed(2);
       return { year: yearVal, monthly, name };
     }
     return null;
   }
 
-  // Show plan chip immediately from S6 (and later we can refine with server currency if needed)
   function showPlanChipInitial() {
     if (!payPlan) return;
     const s6 = getS6PlanFromDOM();
     const rupees = Number.isFinite(s6?.year) ? s6.year : (STATE._currentPrice || 199);
-    const planName = s6?.name || (rupees < 199 ? 'Yearly — Early Access' : 'Yearly');
+    const planName = s6?.name || (rupees < 199 ? 'Yearly - Early Access' : 'Yearly');
 
     if (payPlanName) payPlanName.textContent = planName;
     if (payPlanAmt)  payPlanAmt.textContent  = '₹' + rupees + ' / year';
@@ -739,7 +736,6 @@
     payPlan.style.display = 'inline-flex';
   }
 
-  // Optionally refine amount/currency from server order (keeps S6 name)
   function refinePlanChipWithOrder(order) {
     if (!payPlan) return;
     const currency = order?.currency || 'INR';
@@ -860,13 +856,151 @@
     return false;
   }
 
+  /* ---------- Code Congrats popup (new) ---------- */
+  const codeBackdrop = byId('codeBackdrop');
+  const codeModal = byId('codeModal');
+  const codeClose = byId('codeClose');
+  const codeOk = byId('codeOk');
+  const codeValue = byId('codeValue');
+  const codeConfetti = byId('codeConfetti');
+  const codeCopy = byId('codeCopy');
+  const codeShare = byId('codeShare');
+
+  function closeCodePopup(){
+    if (!codeBackdrop || !codeModal) return;
+    codeBackdrop.classList.remove('recover-show');
+    codeModal.classList.remove('recover-show');
+  }
+
+  // colorful confetti
+  function burstConfetti(canvas, duration=20000){
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resize(){
+      const r = canvas.getBoundingClientRect();
+      canvas.width = Math.max(320, Math.floor(r.width));
+      canvas.height = Math.max(140, Math.floor(r.height));
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const colors = [
+      '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+      '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#6366f1',
+      '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'
+    ];
+
+    const W = () => canvas.width;
+    const H = () => canvas.height;
+    const N = 180;
+    const g = 0.015;
+    const pieces = Array.from({length:N}, () => ({
+      x: Math.random()*W(),
+      y: -Math.random()*H()*0.6,
+      r: 2 + Math.random()*4,
+      vx: -1 + Math.random()*2,
+      vy: 1.2 + Math.random()*2.4,
+      rot: Math.random()*Math.PI*2,
+      vr: -0.25 + Math.random()*0.5,
+      c: colors[(Math.random()*colors.length)|0],
+      shape: (Math.random()<0.3) ? 'circle' : 'rect'
+    }));
+
+    const t0 = performance.now();
+    function step(t){
+      const k = Math.min(1, (t - t0)/duration);
+      ctx.clearRect(0,0,W(),H());
+      for (const p of pieces){
+        // slight breeze
+        p.vx += Math.sin((t + p.x)*0.001)*0.002;
+        p.vy += g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+
+        if (p.y > H()+12) { // recycle from top
+          p.y = -12;
+          p.x = Math.random()*W();
+          p.vy = 1 + Math.random()*2.2;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.c;
+        if (p.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI*2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
+        }
+        ctx.restore();
+      }
+      if (k < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function openCodePopup(codeLabel){
+    if (!codeBackdrop || !codeModal) return;
+    if (codeValue) codeValue.textContent = codeLabel || '#0000';
+    codeBackdrop.classList.add('recover-show');
+    codeModal.classList.add('recover-show');
+    setTimeout(()=> burstConfetti(codeConfetti, 3200), 0);
+  }
+
+  async function copyText(text, btn){
+    try {
+      await navigator.clipboard.writeText(text);
+      if (btn) {
+        const old = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.disabled = true;
+        setTimeout(()=>{ btn.textContent = old; btn.disabled = false; }, 900);
+      }
+    } catch {
+      // silent
+    }
+  }
+
+  async function shareTextWithFallback(text, url){
+    const payload = { title: 'Dream Stage', text, url };
+    try{
+      if (navigator.share) {
+        await navigator.share(payload);
+        return;
+      }
+    }catch{}
+    // Fallback to WhatsApp share
+    const shareUrl = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + (url || ''));
+    window.open(shareUrl, '_blank', 'noopener');
+  }
+
+  codeClose?.addEventListener('click', closeCodePopup);
+  codeOk?.addEventListener('click', closeCodePopup);
+  codeBackdrop?.addEventListener('click', (e)=>{ if(e.target===codeBackdrop) closeCodePopup(); });
+
+  codeCopy?.addEventListener('click', ()=> {
+    const codeLabel = (codeValue?.textContent || '').trim();
+    copyText(codeLabel, codeCopy);
+  });
+
+  codeShare?.addEventListener('click', ()=> {
+    const codeLabel = (codeValue?.textContent || '').trim();
+    const txt = `I just claimed my Creator Code ${codeLabel} on Dream Stage.`;
+    const url = 'https://dreamstage.tech';
+    shareTextWithFallback(txt, url);
+  });
+
   async function runPayment() {
     if (payStart) payStart.style.display = 'none';
     if (payErr) { payErr.style.display = 'none'; payErr.textContent = ''; }
     setLane('processing'); setStatus('Creating order…'); if (stayWarn) stayWarn.style.display = 'flex';
 
     try {
-      // create order & (optionally) refine chip currency/amount
+      // create order & refine chip
       const order = await createOrder();
       refinePlanChipWithOrder(order);
 
@@ -890,7 +1024,7 @@
       const orderId   = order.orderId;
       const paymentId = resp.razorpay_payment_id;
 
-      const serverCode = v.creatorCode || v.creatorCodeNumber || (a && (a.creatorCode || a.creatorCodeNumber));
+      const serverCode = v.code || v.creatorCode || v.creatorCodeNumber || (a && (a.creatorCode || a.creatorCodeNumber));
       const labelCode  = codeToLabel(serverCode);
 
       if (invAmount)  invAmount.textContent  = (currency === 'INR' ? '₹' : currency + ' ') + (Number(amount) / 100).toFixed(2);
@@ -920,6 +1054,19 @@
       setStatus('Payment successful ✓');
       if (stayWarn) stayWarn.style.display = 'none';
       if (msg) msg.textContent = 'Payment successful!';
+
+      const finalCodeLabel = labelCode || codeToLabel(v.code);
+      if (invCode && finalCodeLabel) invCode.textContent = finalCodeLabel;
+
+      try {
+        const tmp = JSON.parse(sessionStorage.getItem('INVOICE_DATA') || '{}');
+        if (finalCodeLabel) tmp.creatorCode = finalCodeLabel;
+        sessionStorage.setItem('INVOICE_DATA', JSON.stringify(tmp));
+      } catch {}
+
+      // Show creator code popup ABOVE the payment popup
+      openCodePopup(finalCodeLabel);
+
     } catch (err) {
       setLane('failed');
       setStatus('Payment failed');

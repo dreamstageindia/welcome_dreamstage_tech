@@ -160,7 +160,7 @@
       toggleChecked();
     });
     row.addEventListener('keydown', function(e){
-      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggleChecked(); }
+      if(e.key==='Enter'||e.key===' ') { e.preventDefault(); toggleChecked(); }
     });
     chk.addEventListener('change', function(){
       updateUI();
@@ -1047,6 +1047,14 @@
         }));
       } catch {}
 
+      // Set invoice link with query parameters
+      if (payInvoice) {
+        const k = encodePhone(STATE.phone);
+        const query = `?name=${encodeURIComponent(STATE.name || 'Dream Stage Member')}&k=${encodeURIComponent(k)}&amt=${encodeURIComponent(amount)}&cur=${encodeURIComponent(currency)}&oid=${encodeURIComponent(orderId)}&pid=${encodeURIComponent(paymentId)}&code=${encodeURIComponent(labelCode)}&plan=${encodeURIComponent(invPlan ? invPlan.textContent : 'Yearly')}&ts=${Date.now()}`;
+        payInvoice.href = `invoice.html${query}`;
+        payInvoice.style.display = 'inline-block';
+      }
+
       setLane('success');
       if (receiptCard) receiptCard.style.display = 'block';
       if (payInvoice)  payInvoice.style.display  = 'inline-block';
@@ -1111,8 +1119,6 @@
   }
 })();
 
-
-  
   /* ---------- Perks pop ---------- */
   (function () {
     var btn = byId('perksBtn'); if (!btn) return;

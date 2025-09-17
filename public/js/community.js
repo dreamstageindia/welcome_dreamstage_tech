@@ -220,7 +220,7 @@
   /* ---------------- Role-based routing ---------------- */
   function goToEarlyAccess(rank) {
     const qs = (typeof rank === 'number') ? ('?rank=' + encodeURIComponent(rank)) : '';
-    window.location.replace('/epk-pay.html' + qs);
+    window.location.replace('/epk-demo.html' + qs);
   }
 
   async function resolveRoleAndRoute(joinOrder) {

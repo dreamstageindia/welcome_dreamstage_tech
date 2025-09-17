@@ -52,27 +52,50 @@
 
   <script>
     (function(){
-      try{
+      const root = document.getElementById('root');
+      const fmtAmt = (amt, cur) => {
+        if (cur === 'INR' || cur === '₹') return '₹' + (Number(amt)/100).toFixed(2);
+        return (Number(amt)/100).toFixed(2) + ' ' + (cur || '');
+      };
+
+      let j;
+      try {
         const raw = sessionStorage.getItem('INVOICE_DATA');
-        const j = raw ? JSON.parse(raw) : null;
-        if(!j) return;
+        j = raw ? JSON.parse(raw) : null;
+      } catch {}
 
-        const fmtAmt = (amt, cur) => {
-          if(cur === 'INR' || cur === '₹') return '₹' + (Number(amt)/100).toFixed(2);
-          return (Number(amt)/100).toFixed(2) + ' ' + (cur||'');
+      // Fallback to URL parameters
+      if (!j) {
+        const params = new URLSearchParams(window.location.search);
+        j = {
+          name: params.get('name') || 'Dream Stage Member',
+          phone: params.get('k') || '',
+          amount: params.get('amt') || '',
+          currency: params.get('cur') || 'INR',
+          orderId: params.get('oid') || '',
+          paymentId: params.get('pid') || '',
+          creatorCode: params.get('code') || '',
+          plan: params.get('plan') || 'Yearly',
+          ts: params.get('ts') || Date.now()
         };
+      }
 
-        document.getElementById('invDate').textContent = new Date(j.ts||Date.now()).toLocaleString();
-        document.getElementById('invName').textContent = j.name || 'Dream Stage Member';
-        document.getElementById('invPhone').textContent = j.phone || '';
-        document.getElementById('iOrder').textContent = j.orderId || '—';
-        document.getElementById('iPayment').textContent = j.paymentId || '—';
-        document.getElementById('iAmount').textContent = fmtAmt(j.amount, j.currency);
-        document.getElementById('iCurrency').textContent = j.currency || '';
-        document.getElementById('iCode').textContent = j.creatorCode ? ('#'+String(j.creatorCode).padStart(4,'0')) : '#0000';
+      if (!j || !j.orderId) {
+        root.textContent = 'Error: Invalid invoice data. Please contact support@dreamstage.tech.';
+        root.hidden = false;
+        return;
+      }
 
-        document.getElementById('root').hidden = false;
-      }catch(e){}
+      document.getElementById('invDate').textContent = new Date(j.ts || Date.now()).toLocaleString();
+      document.getElementById('invName').textContent = j.name || 'Dream Stage Member';
+      document.getElementById('invPhone').textContent = j.phone || '—';
+      document.getElementById('iOrder').textContent = j.orderId || '—';
+      document.getElementById('iPayment').textContent = j.paymentId || '—';
+      document.getElementById('iAmount').textContent = fmtAmt(j.amount, j.currency);
+      document.getElementById('iCurrency').textContent = j.currency || 'INR';
+      document.getElementById('iCode').textContent = j.creatorCode ? ('#' + String(j.creatorCode).padStart(4, '0')) : '#0000';
+
+      root.hidden = false;
     })();
   </script>
 </body>

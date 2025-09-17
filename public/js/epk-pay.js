@@ -1,4 +1,3 @@
-/* ---------- public/js/epk-pay.js  (popup pay + invoice + creator code assign; no joinOrder) ---------- */
 (function(){
   const STATE = {
     sessionId: null,
@@ -107,13 +106,58 @@
     });
   })();
 
-  /* ---------- S1 pop ---------- */
-  (function(){ var btn = byId('why1'); if(!btn) return;
-    var wrap = btn.parentElement;
-    function toggle(e){ e && e.preventDefault(); var open=!wrap.classList.contains('open'); wrap.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); }
-    btn.addEventListener('click', toggle, {passive:false});
-    btn.addEventListener('touchend', toggle, {passive:false});
-    document.addEventListener('click', function(e){ if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); } }, { passive:true });
+  /* ---------- Unified Tooltip Toggle for Hover and Tap ---------- */
+  (function () {
+    const tooltipTriggers = document.querySelectorAll([
+      '.why-wrap .btn', // Why buttons (S1, S2)
+      '#perksBtn', // Perks button (S5, specific ID for reliability)
+      '#s3 .preview-anchor .preview-link', // Preview link (S3)
+      '#s4 .details .btn', // Timeline details (S4)
+      '#s6 .why .why-btn' // Plan details (S6)
+    ].join(','));
+
+    tooltipTriggers.forEach(btn => {
+      const wrap = btn.closest('.why-wrap, .perks-wrap, .preview-anchor, .details, .why');
+      if (!wrap) return;
+
+      function toggleTooltip(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Prevent parent events
+        const isOpen = wrap.classList.contains('open');
+        // Close all other tooltips
+        document.querySelectorAll('.why-wrap.open, .perks-wrap.open, .preview-anchor.open, .details.open, .why.open')
+          .forEach(w => {
+            if (w !== wrap) {
+              w.classList.remove('open');
+              const trigger = w.querySelector('.btn, .preview-link, .why-btn, #perksBtn');
+              if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            }
+          });
+        // Toggle current tooltip
+        wrap.classList.toggle('open', !isOpen);
+        btn.setAttribute('aria-expanded', !isOpen);
+      }
+
+      // Remove existing listeners to prevent duplicates
+      btn.removeEventListener('click', toggleTooltip);
+      btn.removeEventListener('touchend', toggleTooltip);
+      // Add listeners for both click and touchend
+      btn.addEventListener('click', toggleTooltip, { passive: false });
+      btn.addEventListener('touchend', toggleTooltip, { passive: false });
+
+      // Close tooltip when tapping/clicking outside
+      document.addEventListener('click', e => {
+        if (!wrap.contains(e.target)) {
+          wrap.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      }, { passive: true });
+
+      // Prevent unintended hover or parent event triggers on touch
+      btn.addEventListener('touchstart', e => {
+        e.stopPropagation();
+      }, { passive: true });
+    });
   })();
 
   /* ---------- Pledge ---------- */
@@ -170,36 +214,6 @@
     STATE._pledgeUpdateUI = updateUI;
   })();
 
-  /* ---------- S2 pop ---------- */
-  (function(){
-    var btn = byId('why2'); if(!btn) return;
-    var wrap = btn.parentElement;
-    function toggle(e){ e && e.preventDefault(); var open=!wrap.classList.contains('open'); wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded', String(open)); }
-    btn.addEventListener('click', toggle, {passive:false});
-    btn.addEventListener('touchend', toggle, {passive:false});
-    document.addEventListener('click', function(e){
-      if(!wrap.contains(e.target)){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
-    }, { passive:true });
-  })();
-
-  /* ---------- S4 pop cards ---------- */
-  (function(){
-    document.querySelectorAll('#s4 .details .btn').forEach(function(btn){
-      var wrap = btn.parentElement;
-      btn.addEventListener('click', function(e){
-        e.preventDefault();
-        var open = !wrap.classList.contains('open');
-        document.querySelectorAll('#s4 .details.open').forEach(function(w){ if(w!==wrap) w.classList.remove('open'); });
-        wrap.classList.toggle('open', open);
-        btn.setAttribute('aria-expanded', String(open));
-      });
-    });
-    document.addEventListener('click', function(e){
-      var opened = document.querySelector('#s4 .details.open');
-      if(opened && !opened.contains(e.target)) opened.classList.remove('open');
-    }, { passive:true });
-  })();
-
   /* ---------- Helpers for code preview + counts ---------- */
   const ccBig = byId('ccBig');
   const ccTier = byId('ccTier');
@@ -217,7 +231,6 @@
     return s;
   }
 
-  // Tiers mapping
   function setTierByCode(n){
     let label = '';
     if (n >= 1 && n <= 100) label = 'OG Member';
@@ -252,7 +265,6 @@
     requestAnimationFrame(step);
   }
 
-  // “Top X%” and 100−X% fill (e.g., rank=7 → top 1%, fill 99%)
   function setScaleNow(predictedRank){
     if (!ccPctLabel) return;
     const rank = Math.max(1, Math.min(predictedRank || 1, TOTAL_USERS));
@@ -284,7 +296,6 @@
     return Number(localStorage.getItem('CREATOR_COUNT_HINT') || 0);
   }
 
-  // S5 preview strictly from PAID count
   async function initS5PreviewAndCounts(){
     const ccLabel = document.querySelector('#s5 .cc-label');
     if (ccLabel) ccLabel.textContent = 'This is what your creator code would look like';
@@ -479,7 +490,6 @@
       updateDetailsUI();
       closeRecover();
 
-      // If recovered user is already paid, jump right away.
       await tryAutoRedirectIfActive();
       await loadJourney();
     }catch{
@@ -503,7 +513,6 @@
     await resolvePlayerFromSession();
     await loadJourney();
 
-    // If we already know the phone (from journey or storage), skip to completion if paid.
     if (await tryAutoRedirectIfActive()) return;
 
     if (!STATE.playerId || !STATE.phone || !STATE.name) {
@@ -633,7 +642,6 @@
         }catch{}
         if(typeof STATE._updateDetailsUI === 'function') STATE._updateDetailsUI();
 
-        // If user edited to a paid account, auto-skip payment
         await tryAutoRedirectIfActive();
 
         close();
@@ -652,480 +660,453 @@
     phoneInp.addEventListener('keydown', (e)=>{ if(e.key==='Enter') save(); });
   })();
 
-/* ---------- Payment popup + invoice + creator code assignment (UPDATED) ---------- */
-(function () {
-  const payBtn      = byId('payBtn');
-  const msg         = byId('payMsg');
-  const payBackdrop = byId('payBackdrop');
-  const payModal    = byId('payModal');
-  const payClose    = byId('payClose');
+  /* ---------- Payment popup + invoice + creator code assignment (UPDATED) ---------- */
+  (function () {
+    const payBtn      = byId('payBtn');
+    const msg         = byId('payMsg');
+    const payBackdrop = byId('payBackdrop');
+    const payModal    = byId('payModal');
+    const payClose    = byId('payClose');
 
-  const payStart    = byId('payStart');
-  const payRetry    = byId('payRetry');
-  const payInvoice  = byId('payInvoice');
-  const payContinue = byId('payContinue');
+    const payStart    = byId('payStart');
+    const payRetry    = byId('payRetry');
+    const payInvoice  = byId('payInvoice');
+    const payContinue = byId('payContinue');
 
-  const payStatus   = byId('payStatus');
-  const payErr      = byId('payErr');
-  const stayWarn    = byId('payStay');
+    const payStatus   = byId('payStatus');
+    const payErr      = byId('payErr');
+    const stayWarn    = byId('payStay');
 
-  // lanes (only one visible)
-  const laneProcessing = byId('laneProcessing');
-  const laneSuccess    = byId('laneSuccess');
-  const laneFailed     = byId('laneFailed');
+    const laneProcessing = byId('laneProcessing');
+    const laneSuccess    = byId('laneSuccess');
+    const laneFailed     = byId('laneFailed');
 
-  // plan chip (header)
-  const payPlan     = byId('payPlan');
-  const payPlanName = byId('payPlanName');
-  const payPlanAmt  = byId('payPlanAmt');
+    const payPlan     = byId('payPlan');
+    const payPlanName = byId('payPlanName');
+    const payPlanAmt  = byId('payPlanAmt');
 
-  // receipt fields
-  const receiptCard = byId('receiptCard');
-  const invAmount   = byId('invAmount');
-  const invOrder    = byId('invOrder');
-  const invPayment  = byId('invPayment');
-  const invCode     = byId('invCode');
-  const invPlan     = byId('invPlan');
-  const invInvoice  = byId('invInvoice');
-  const invDate     = byId('invDate');
+    const receiptCard = byId('receiptCard');
+    const invAmount   = byId('invAmount');
+    const invOrder    = byId('invOrder');
+    const invPayment  = byId('invPayment');
+    const invCode     = byId('invCode');
+    const invPlan     = byId('invPlan');
+    const invInvoice  = byId('invInvoice');
+    const invDate     = byId('invDate');
 
-  // local helpers
-  const digits = (s) => String(s || '').replace(/\D+/g, '');
-  const encodePhone = (p) => { try { return btoa(digits(p)); } catch { return digits(p); } };
+    const digits = (s) => String(s || '').replace(/\D+/g, '');
+    const encodePhone = (p) => { try { return btoa(digits(p)); } catch { return digits(p); } };
 
-  function codeToLabel(val) {
-    if (val == null) return '';
-    const s = String(val).replace(/^#/, '');
-    const n = Number(s);
-    if (Number.isFinite(n) && n > 0) return '#' + String(n).padStart(4, '0');
-    return String(val).startsWith('#') ? String(val) : '#' + String(val);
-  }
-
-  function setStatus(text) { if (payStatus) payStatus.textContent = text; }
-
-  function setLane(state) {
-    [laneProcessing, laneSuccess, laneFailed].forEach(el => el && el.classList.remove('active'));
-    if (state === 'processing') laneProcessing?.classList.add('active');
-    if (state === 'success')    laneSuccess?.classList.add('active');
-    if (state === 'failed')     laneFailed?.classList.add('active');
-  }
-
-  // Read plan shown in Section 6
-  function getS6PlanFromDOM() {
-    const yEl = document.getElementById('dealYear');
-    const mEl = document.getElementById('dealMonthly');
-    const yearVal = Number(String(yEl?.textContent || '').replace(/[^\d]/g, ''));
-    const monthlyVal = Number(String(mEl?.textContent || '').replace(/[^\d.]/g, ''));
-    if (Number.isFinite(yearVal) && yearVal > 0) {
-      const name = yearVal < 199 ? 'Yearly - Early Access' : 'Yearly';
-      const monthly = Number.isFinite(monthlyVal) ? monthlyVal : +(yearVal / 12).toFixed(2);
-      return { year: yearVal, monthly, name };
+    function codeToLabel(val) {
+      if (val == null) return '';
+      const s = String(val).replace(/^#/, '');
+      const n = Number(s);
+      if (Number.isFinite(n) && n > 0) return '#' + String(n).padStart(4, '0');
+      return String(val).startsWith('#') ? String(val) : '#' + String(val);
     }
-    return null;
-  }
 
-  function showPlanChipInitial() {
-    if (!payPlan) return;
-    const s6 = getS6PlanFromDOM();
-    const rupees = Number.isFinite(s6?.year) ? s6.year : (STATE._currentPrice || 199);
-    const planName = s6?.name || (rupees < 199 ? 'Yearly - Early Access' : 'Yearly');
+    function setStatus(text) { if (payStatus) payStatus.textContent = text; }
 
-    if (payPlanName) payPlanName.textContent = planName;
-    if (payPlanAmt)  payPlanAmt.textContent  = '₹' + rupees + ' / year';
-
-    payPlan.style.display = 'inline-flex';
-  }
-
-  function refinePlanChipWithOrder(order) {
-    if (!payPlan) return;
-    const currency = order?.currency || 'INR';
-    const rupeesFromOrder = Number.isFinite(order?.amount) ? Math.round(order.amount / 100) : NaN;
-
-    if (Number.isFinite(rupeesFromOrder)) {
-      const label = (currency === 'INR' ? '₹' : (currency + ' ')) + rupeesFromOrder + ' / year';
-      if (payPlanAmt) payPlanAmt.textContent = label;
+    function setLane(state) {
+      [laneProcessing, laneSuccess, laneFailed].forEach(el => el && el.classList.remove('active'));
+      if (state === 'processing') laneProcessing?.classList.add('active');
+      if (state === 'success')    laneSuccess?.classList.add('active');
+      if (state === 'failed')     laneFailed?.classList.add('active');
     }
-    payPlan.style.display = 'inline-flex';
-  }
 
-  async function tryAutoRedirectIfActive() {
-    try {
-      if (!STATE.phone) return false;
-      const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(STATE.phone)}`, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) return false;
-      const j = await res.json();
-      if (j?.membership?.status === 'active') {
-        if (j._id) { STATE.playerId = j._id; localStorage.setItem('QF_PLAYER_ID', j._id); }
-        const k = encodePhone(STATE.phone);
-        location.href = `complete.html?k=${encodeURIComponent(k)}`;
-        return true;
+    function getS6PlanFromDOM() {
+      const yEl = document.getElementById('dealYear');
+      const mEl = document.getElementById('dealMonthly');
+      const yearVal = Number(String(yEl?.textContent || '').replace(/[^\d]/g, ''));
+      const monthlyVal = Number(String(mEl?.textContent || '').replace(/[^\d.]/g, ''));
+      if (Number.isFinite(yearVal) && yearVal > 0) {
+        const name = yearVal < 199 ? 'Yearly - Early Access' : 'Yearly';
+        const monthly = Number.isFinite(monthlyVal) ? monthlyVal : +(yearVal / 12).toFixed(2);
+        return { year: yearVal, monthly, name };
       }
-    } catch {}
-    return false;
-  }
-
-  if (!payBtn) return;
-
-  function openPopup() {
-    if (!payModal || !payBackdrop) { doPayLegacy(); return; }
-    // reset UI
-    setLane('processing'); setStatus('Ready');
-    if (payErr) { payErr.style.display = 'none'; payErr.textContent = ''; }
-    if (receiptCard) receiptCard.style.display = 'none';
-    if (payInvoice)  payInvoice.style.display  = 'none';
-    if (payContinue) payContinue.style.display = 'none';
-    if (payRetry)    payRetry.style.display    = 'none';
-    if (payStart)  { payStart.style.display    = 'inline-block'; }
-    if (stayWarn)    stayWarn.style.display    = 'flex';
-
-    // show the plan from section 6 right away
-    if (payPlan) payPlan.style.display = 'none';
-    showPlanChipInitial();
-
-    payBackdrop.classList.add('recover-show');
-    payModal.classList.add('recover-show');
-  }
-
-  function closePopup() {
-    if (!payModal || !payBackdrop) return;
-    payBackdrop.classList.remove('recover-show');
-    payModal.classList.remove('recover-show');
-  }
-  payClose?.addEventListener('click', closePopup);
-  payBackdrop?.addEventListener('click', (e) => { if (e.target === payBackdrop) closePopup(); });
-
-  // Open modal
-  payBtn.addEventListener('click', async () => {
-    if (payBtn.getAttribute('aria-disabled') === 'true') return;
-    if (!STATE.phone) {
-      if (msg) msg.textContent = 'Please add your phone number under "Your Details" before paying.';
-      payBtn.classList.add('shake'); setTimeout(() => payBtn.classList.remove('shake'), 400);
-      return;
+      return null;
     }
-    if (await tryAutoRedirectIfActive()) return;
-    openPopup();
-  });
 
-  async function createOrder() {
-    return postJSON('/api/pay/order', { phone: STATE.phone });
-  }
+    function showPlanChipInitial() {
+      if (!payPlan) return;
+      const s6 = getS6PlanFromDOM();
+      const rupees = Number.isFinite(s6?.year) ? s6.year : (STATE._currentPrice || 199);
+      const planName = s6?.name || (rupees < 199 ? 'Yearly - Early Access' : 'Yearly');
 
-  function openCheckout(order) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        key: order.keyId,
-        amount: String(order.amount),
-        currency: order.currency,
-        name: 'Dream Stage',
-        description: 'Membership',
-        order_id: order.orderId,
-        prefill: {
-          name: STATE.name || order.name || 'Dream Stage Member',
-          contact: order.contact || digits(STATE.phone)
-        },
-        theme: { color: '#d946ef' },
-        modal: { ondismiss: () => reject(new Error('Payment window closed')) },
-        handler: (resp) => resolve(resp)
-      };
-      const rz = new Razorpay(options);
-      rz.on('payment.failed', (resp) => reject(new Error(resp?.error?.description || 'Payment failed')));
-      rz.open();
-    });
-  }
+      if (payPlanName) payPlanName.textContent = planName;
+      if (payPlanAmt)  payPlanAmt.textContent  = '₹' + rupees + ' / year for the next 2 years';
 
-  async function verifyPayment(payload) {
-    return postJSON('/api/pay/verify', {
-      phone: STATE.phone,
-      razorpay_payment_id: payload.razorpay_payment_id,
-      razorpay_order_id: payload.razorpay_order_id,
-      razorpay_signature: payload.razorpay_signature
-    });
-  }
-
-  async function assignCreatorCode() {
-    if (!STATE.playerId) throw new Error('Missing player');
-    return postJSON(`/api/players/${encodeURIComponent(STATE.playerId)}/assign-creator-code`, {});
-  }
-
-  async function claimInviteAfterPayment() {
-    if (!STATE.inviteCode || STATE.inviteClaimed) return true;
-    try {
-      const j = await postJSON('/api/invites/claim', { code: STATE.inviteCode, playerId: STATE.playerId });
-      if (j?.ok) { STATE.inviteClaimed = true; localStorage.setItem('INVITE_CLAIMED', '1'); return true; }
-    } catch {}
-    return false;
-  }
-
-  /* ---------- Code Congrats popup (new) ---------- */
-  const codeBackdrop = byId('codeBackdrop');
-  const codeModal = byId('codeModal');
-  const codeClose = byId('codeClose');
-  const codeOk = byId('codeOk');
-  const codeValue = byId('codeValue');
-  const codeConfetti = byId('codeConfetti');
-  const codeCopy = byId('codeCopy');
-  const codeShare = byId('codeShare');
-
-  function closeCodePopup(){
-    if (!codeBackdrop || !codeModal) return;
-    codeBackdrop.classList.remove('recover-show');
-    codeModal.classList.remove('recover-show');
-  }
-
-  // colorful confetti
-  function burstConfetti(canvas, duration=20000){
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    function resize(){
-      const r = canvas.getBoundingClientRect();
-      canvas.width = Math.max(320, Math.floor(r.width));
-      canvas.height = Math.max(140, Math.floor(r.height));
+      payPlan.style.display = 'inline-flex';
     }
-    resize();
-    window.addEventListener('resize', resize);
 
-    const colors = [
-      '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
-      '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#6366f1',
-      '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'
-    ];
+    function refinePlanChipWithOrder(order) {
+      if (!payPlan) return;
+      const currency = order?.currency || 'INR';
+      const rupeesFromOrder = Number.isFinite(order?.amount) ? Math.round(order.amount / 100) : NaN;
 
-    const W = () => canvas.width;
-    const H = () => canvas.height;
-    const N = 180;
-    const g = 0.015;
-    const pieces = Array.from({length:N}, () => ({
-      x: Math.random()*W(),
-      y: -Math.random()*H()*0.6,
-      r: 2 + Math.random()*4,
-      vx: -1 + Math.random()*2,
-      vy: 1.2 + Math.random()*2.4,
-      rot: Math.random()*Math.PI*2,
-      vr: -0.25 + Math.random()*0.5,
-      c: colors[(Math.random()*colors.length)|0],
-      shape: (Math.random()<0.3) ? 'circle' : 'rect'
-    }));
+      if (Number.isFinite(rupeesFromOrder)) {
+        const label = (currency === 'INR' ? '₹' : currency + ' ') + rupeesFromOrder + ' / year';
+        if (payPlanAmt) payPlanAmt.textContent = label;
+      }
+      payPlan.style.display = 'inline-flex';
+    }
 
-    const t0 = performance.now();
-    function step(t){
-      const k = Math.min(1, (t - t0)/duration);
-      ctx.clearRect(0,0,W(),H());
-      for (const p of pieces){
-        // slight breeze
-        p.vx += Math.sin((t + p.x)*0.001)*0.002;
-        p.vy += g;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rot += p.vr;
-
-        if (p.y > H()+12) { // recycle from top
-          p.y = -12;
-          p.x = Math.random()*W();
-          p.vy = 1 + Math.random()*2.2;
+    async function tryAutoRedirectIfActive() {
+      try {
+        if (!STATE.phone) return false;
+        const res = await fetch(`/api/player/by-phone?phone=${encodeURIComponent(STATE.phone)}`, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) return false;
+        const j = await res.json();
+        if (j?.membership?.status === 'active') {
+          if (j._id) { STATE.playerId = j._id; localStorage.setItem('QF_PLAYER_ID', j._id); }
+          const k = encodePhone(STATE.phone);
+          location.href = `complete.html?k=${encodeURIComponent(k)}`;
+          return true;
         }
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = p.c;
-        if (p.shape === 'circle') {
-          ctx.beginPath();
-          ctx.arc(0, 0, p.r, 0, Math.PI*2);
-          ctx.fill();
-        } else {
-          ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
-        }
-        ctx.restore();
-      }
-      if (k < 1) requestAnimationFrame(step);
+      } catch {}
+      return false;
     }
-    requestAnimationFrame(step);
-  }
 
-  function openCodePopup(codeLabel){
-    if (!codeBackdrop || !codeModal) return;
-    if (codeValue) codeValue.textContent = codeLabel || '#0000';
-    codeBackdrop.classList.add('recover-show');
-    codeModal.classList.add('recover-show');
-    setTimeout(()=> burstConfetti(codeConfetti, 3200), 0);
-  }
+    if (!payBtn) return;
 
-  async function copyText(text, btn){
-    try {
-      await navigator.clipboard.writeText(text);
-      if (btn) {
-        const old = btn.textContent;
-        btn.textContent = 'Copied';
-        btn.disabled = true;
-        setTimeout(()=>{ btn.textContent = old; btn.disabled = false; }, 900);
-      }
-    } catch {
-      // silent
+    function openPopup() {
+      if (!payModal || !payBackdrop) { doPayLegacy(); return; }
+      setLane('processing'); setStatus('Ready');
+      if (payErr) { payErr.style.display = 'none'; payErr.textContent = ''; }
+      if (receiptCard) receiptCard.style.display = 'none';
+      if (payInvoice)  payInvoice.style.display  = 'none';
+      if (payContinue) payContinue.style.display = 'none';
+      if (payRetry)    payRetry.style.display    = 'none';
+      if (payStart)  { payStart.style.display    = 'inline-block'; }
+      if (stayWarn)    stayWarn.style.display    = 'flex';
+
+      if (payPlan) payPlan.style.display = 'none';
+      showPlanChipInitial();
+
+      payBackdrop.classList.add('recover-show');
+      payModal.classList.add('recover-show');
     }
-  }
 
-  async function shareTextWithFallback(text, url){
-    const payload = { title: 'Dream Stage', text, url };
-    try{
-      if (navigator.share) {
-        await navigator.share(payload);
+    function closePopup() {
+      if (!payModal || !payBackdrop) return;
+      payBackdrop.classList.remove('recover-show');
+      payModal.classList.remove('recover-show');
+    }
+    payClose?.addEventListener('click', closePopup);
+    payBackdrop?.addEventListener('click', (e) => { if (e.target === payBackdrop) closePopup(); });
+
+    payBtn.addEventListener('click', async () => {
+      if (payBtn.getAttribute('aria-disabled') === 'true') return;
+      if (!STATE.phone) {
+        if (msg) msg.textContent = 'Please add your phone number under "Your Details" before paying.';
+        payBtn.classList.add('shake'); setTimeout(() => payBtn.classList.remove('shake'), 400);
         return;
       }
-    }catch{}
-    // Fallback to WhatsApp share
-    const shareUrl = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + (url || ''));
-    window.open(shareUrl, '_blank', 'noopener');
-  }
+      if (await tryAutoRedirectIfActive()) return;
+      openPopup();
+    });
 
-  codeClose?.addEventListener('click', closeCodePopup);
-  codeOk?.addEventListener('click', closeCodePopup);
-  codeBackdrop?.addEventListener('click', (e)=>{ if(e.target===codeBackdrop) closeCodePopup(); });
-
-  codeCopy?.addEventListener('click', ()=> {
-    const codeLabel = (codeValue?.textContent || '').trim();
-    copyText(codeLabel, codeCopy);
-  });
-
-  codeShare?.addEventListener('click', ()=> {
-    const codeLabel = (codeValue?.textContent || '').trim();
-    const txt = `I just claimed my Creator Code ${codeLabel} on Dream Stage.`;
-    const url = 'https://dreamstage.tech';
-    shareTextWithFallback(txt, url);
-  });
-
-  async function runPayment() {
-    if (payStart) payStart.style.display = 'none';
-    if (payErr) { payErr.style.display = 'none'; payErr.textContent = ''; }
-    setLane('processing'); setStatus('Creating order…'); if (stayWarn) stayWarn.style.display = 'flex';
-
-    try {
-      // create order & refine chip
-      const order = await createOrder();
-      refinePlanChipWithOrder(order);
-
-      setStatus('Awaiting payment…');
-      const resp = await openCheckout(order);
-
-      setStatus('Verifying payment…');
-      const v = await verifyPayment(resp);
-
-      setStatus('Assigning your creator code…');
-      let a = null; try { a = await assignCreatorCode(); } catch {}
-
-      if (STATE.inviteCode && !STATE.inviteClaimed) {
-        setStatus('Finalizing your invite…');
-        await claimInviteAfterPayment();
-      }
-
-      // Fill receipt
-      const amount    = v.amount ?? order.amount;
-      const currency  = v.currency ?? order.currency ?? 'INR';
-      const orderId   = order.orderId;
-      const paymentId = resp.razorpay_payment_id;
-
-      const serverCode = v.code || v.creatorCode || v.creatorCodeNumber || (a && (a.creatorCode || a.creatorCodeNumber));
-      const labelCode  = codeToLabel(serverCode);
-
-      if (invAmount)  invAmount.textContent  = (currency === 'INR' ? '₹' : currency + ' ') + (Number(amount) / 100).toFixed(2);
-      if (invOrder)   invOrder.textContent   = orderId || '—';
-      if (invPayment) invPayment.textContent = paymentId || '—';
-      if (invCode)    invCode.textContent    = labelCode || '—';
-      if (invPlan)    invPlan.textContent    = (payPlanName?.textContent || 'Yearly');
-      if (invInvoice) invInvoice.textContent = `DS-${new Date().getFullYear()}-${(orderId || '').slice(-6).toUpperCase() || 'XXXXXX'}`;
-      if (invDate)    invDate.textContent    = new Date().toLocaleString();
-
-      // store for invoice.html
-      try {
-        sessionStorage.setItem('INVOICE_DATA', JSON.stringify({
-          name: STATE.name,
-          phone: STATE.phone,
-          amount, currency, orderId, paymentId,
-          creatorCode: labelCode,
-          plan: invPlan ? invPlan.textContent : 'Yearly',
-          ts: Date.now()
-        }));
-      } catch {}
-
-      // Set invoice link with query parameters
-      if (payInvoice) {
-        const k = encodePhone(STATE.phone);
-        const query = `?name=${encodeURIComponent(STATE.name || 'Dream Stage Member')}&k=${encodeURIComponent(k)}&amt=${encodeURIComponent(amount)}&cur=${encodeURIComponent(currency)}&oid=${encodeURIComponent(orderId)}&pid=${encodeURIComponent(paymentId)}&code=${encodeURIComponent(labelCode)}&plan=${encodeURIComponent(invPlan ? invPlan.textContent : 'Yearly')}&ts=${Date.now()}`;
-        payInvoice.href = `invoice.html${query}`;
-        payInvoice.style.display = 'inline-block';
-      }
-
-      setLane('success');
-      if (receiptCard) receiptCard.style.display = 'block';
-      if (payInvoice)  payInvoice.style.display  = 'inline-block';
-      if (payContinue) payContinue.style.display = 'inline-block';
-      setStatus('Payment successful ✓');
-      if (stayWarn) stayWarn.style.display = 'none';
-      if (msg) msg.textContent = 'Payment successful!';
-
-      const finalCodeLabel = labelCode || codeToLabel(v.code);
-      if (invCode && finalCodeLabel) invCode.textContent = finalCodeLabel;
-
-      try {
-        const tmp = JSON.parse(sessionStorage.getItem('INVOICE_DATA') || '{}');
-        if (finalCodeLabel) tmp.creatorCode = finalCodeLabel;
-        sessionStorage.setItem('INVOICE_DATA', JSON.stringify(tmp));
-      } catch {}
-
-      // Show creator code popup ABOVE the payment popup
-      openCodePopup(finalCodeLabel);
-
-    } catch (err) {
-      setLane('failed');
-      setStatus('Payment failed');
-      if (payErr) {
-        payErr.textContent = String(err?.message || 'Something went wrong.');
-        payErr.style.display = 'block';
-      }
-      if (stayWarn) stayWarn.style.display = 'none';
-      if (payRetry) { payRetry.style.display = 'inline-block'; }
-      if (msg) msg.textContent = `Payment failed: ${err?.message || 'Something went wrong.'} You can retry.`;
+    async function createOrder() {
+      return postJSON('/api/pay/order', { phone: STATE.phone });
     }
-  }
 
-  payStart?.addEventListener('click', runPayment);
-  payRetry?.addEventListener('click', runPayment);
+    function openCheckout(order) {
+      return new Promise((resolve, reject) => {
+        const options = {
+          key: order.keyId,
+          amount: String(order.amount),
+          currency: order.currency,
+          name: 'Dream Stage',
+          description: 'Membership',
+          order_id: order.orderId,
+          prefill: {
+            name: STATE.name || order.name || 'Dream Stage Member',
+            contact: order.contact || digits(STATE.phone)
+          },
+          theme: { color: '#d946ef' },
+          modal: { ondismiss: () => reject(new Error('Payment window closed')) },
+          handler: (resp) => resolve(resp)
+        };
+        const rz = new Razorpay(options);
+        rz.on('payment.failed', (resp) => reject(new Error(resp?.error?.description || 'Payment failed')));
+        rz.open();
+      });
+    }
 
-  payContinue?.addEventListener('click', () => {
-    const k = encodePhone(STATE.phone);
-    location.href = `complete.html?k=${encodeURIComponent(k)}`;
-  });
+    async function verifyPayment(payload) {
+      return postJSON('/api/pay/verify', {
+        phone: STATE.phone,
+        razorpay_payment_id: payload.razorpay_payment_id,
+        razorpay_order_id: payload.razorpay_order_id,
+        razorpay_signature: payload.razorpay_signature
+      });
+    }
 
-  /* ------- Legacy fallback (rare) ------- */
-  async function doPayLegacy() {
-    if (payBtn.getAttribute('aria-disabled') === 'true') return;
-    if (!STATE.phone) { if (msg) msg.textContent = 'Please add your phone number…'; return; }
-    if (await tryAutoRedirectIfActive()) return;
+    async function assignCreatorCode() {
+      if (!STATE.playerId) throw new Error('Missing player');
+      return postJSON(`/api/players/${encodeURIComponent(STATE.playerId)}/assign-creator-code`, {});
+    }
 
-    payBtn.textContent = 'Processing…';
-    try {
-      const order = await postJSON('/api/pay/order', { phone: STATE.phone });
-      const resp  = await openCheckout(order);
-      await verifyPayment(resp);
-      try { await assignCreatorCode(); } catch {}
-      if (STATE.inviteCode && !STATE.inviteClaimed) await claimInviteAfterPayment();
+    async function claimInviteAfterPayment() {
+      if (!STATE.inviteCode || STATE.inviteClaimed) return true;
+      try {
+        const j = await postJSON('/api/invites/claim', { code: STATE.inviteCode, playerId: STATE.playerId });
+        if (j?.ok) { STATE.inviteClaimed = true; localStorage.setItem('INVITE_CLAIMED', '1'); return true; }
+      } catch {}
+      return false;
+    }
+
+    /* ---------- Code Congrats popup (new) ---------- */
+    const codeBackdrop = byId('codeBackdrop');
+    const codeModal = byId('codeModal');
+    const codeClose = byId('codeClose');
+    const codeOk = byId('codeOk');
+    const codeValue = byId('codeValue');
+    const codeConfetti = byId('codeConfetti');
+    const codeCopy = byId('codeCopy');
+    const codeShare = byId('codeShare');
+
+    function closeCodePopup(){
+      if (!codeBackdrop || !codeModal) return;
+      codeBackdrop.classList.remove('recover-show');
+      codeModal.classList.remove('recover-show');
+    }
+
+    function burstConfetti(canvas, duration=20000){
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      function resize(){
+        const r = canvas.getBoundingClientRect();
+        canvas.width = Math.max(320, Math.floor(r.width));
+        canvas.height = Math.max(140, Math.floor(r.height));
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const colors = [
+        '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+        '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#6366f1',
+        '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'
+      ];
+
+      const W = () => canvas.width;
+      const H = () => canvas.height;
+      const N = 180;
+      const g = 0.015;
+      const pieces = Array.from({length:N}, () => ({
+        x: Math.random()*W(),
+        y: -Math.random()*H()*0.6,
+        r: 2 + Math.random()*4,
+        vx: -1 + Math.random()*2,
+        vy: 1.2 + Math.random()*2.4,
+        rot: Math.random()*Math.PI*2,
+        vr: -0.25 + Math.random()*0.5,
+        c: colors[(Math.random()*colors.length)|0],
+        shape: (Math.random()<0.3) ? 'circle' : 'rect'
+      }));
+
+      const t0 = performance.now();
+      function step(t){
+        const k = Math.min(1, (t - t0)/duration);
+        ctx.clearRect(0,0,W(),H());
+        for (const p of pieces){
+          p.vx += Math.sin((t + p.x)*0.001)*0.002;
+          p.vy += g;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vr;
+
+          if (p.y > H()+12) {
+            p.y = -12;
+            p.x = Math.random()*W();
+            p.vy = 1 + Math.random()*2.2;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.c;
+          if (p.shape === 'circle') {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.r, 0, Math.PI*2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
+          }
+          ctx.restore();
+        }
+        if (k < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function openCodePopup(codeLabel){
+      if (!codeBackdrop || !codeModal) return;
+      if (codeValue) codeValue.textContent = codeLabel || '#0000';
+      codeBackdrop.classList.add('recover-show');
+      codeModal.classList.add('recover-show');
+      setTimeout(()=> burstConfetti(codeConfetti, 3200), 0);
+    }
+
+    async function copyText(text, btn){
+      try {
+        await navigator.clipboard.writeText(text);
+        if (btn) {
+          const old = btn.textContent;
+          btn.textContent = 'Copied';
+          btn.disabled = true;
+          setTimeout(()=>{ btn.textContent = old; btn.disabled = false; }, 900);
+        }
+      } catch {
+        // silent
+      }
+    }
+
+    async function shareTextWithFallback(text, url){
+      const payload = { title: 'Dream Stage', text, url };
+      try{
+        if (navigator.share) {
+          await navigator.share(payload);
+          return;
+        }
+      }catch{}
+      const shareUrl = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + (url || ''));
+      window.open(shareUrl, '_blank', 'noopener');
+    }
+
+    codeClose?.addEventListener('click', closeCodePopup);
+    codeOk?.addEventListener('click', closeCodePopup);
+    codeBackdrop?.addEventListener('click', (e)=>{ if(e.target===codeBackdrop) closeCodePopup(); });
+
+    codeCopy?.addEventListener('click', ()=> {
+      const codeLabel = (codeValue?.textContent || '').trim();
+      copyText(codeLabel, codeCopy);
+    });
+
+    codeShare?.addEventListener('click', ()=> {
+      const codeLabel = (codeValue?.textContent || '').trim();
+      const txt = `I just claimed my Creator Code ${codeLabel} on Dream Stage.`;
+      const url = 'https://dreamstage.tech';
+      shareTextWithFallback(txt, url);
+    });
+
+    async function runPayment() {
+      if (payStart) payStart.style.display = 'none';
+      if (payErr) { payErr.style.display = 'none'; payErr.textContent = ''; }
+      setLane('processing'); setStatus('Creating order…'); if (stayWarn) stayWarn.style.display = 'flex';
+
+      try {
+        const order = await createOrder();
+        refinePlanChipWithOrder(order);
+
+        setStatus('Awaiting payment…');
+        const resp = await openCheckout(order);
+
+        setStatus('Verifying payment…');
+        const v = await verifyPayment(resp);
+
+        setStatus('Assigning your creator code…');
+        let a = null; try { a = await assignCreatorCode(); } catch {}
+
+        if (STATE.inviteCode && !STATE.inviteClaimed) {
+          setStatus('Finalizing your invite…');
+          await claimInviteAfterPayment();
+        }
+
+        const amount    = v.amount ?? order.amount;
+        const currency  = v.currency ?? order.currency ?? 'INR';
+        const orderId   = order.orderId;
+        const paymentId = resp.razorpay_payment_id;
+
+        const serverCode = v.code || v.creatorCode || v.creatorCodeNumber || (a && (a.creatorCode || a.creatorCodeNumber));
+        const labelCode  = codeToLabel(serverCode);
+
+        if (invAmount)  invAmount.textContent  = (currency === 'INR' ? '₹' : currency + ' ') + (Number(amount) / 100).toFixed(2);
+        if (invOrder)   invOrder.textContent   = orderId || '—';
+        if (invPayment) invPayment.textContent = paymentId || '—';
+        if (invCode)    invCode.textContent    = labelCode || '—';
+        if (invPlan)    invPlan.textContent    = (payPlanName?.textContent || 'Yearly');
+        if (invInvoice) invInvoice.textContent = `DS-${new Date().getFullYear()}-${(orderId || '').slice(-6).toUpperCase() || 'XXXXXX'}`;
+        if (invDate)    invDate.textContent    = new Date().toLocaleString();
+
+        try {
+          sessionStorage.setItem('INVOICE_DATA', JSON.stringify({
+            name: STATE.name,
+            phone: STATE.phone,
+            amount, currency, orderId, paymentId,
+            creatorCode: labelCode,
+            plan: invPlan ? invPlan.textContent : 'Yearly',
+            ts: Date.now()
+          }));
+        } catch {}
+
+        if (payInvoice) {
+          const k = encodePhone(STATE.phone);
+          const query = `?name=${encodeURIComponent(STATE.name || 'Dream Stage Member')}&k=${encodeURIComponent(k)}&amt=${encodeURIComponent(amount)}&cur=${encodeURIComponent(currency)}&oid=${encodeURIComponent(orderId)}&pid=${encodeURIComponent(paymentId)}&code=${encodeURIComponent(labelCode)}&plan=${encodeURIComponent(invPlan ? invPlan.textContent : 'Yearly')}&ts=${Date.now()}`;
+          payInvoice.href = `invoice.html${query}`;
+          payInvoice.style.display = 'inline-block';
+        }
+
+        setLane('success');
+        if (receiptCard) receiptCard.style.display = 'block';
+        if (payInvoice)  payInvoice.style.display  = 'inline-block';
+        if (payContinue) payContinue.style.display = 'inline-block';
+        setStatus('Payment successful ✓');
+        if (stayWarn) stayWarn.style.display = 'none';
+        if (msg) msg.textContent = 'Payment successful!';
+
+        const finalCodeLabel = labelCode || codeToLabel(v.code);
+        if (invCode && finalCodeLabel) invCode.textContent = finalCodeLabel;
+
+        try {
+          const tmp = JSON.parse(sessionStorage.getItem('INVOICE_DATA') || '{}');
+          if (finalCodeLabel) tmp.creatorCode = finalCodeLabel;
+          sessionStorage.setItem('INVOICE_DATA', JSON.stringify(tmp));
+        } catch {}
+
+        openCodePopup(finalCodeLabel);
+
+      } catch (err) {
+        setLane('failed');
+        setStatus('Payment failed');
+        if (payErr) {
+          payErr.textContent = String(err?.message || 'Something went wrong.');
+          payErr.style.display = 'block';
+        }
+        if (stayWarn) stayWarn.style.display = 'none';
+        if (payRetry) { payRetry.style.display = 'inline-block'; }
+        if (msg) msg.textContent = `Payment failed: ${err?.message || 'Something went wrong.'} You can retry.`;
+      }
+    }
+
+    payStart?.addEventListener('click', runPayment);
+    payRetry?.addEventListener('click', runPayment);
+
+    payContinue?.addEventListener('click', () => {
       const k = encodePhone(STATE.phone);
-      await new Promise(r => setTimeout(r, 250));
-      location.href = `congrats.html?k=${encodeURIComponent(k)}`;
-    } catch (err) {
-      if (msg) msg.textContent = `Payment failed: ${err?.message || 'Something went wrong.'} You can retry.`;
-      payBtn.textContent = 'Retry Payment';
-    }
-  }
-})();
+      location.href = `complete.html?k=${encodeURIComponent(k)}`;
+    });
 
-  /* ---------- Perks pop ---------- */
-  (function () {
-    var btn = byId('perksBtn'); if (!btn) return;
-    var wrap = btn.parentElement;
-    function toggle(e) { e && e.preventDefault(); var open = !wrap.classList.contains('open'); wrap.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); }
-    btn.addEventListener('click', toggle, { passive: false });
-    btn.addEventListener('touchend', toggle, { passive: false });
-    document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); } }, { passive: true });
+    async function doPayLegacy() {
+      if (payBtn.getAttribute('aria-disabled') === 'true') return;
+      if (!STATE.phone) { if (msg) msg.textContent = 'Please add your phone number…'; return; }
+      if (await tryAutoRedirectIfActive()) return;
+
+      payBtn.textContent = 'Processing…';
+      try {
+        const order = await postJSON('/api/pay/order', { phone: STATE.phone });
+        const resp  = await openCheckout(order);
+        await verifyPayment(resp);
+        try { await assignCreatorCode(); } catch {}
+        if (STATE.inviteCode && !STATE.inviteClaimed) await claimInviteAfterPayment();
+        const k = encodePhone(STATE.phone);
+        await new Promise(r => setTimeout(r, 250));
+        location.href = `congrats.html?k=${encodeURIComponent(k)}`;
+      } catch (err) {
+        if (msg) msg.textContent = `Payment failed: ${err?.message || 'Something went wrong.'} You can retry.`;
+        payBtn.textContent = 'Retry Payment';
+      }
+    }
   })();
 })();

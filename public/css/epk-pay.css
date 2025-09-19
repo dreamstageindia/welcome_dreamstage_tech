@@ -519,7 +519,7 @@ ul.fancy li::before {
   background: #fff;
   box-shadow: var(--shadow);
   text-align: left;
-  cursor: pointer;
+  /* cursor: pointer; */
   transition: box-shadow .12s ease, border-color .12s ease;
   min-height: 200px
 }
@@ -572,7 +572,6 @@ ul.fancy li::before {
 
 #s3 .preview-link {
   font-weight: 900;
-  text-decoration: underline;
   color: var(--brand)
 }
 

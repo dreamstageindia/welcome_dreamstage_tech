@@ -9,12 +9,33 @@
   />
   <title>DREAM STAGE</title>
 
+  <!-- Early iOS redirect (runs before loading styles/scripts) -->
+  <script>
+    (function () {
+      var ua = navigator.userAgent || "";
+      var platform = navigator.platform || "";
+      var isIOSUA = /iPad|iPhone|iPod/i.test(ua);
+      var isIPadOSDesktop = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+      var isIOS = isIOSUA || isIPadOSDesktop;
+
+      // avoid redirect loops (only on index page)
+      var path = (location.pathname || "").toLowerCase();
+      var isOnOnboard = path.endsWith("/onboard.html") || path.endsWith("/onboard");
+
+      if (isIOS && !isOnOnboard) {
+        // Use replace so the back button doesn't bounce the user back here
+        location.replace("onboard.html");
+      }
+      // Expose for later scripts if needed
+      window.__IS_IOS__ = isIOS;
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
-<link rel="shortcut icon" href="./images/logo.png" type="image/x-icon">
-
+  <link rel="shortcut icon" href="./images/logo.png" type="image/x-icon">
 
   <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="css/style.css">
@@ -30,7 +51,7 @@
       overscroll-behavior: none;
       -webkit-text-size-adjust: 100%;
     }
-  
+
     /* Shell just fills the viewport. No grid centering. */
     #stage-center {
       position: fixed;
@@ -40,7 +61,7 @@
       min-height: 100svh;
       z-index: 50;
     }
-  
+
     /* Fixed logical stage. We’ll translate+scale it from JS. */
     #scale-root {
       width: 1280px;
@@ -52,11 +73,10 @@
       backface-visibility: hidden;
       -webkit-transform: translateZ(0);
     }
-  
+
     /* Allow two-finger pinch on the canvas */
     canvas.game-screen { touch-action: pinch-zoom; }
   </style>
-  
 </head>
 
 <body>
@@ -113,24 +133,13 @@
   <script src="js/Preloader.js"></script>
 
   <script>
-    // Robust iOS detection (covers iPadOS desktop UA too)
-    (function(){
-      window.__IS_IOS__ = (function () {
-        var ua = navigator.userAgent || "";
-        var platform = navigator.platform || "";
-        var iOSUA = /iPad|iPhone|iPod/i.test(ua);
-        var iPadOSDesktopMode = platform === "MacIntel" && navigator.maxTouchPoints > 1;
-        return iOSUA || iPadOSDesktopMode;
-      })();
-    })();
-  
-    // Lock to landscape when allowed (non-iOS browsers typically support this)
+    // Lock to landscape when allowed (skip lock errors)
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(function(err){
         console.warn('Orientation lock failed:', err);
       });
     }
-  
+
     // Show “rotate” overlay only for NON-iOS phones/tablets in portrait
     function checkOrientation() {
       const overlay = document.getElementById('rotate-overlay');
@@ -144,14 +153,12 @@
         overlay.style.display = 'none';
       }
     }
-  
+
     window.addEventListener('orientationchange', checkOrientation, { passive: true });
     window.addEventListener('resize', checkOrientation, { passive: true });
     document.addEventListener('visibilitychange', checkOrientation, { passive: true });
     checkOrientation();
   </script>
 
-
 </body>
 </html>
-

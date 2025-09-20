@@ -872,7 +872,7 @@
       codeModal.classList.remove('recover-show');
     }
 
-    function burstConfetti(canvas, duration=20000){
+    function burstConfetti(canvas, duration=2000000000000){
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
@@ -946,7 +946,7 @@
       if (codeValue) codeValue.textContent = codeLabel || '#0000';
       codeBackdrop.classList.add('recover-show');
       codeModal.classList.add('recover-show');
-      setTimeout(()=> burstConfetti(codeConfetti, 3200), 0);
+      setTimeout(()=> burstConfetti(codeConfetti, 320000000), 0);
     }
 
     async function copyText(text, btn){

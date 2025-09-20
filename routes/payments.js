@@ -79,9 +79,21 @@ router.post('/order', async (req, res) => {
     const player = await Player.findOne({ 'phone.number': phone }).exec();
     if (!player) return res.status(404).json({ error: 'Account not found' });
 
-    const rupees   = computeRupees(player.joinOrder);
-    const amount   = rupees * 100;               // paise
-    const currency = 'INR';
+    // --- NEW: expected rank BEFORE payment ---
+    async function expectedJoinOrder(p) {
+      // If somehow they already have a number, use it
+      if (p?.creator?.number > 0) return p.creator.number;
+      if (Number.isFinite(p?.joinOrder) && p.joinOrder > 0) return p.joinOrder;
+
+      // Fallback: approximate with number of paid orders so far + 1
+      const paidCount = await PaymentOrder.countDocuments({ status: 'paid' }).exec();
+      return paidCount + 1;
+    }
+
+    const predictedRank = await expectedJoinOrder(player);
+    const rupees        = computeRupees(predictedRank); // <=100: 49, <=3000: 99, else 199
+    const amount        = rupees * 100;                 // paise
+    const currency      = 'INR';
 
     // Razorpay requires <= 40 chars for receipt
     const shortId = player._id.toString().slice(-6);
@@ -108,7 +120,7 @@ router.post('/order', async (req, res) => {
       return res.status(502).json({ error: 'Invalid response from payment gateway' });
     }
 
-    // Now we have a legit orderId → safe to upsert
+    // Upsert our local order record
     await PaymentOrder.findOneAndUpdate(
       { orderId: order.id },
       {
@@ -132,11 +144,12 @@ router.post('/order', async (req, res) => {
       ok: true,
       keyId: RZP_KEY_ID,
       orderId: order.id,
-      amount: order.amount ?? amount,
+      amount: order.amount ?? amount,         // paise
       currency: order.currency || currency,
       name: player.name || 'Dream Stage Member',
       contact: contactDigits,
-      joinOrder: player.joinOrder || 0,
+      // helpful extras for the UI
+      predictedRank,
       plan: { name: 'Yearly', priceRupees: rupees }
     });
   } catch (err) {
@@ -144,6 +157,7 @@ router.post('/order', async (req, res) => {
     res.status(500).json({ error: 'Could not create order' });
   }
 });
+
 
 /* ------------------------- VERIFY + ACTIVATE + ASSIGN CODE ------------------------- */
 router.post('/verify', async (req, res) => {

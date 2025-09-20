@@ -81,7 +81,7 @@ li,
   z-index: 30;
   background: #fff;
   border-bottom: 1px solid var(--border);
-  height: var(--sticky)
+  height: 50px
 }
 
 .topbar-inner {
@@ -143,7 +143,7 @@ li,
 
 .tube {
   width: 100%;
-  height: 14px;
+  height: 5px;
   border-radius: 0;
   background: #faf5ff;
   position: fixed;
@@ -152,7 +152,8 @@ li,
   padding: 0;
   border: none;
   box-shadow: none;
-  top: 71px;
+  z-index: 100;
+  top: 50px;
 }
 
 .tube .fill {
@@ -164,12 +165,13 @@ li,
   /* 0 → 1 */
   background: linear-gradient(90deg, #c41fe1, #530aa5);
   border-radius: inherit;
+  z-index: 100;
   transition: width .25s ease;
 }
 
 /* ------------------ PAGE STACK ------------------ */
 .fullpage {
-  padding-top: calc(var(--sticky) + var(--stepsH))
+  padding-top: 3%;
 }
 
 .step {
@@ -177,7 +179,7 @@ li,
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-block: clamp(28px, 8vh, 72px)
+  padding-block: clamp(0px, 0vh, 72px)
 }
 
 .fp-stage {
@@ -528,6 +530,22 @@ ul.fancy li::before {
   border-color: #f0abfc;
   box-shadow: 0 14px 30px rgba(0, 0, 0, .08)
 }
+
+/* place in your css */
+.card-btn .icons {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+.card-btn .icons img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 
 #s3 .icon {
   width: 22px;

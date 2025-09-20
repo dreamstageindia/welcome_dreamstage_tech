@@ -143,7 +143,7 @@
       modal.innerHTML = `
         <div class="invite-box" role="dialog" aria-modal="true" aria-labelledby="inviteTitle">
           <header>
-            <div id="inviteTitle">Enter your invite code</div>
+            <div id="inviteTitle">You’re about to preview a demo EPK, imagine how yours could look.</div>
             <button class="invite-btn secondary" id="inviteClose" type="button" aria-label="Close">✕</button>
           </header>
           <main>

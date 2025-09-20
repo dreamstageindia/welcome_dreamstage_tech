@@ -2,15 +2,6 @@
 var MarioMaker = (function() {
   var instance;
 
-  // Robust iOS detection (covers iPadOS desktop UA too)
-  var IS_IOS = (function () {
-    var ua = navigator.userAgent || "";
-    var platform = navigator.platform || "";
-    var iOSUA = /iPad|iPhone|iPod/i.test(ua);
-    var iPadOSDesktopMode = platform === "MacIntel" && navigator.maxTouchPoints > 1;
-    return iOSUA || iPadOSDesktopMode;
-  })();
-
   function MarioMaker() {
     var view = View.getInstance();
 
@@ -33,6 +24,13 @@ var MarioMaker = (function() {
     var qflow = QuestionFlow.getInstance();
 
     // ----- Simple persistent state -----
+    // GS schema:
+    // {
+    //   inGame: boolean,
+    //   currentLevel: number,
+    //   pendingMilestone: boolean,
+    //   pendingAfterComplete: boolean
+    // }
     var GS_KEY = 'MM_GAME_STATE';
     function readState() {
       try { return JSON.parse(localStorage.getItem(GS_KEY) || '{}'); }
@@ -127,23 +125,8 @@ var MarioMaker = (function() {
         window.location.href = 'onboard.html';
       };
 
-      // ---- iOS restrictions: show ONLY "KEEP IT SIMPLE" ----
-      if (IS_IOS) {
-        // Hide gameplay-related buttons entirely for iOS
-        view.style(startGameButton, { display: 'none' });
-        view.style(editorButton, { display: 'none' });
-        view.style(createdLevelsButton, { display: 'none' });
-        // Also ensure the back button is hidden by default
-        view.style(backToMenuBtn, { display: 'none' });
-
-        // Wipe any persisted in-game state so we never auto-resume gameplay
-        clearState();
-      }
-
-      // Attempt auto-resume if user refreshes mid-session (non-iOS only)
-      if (!IS_IOS) {
-        that.tryAutoResume();
-      }
+      // Attempt auto-resume if user refreshes mid-session
+      that.tryAutoResume();
     };
 
     this.tryAutoResume = function() {
@@ -249,12 +232,6 @@ var MarioMaker = (function() {
     };
 
     this.onStartGame = function() {
-      if (IS_IOS) {
-        // Guard: gameplay is disabled on iOS. Redirect to simple onboarding.
-        window.location.href = 'onboard.html';
-        return;
-      }
-
       if (backToMenuBtn) {
         view.style(backToMenuBtn, { display: 'block' });
       } else {
@@ -363,11 +340,6 @@ var MarioMaker = (function() {
     };
 
     this.startEditor = function() {
-      if (IS_IOS) {
-        // Editor (which can lead to gameplay) is disabled on iOS
-        window.location.href = 'onboard.html';
-        return;
-      }
       if (backToMenuBtn) {
         view.style(backToMenuBtn, { display: 'block' });
       } else {
@@ -385,11 +357,6 @@ var MarioMaker = (function() {
     };
 
     this.startCreatedLevels = function() {
-      if (IS_IOS) {
-        // Created levels (and potential play) disabled on iOS
-        window.location.href = 'onboard.html';
-        return;
-      }
       if (backToMenuBtn) {
         view.style(backToMenuBtn, { display: 'block' });
       } else {

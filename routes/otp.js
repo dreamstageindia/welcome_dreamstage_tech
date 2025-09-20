@@ -1,9 +1,11 @@
+// routes/otp.js (CommonJS)
 const express = require('express');
 const crypto  = require('crypto');
 const router  = express.Router();
 
 const Player  = require('../models/Player');
 const Counter = require('../models/Counter');
+const twilio  = require('twilio');
 
 const hashOTP = (otp) => crypto.createHash('sha256').update(String(otp)).digest('hex');
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000); // 6-digit
@@ -14,13 +16,28 @@ const normalizePhone = (s) => {
   return '+' + raw.replace(/\D+/g,'');
 };
 
+function getTwilioClient() {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken  = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_FROM_NUMBER;
+
+  if (!accountSid || !authToken || !fromNumber) {
+    const msg = 'SMS provider not configured (set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER)';
+    const err = new Error(msg);
+    err.code = 'TWILIO_CONFIG_MISSING';
+    throw err;
+  }
+  const client = twilio(accountSid, authToken);
+  return { client, fromNumber };
+}
+
 // POST /api/otp/send
 router.post('/send', async (req, res) => {
   try {
     let { playerId, sessionId, phone } = req.body;
 
     phone = normalizePhone(phone);
-    if (!phone) return res.status(400).json({ error: 'Invalid phone' });
+    if (!phone || phone.length < 8) return res.status(400).json({ error: 'Invalid phone' });
 
     let doc = null;
 
@@ -42,15 +59,18 @@ router.post('/send', async (req, res) => {
       return res.status(400).json({ error: 'playerId or sessionId is required' });
     }
 
+    // Unique phone guard
     const existing = await Player.findOne({ 'phone.number': phone }).select('_id').lean().exec();
     if (existing && String(existing._id) !== String(doc._id)) {
       return res.status(409).json({ error: 'PHONE_EXISTS', message: 'Phone number already exists' });
     }
 
+    // Generate + hash OTP
     const code = generateOTP();
     const codeHash = hashOTP(code);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
+    // Persist OTP + phone state
     doc.phone.number = phone;
     doc.phone.verified = false;
     doc.phone.verifiedAt = null;
@@ -67,12 +87,24 @@ router.post('/send', async (req, res) => {
       throw e;
     }
 
-    const payload = { ok: true, expiresAt };
-    if (process.env.NODE_ENV !== 'production') {
-      payload.devOtp = code;
-      console.log(`DEV OTP for ${phone} (${doc._id}): ${code}`);
+    // Always send SMS via Twilio (no dev fallback / no OTP in response)
+    try {
+      const { client, fromNumber } = getTwilioClient();
+      await client.messages.create({
+        from: fromNumber,    // must be a Twilio-verified E.164 number
+        to: phone,           // E.164
+        body: `Your Dream Stage verification code is: ${code}. It will expire in 5 minutes.`,
+      });
+    } catch (twilioErr) {
+      if (twilioErr?.code === 'TWILIO_CONFIG_MISSING') {
+        return res.status(500).json({ error: 'SMS provider not configured' });
+      }
+      console.error('Twilio send error:', twilioErr);
+      return res.status(502).json({ error: 'Failed to send SMS OTP' });
     }
-    res.json(payload);
+
+    // Success: never return / log the OTP
+    return res.json({ ok: true, expiresAt });
   } catch (err) {
     console.error('POST /otp/send error:', err);
     res.status(500).json({ error: 'Failed to send OTP' });

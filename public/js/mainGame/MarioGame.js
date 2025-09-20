@@ -511,7 +511,7 @@ function MarioGame() {
       if (!mario.jumping && mario.grounded) {
         mario.jumping = true;
         mario.grounded = false;
-        mario.velY = -(mario.speed / 2 + 5.5);
+        mario.velY = -(mario.speed / 2 + 6);
         if (mario.frame === 0 || mario.frame === 1) mario.frame = 3;
         else if (mario.frame === 8 || mario.frame === 9) mario.frame = 2;
         gameSound.play('jump');

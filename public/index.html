@@ -113,28 +113,45 @@
   <script src="js/Preloader.js"></script>
 
   <script>
-    // Lock to landscape when allowed
+    // Robust iOS detection (covers iPadOS desktop UA too)
+    (function(){
+      window.__IS_IOS__ = (function () {
+        var ua = navigator.userAgent || "";
+        var platform = navigator.platform || "";
+        var iOSUA = /iPad|iPhone|iPod/i.test(ua);
+        var iPadOSDesktopMode = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+        return iOSUA || iPadOSDesktopMode;
+      })();
+    })();
+  
+    // Lock to landscape when allowed (non-iOS browsers typically support this)
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(function(err){
         console.warn('Orientation lock failed:', err);
       });
     }
-
-    // Show “rotate” overlay if still in portrait on phones/tablets
+  
+    // Show “rotate” overlay only for NON-iOS phones/tablets in portrait
     function checkOrientation() {
       const overlay = document.getElementById('rotate-overlay');
+      if (window.__IS_IOS__) {
+        overlay.style.display = 'none';
+        return;
+      }
       if (window.matchMedia("(orientation: portrait) and (max-width: 1024px)").matches) {
         overlay.style.display = 'flex';
       } else {
         overlay.style.display = 'none';
       }
     }
-
+  
     window.addEventListener('orientationchange', checkOrientation, { passive: true });
     window.addEventListener('resize', checkOrientation, { passive: true });
     document.addEventListener('visibilitychange', checkOrientation, { passive: true });
     checkOrientation();
   </script>
 
+
 </body>
 </html>
+

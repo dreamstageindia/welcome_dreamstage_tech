@@ -210,7 +210,7 @@
 
     const limit = seg.limit || 1;
     prizeTitle.textContent = 'Invite Power Unlocked!';
-    prizeMsg.textContent = `Congratulations, You have WON ${limit} Invites.<br>Now or never: choose the next wave of artists<br>Validity : 30 Days from today`;
+    prizeMsg.textContent = `Congratulations, You have WON ${limit} Invites.\nNow or never: choose the next wave of artists\nValidity : 30 Days from today`;
 
     let claim = await claimOnServer(limit);
     if (!claim?.ok) claim = await createInviteCodeFallback(limit);

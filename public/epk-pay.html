@@ -9,6 +9,70 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <link rel="stylesheet" href="./css/epk-pay.css">
   <link rel="shortcut icon" href="./images/logo.png" type="image/x-icon">
+  <style>
+    /* anchor for the i and its tooltip */
+.info-wrap{ position: relative; display:inline-flex; align-items:center; }
+
+/* the i button */
+.info-dot{
+  width: 20px; height: 20px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  display:inline-flex; align-items:center; justify-content:center;
+  font: 600 12px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #a855f7;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.info-dot:hover, .info-dot:focus-visible{
+  outline: none;
+  background: rgba(168,85,247,.08);
+}
+
+/* tooltip positioned BELOW the i */
+.tooltip-card{
+  position: absolute;
+  top: calc(100% + 8px);     /* below the i */
+  left: -270%;
+  transform: translateX(-50%) translateY(-4px);
+  max-width: 420px;
+  background: #fff;
+  color: #111;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+  padding: 12px 14px;
+  font: 400 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  z-index: 30;
+  opacity: 0; pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+  width: 265px;
+}
+.tooltip-card::after{
+  content: "";
+  position: absolute;
+  top: -6px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px; height: 10px;
+  background: #fff;
+  border-left: 1px solid rgba(0,0,0,.08);
+  border-top: 1px solid rgba(0,0,0,.08);
+}
+
+/* show only when the i is active (NOT on whole card hover) */
+.info-wrap.show-tip .tooltip-card{
+  opacity: 1; pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* IMPORTANT: remove card-wide hover trigger if you had it */
+.preview-anchor:hover .tooltip-card,
+.preview-anchor:focus-within .tooltip-card{
+  /* intentionally left empty to disable card-wide hover */
+}
+
+  </style>
 </head>
 
 <body>
@@ -137,12 +201,36 @@
               <span class="icons" aria-hidden="true">
                 <img src="./images/3.svg" alt="" />
               </span>
-              <div class="title" id="t-epk">Customizable EPK/Profiles</div>
+            
+              <div class="title" id="t-epk" style="display:flex;align-items:center;gap:8px">
+                Customizable EPK/Profiles
+            
+                <!-- wrap just the i + tooltip -->
+                <span class="info-wrap">
+                  <button
+                    type="button"
+                    class="info-dot"
+                    aria-label="What is an EPK?"
+                    aria-expanded="false"
+                    aria-describedby="epkTip"
+                  >i</button>
+            
+                  <!-- Tooltip lives with the button so it's placed under the i -->
+                  <div class="tooltip-card" id="epkTip" role="tooltip" aria-hidden="true">
+                    <strong>What’s an EPK?</strong><br>
+                    Your professional, shareable one-page portfolio for curators, brands, and venues. Includes:
+                    short bio + hero image; 1–2 standout videos/reels; photos, highlights, past gigs/clients;
+                    links to socials and contact/manager info. You can also add affiliations, crew member details, and rates.
+                  </div>
+                </span>
+              </div>
+            
               <div class="desc" id="d-epk">
                 Build your <b>online artist presence</b> and reach the world like never before. Your work will find its audience.
                 <a href="./epk-demo.html" target="_blank" style="text-decoration: none;color: palevioletred;font-size: large;">Preview →</a>
               </div>
             </div>
+            
     
             <button class="card-btn" type="button" aria-labelledby="t-code" aria-describedby="d-code">
               <span class="icons" aria-hidden="true">
@@ -593,7 +681,7 @@
         <!-- Receipt (shown only on success) -->
         <section id="receiptCard" class="receipt" style="display:none" aria-live="polite">
           <header>
-            <div class="title">Payment confirmed — here’s your receipt</div>
+            <div class="title">Payment confirmed, here’s your receipt</div>
             <button class="recover-btn accent" id="payContinue" type="button">Continue</button>
           </header>
 
@@ -684,6 +772,42 @@
       wireWhyToggle('why1'); // “Why Dream Stage?” on S1
       wireWhyToggle('why2'); // “Why this?” on S2
     })();
+
+    (function(){
+  const wrap = document.querySelector('.preview-anchor .info-wrap');
+  if (!wrap) return;
+  const btn = wrap.querySelector('.info-dot');
+  const tip = wrap.querySelector('.tooltip-card');
+
+  function openTip(on){
+    wrap.classList.toggle('show-tip', on);
+    btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    tip.setAttribute('aria-hidden', on ? 'false' : 'true');
+  }
+
+  // Toggle on click (mobile + desktop)
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    openTip(!wrap.classList.contains('show-tip'));
+  }, { passive:false });
+
+  // Desktop hover: show while hovering the i only
+  btn.addEventListener('mouseenter', ()=> openTip(true));
+  wrap.addEventListener('mouseleave', ()=> openTip(false));
+
+  // Close on outside click/tap
+  document.addEventListener('click', function(e){
+    if (!wrap.contains(e.target)) openTip(false);
+  }, { passive:true });
+
+  // Close on scroll (mobile-friendly)
+  window.addEventListener('scroll', ()=> openTip(false), { passive:true });
+
+  // ESC to close
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') openTip(false);
+  });
+})();
   </script>
   
 
